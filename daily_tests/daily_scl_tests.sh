@@ -1,12 +1,21 @@
 #!/bin/bash
 
-SCL_CONTAINERS="s2i-php-container \
+SCL_CONTAINERS="s2i-nodejs-container \
+s2i-base-container \
+s2i-php-container \
 s2i-perl-container \
 s2i-ruby-container \
 s2i-python-container \
-container-common-scripts \
-s2i-nodejs-container \
-s2i-base-container"
+postgresql-container \
+varnish-container \
+nginx-container \
+httpd-container \
+mariadb-container \
+redis-container \
+mysql-container \
+mongodb-container \
+golang-container
+"
 
 TMP_DIR="/tmp/daily_scl_tests"
 RESULT_DIR="${TMP_DIR}/results"
@@ -21,6 +30,7 @@ function clone_repo() {
     git clone "https://github.com/sclorg/${repo_name}.git"
     cd ${repo_name}
     git submodule update --init
+    git submodule update --remote
 }
 
 function iterate_over_all_containers() {
@@ -28,10 +38,7 @@ function iterate_over_all_containers() {
         cd ${TMP_DIR}
         local log_name="${TMP_DIR}/${repo}.log"
         clone_repo "$repo"
-        make test CUSTOM_REPO=/vagrant/repos7 TARGET=rhel7 > "${log_name}" 2>&1
-        if [[ $? -ne 0 ]]; then
-            cp "${log_name}" "${RESULT_DIR}/"
-        fi
+        make test TARGET=centos7 > "${log_name}" 2>&1 || cp "${log_name}" "${RESULT_DIR}/"
     done
 }
 
