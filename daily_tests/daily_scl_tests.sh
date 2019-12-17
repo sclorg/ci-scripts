@@ -37,7 +37,7 @@ function iterate_over_all_containers() {
     for repo in ${SCL_CONTAINERS}; do
         cd ${TMP_DIR} || exit
         local log_name="${TMP_DIR}/${repo}.log"
-        clone_repo "$repo" && make test TARGET=centos7 > "${log_name}" 2>&1 || cp "${log_name}" "${RESULT_DIR}/"
+        clone_repo "$repo" && make test TARGET=centos7 > "${log_name}" 2>&1 || mv "${log_name}" "${RESULT_DIR}/"
     done
 }
 
