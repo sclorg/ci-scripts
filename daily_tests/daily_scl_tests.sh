@@ -1,7 +1,7 @@
 #!/bin/bash
 
-SCL_CONTAINERS="s2i-nodejs-container \
-s2i-base-container \
+SCL_CONTAINERS="s2i-base-container \
+s2i-nodejs-container \
 s2i-php-container \
 s2i-perl-container \
 s2i-ruby-container \
