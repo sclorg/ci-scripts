@@ -76,7 +76,7 @@ class SendResults:
             )
             self.msg.attach(file_attachment)
             # Delete log file and append into failed_containers array
-            failed_containers.append(filename)
+            failed_containers.append(str(filename))
             filename.unlink()
         return failed_containers
 
