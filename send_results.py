@@ -12,7 +12,7 @@ from email.mime.multipart import MIMEMultipart
 COMMASPACE = ", "
 
 
-class SendResults(object):
+class SendResults():
 
     results_dir: Path = None
     sender: str = ""
