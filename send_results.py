@@ -12,7 +12,7 @@ from email.mime.multipart import MIMEMultipart
 COMMASPACE = ", "
 
 
-class SendResults():
+class SendResults:
 
     results_dir: Path = None
     sender: str = ""
@@ -50,16 +50,22 @@ class SendResults():
         Parse CLI arguments
         """
         # Directory, where are stored logs
+        if len(sys.argv) < 4:
+            print(
+                "Script `send_results.py` expects at least 3 arguments."
+                "./send_results.py <directory> <sender> <recipient_1> <recipient_2> ..."
+            )
+            sys.exit(1)
         self.results_dir = Path(sys.argv[1])
         self.sender = sys.argv[2]
         self.recipients = sys.argv[3:]
         if not self.results_dir.exists() and not self.results_dir.is_dir():
+            print("The directory specified as the first argument does not exist.")
             sys.exit(1)
 
     def iterate_over_dir(self) -> List:
         failed_containers: List = []
         for filename in self.results_dir.iterdir():
-            print(filename)
             if not filename.is_file() and not str(filename).endswith(".log"):
                 continue
             # Open log file and attach it into message
@@ -80,21 +86,21 @@ class SendResults():
         """
         failed_containers: List = self.iterate_over_dir()
         if failed_containers:
-            short_result = "was successful."
-            self.msg["Subject"] = self.title + short_result
-            html = self.html.format(results=short_result, cont="")
-        else:
             short_result = "failed."
             self.msg["Subject"] = self.title + short_result
             html = self.html.format(
                 results=short_result,
                 cont="<br>Failed containers: " + " ".join(failed_containers),
             )
+        else:
+            short_result = "was successful."
+            self.msg["Subject"] = self.title + short_result
+            html = self.html.format(results=short_result, cont="")
+
         self.msg.attach(MIMEText(html, "html"))
         s = smtplib.SMTP("localhost")
         s.sendmail(self.sender, self.recipients, self.msg.as_string())
         s.quit()
-        print("Results were sent")
 
 
 if __name__ == "__main__":
