@@ -94,7 +94,7 @@ class SendResults(object):
         s = smtplib.SMTP("localhost")
         s.sendmail(self.sender, self.recipients, self.msg.as_string())
         s.quit()
-        print("Results were send")
+        print("Results were sent")
 
 
 if __name__ == "__main__":
