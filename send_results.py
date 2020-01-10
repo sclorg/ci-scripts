@@ -69,6 +69,7 @@ class SendResults:
             if not filename.is_file() and not str(filename).endswith(".log"):
                 continue
             # Open log file and attach it into message
+            print(f"Failed container {str(filename)}.")
             with filename.open() as fp:
                 file_attachment = MIMEText(fp.read(), "plain")
             file_attachment.add_header(
@@ -100,6 +101,7 @@ class SendResults:
         self.msg.attach(MIMEText(html, "html"))
         s = smtplib.SMTP("localhost")
         s.sendmail(self.sender, self.recipients, self.msg.as_string())
+        print("Email sent.")
         s.quit()
 
 
