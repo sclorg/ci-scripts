@@ -73,11 +73,11 @@ class SendResults:
             with filename.open() as fp:
                 file_attachment = MIMEText(fp.read(), "plain")
             file_attachment.add_header(
-                "Content-Disposition", "attachment", filename=str(filename)
+                "Content-Disposition", "attachment", filename=filename.name
             )
             self.msg.attach(file_attachment)
             # Delete log file and append into failed_containers array
-            failed_containers.append(str(filename))
+            failed_containers.append(filename.stem)
             filename.unlink()
         return failed_containers
 
@@ -91,7 +91,7 @@ class SendResults:
             self.msg["Subject"] = self.title + short_result
             html = self.html.format(
                 results=short_result,
-                cont="<br>Failed containers: " + " ".join(failed_containers),
+                cont="<br>Failed containers: <br>" + "<br>".join(failed_containers),
             )
         else:
             short_result = "was successful."
