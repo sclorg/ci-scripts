@@ -16,6 +16,7 @@ class SendResults:
 
     results_dir: Path = None
     sender: str = ""
+    target: str = ""
     recipients: List[str] = []
     msg: MIMEMultipart = None
     # Body message for an email
@@ -24,13 +25,13 @@ class SendResults:
         <head></head>
             <body>
             <p>
-                Nightly build testing of RHSCL containers {results}
+                Nightly build testing of RHSCL containers for target {target} {results}
                 {cont}
             </p>
             </body>
         </html>
     """
-    title: str = "RHSCL daily night build testing "
+    title: str = "RHSCL daily night build testing for target {target}"
 
     def __init__(self):
         """
@@ -50,15 +51,16 @@ class SendResults:
         Parse CLI arguments
         """
         # Directory, where are stored logs
-        if len(sys.argv) < 4:
+        if len(sys.argv) < 5:
             print(
                 "Script `send_results.py` expects at least 3 arguments."
-                "./send_results.py <directory> <sender> <recipient_1> <recipient_2> ..."
+                "./send_results.py <directory> <target> <sender> <recipient_1> <recipient_2> ..."
             )
             sys.exit(1)
         self.results_dir = Path(sys.argv[1])
-        self.sender = sys.argv[2]
-        self.recipients = sys.argv[3:]
+        self.target = sys.argv[2]
+        self.sender = sys.argv[3]
+        self.recipients = sys.argv[4:]
         if not self.results_dir.exists() and not self.results_dir.is_dir():
             print("The directory specified as the first argument does not exist.")
             sys.exit(1)
@@ -90,13 +92,14 @@ class SendResults:
             short_result = "failed."
             self.msg["Subject"] = self.title + short_result
             html = self.html.format(
+                target=self.target,
                 results=short_result,
                 cont="<br>Failed containers: <br>" + "<br>".join(failed_containers),
             )
         else:
             short_result = "was successful."
             self.msg["Subject"] = self.title + short_result
-            html = self.html.format(results=short_result, cont="")
+            html = self.html.format(target=self.target, results=short_result, cont="")
 
         self.msg.attach(MIMEText(html, "html"))
         s = smtplib.SMTP("localhost")

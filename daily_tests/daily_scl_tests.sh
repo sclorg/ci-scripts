@@ -17,8 +17,12 @@ mongodb-container \
 golang-container
 "
 
+
+[[ -z "$1" ]] && { echo "You have to specify target to build SCL images. centos7, rhel7 or fedora" && exit 1 ; }
+
+TARGET="$1"
 TMP_DIR="/tmp/daily_scl_tests"
-RESULT_DIR="${TMP_DIR}/results"
+RESULT_DIR="${TMP_DIR}/results/"
 
 if [[ -d "${TMP_DIR}" ]]; then
     rm -rf "${TMP_DIR:?}/"
@@ -37,7 +41,7 @@ function iterate_over_all_containers() {
     for repo in ${SCL_CONTAINERS}; do
         cd ${TMP_DIR} || exit
         local log_name="${TMP_DIR}/${repo}.log"
-        clone_repo "$repo" && make test TARGET=centos7 > "${log_name}" 2>&1 || mv "${log_name}" "${RESULT_DIR}/"
+        clone_repo "$repo" && make test TARGET="${TARGET}" > "${log_name}" 2>&1 || mv "${log_name}" "${RESULT_DIR}/"
     done
 }
 
