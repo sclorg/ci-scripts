@@ -31,7 +31,7 @@ class SendResults:
             </body>
         </html>
     """
-    title: str = "RHSCL daily night build testing for target {target}"
+    title: str = "RHSCL nightly build testing for target {target} "
 
     def __init__(self):
         """
@@ -90,16 +90,18 @@ class SendResults:
         failed_containers: List = self.iterate_over_dir()
         if failed_containers:
             short_result = "failed."
-            self.msg["Subject"] = self.title + short_result
+            self.msg["Subject"] = self.title.format(target=self.target) + short_result
             html = self.html.format(
-                target=self.target,
+                target=self.target.capitalize(),
                 results=short_result,
                 cont="<br>Failed containers: <br>" + "<br>".join(failed_containers),
             )
         else:
             short_result = "was successful."
-            self.msg["Subject"] = self.title + short_result
-            html = self.html.format(target=self.target, results=short_result, cont="")
+            self.msg["Subject"] = self.title.format(target=self.target) + short_result
+            html = self.html.format(
+                target=self.target.capitalize(), results=short_result, cont=""
+            )
 
         self.msg.attach(MIMEText(html, "html"))
         s = smtplib.SMTP("localhost")
