@@ -88,20 +88,16 @@ class SendResults:
         Sends an email based on the logs from the given directory
         """
         failed_containers: List = self.iterate_over_dir()
-        if failed_containers:
-            short_result = "failed."
-            self.msg["Subject"] = self.title.format(target=self.target) + short_result
-            html = self.html.format(
-                target=self.target.capitalize(),
-                results=short_result,
-                cont="<br>Failed containers: <br>" + "<br>".join(failed_containers),
-            )
-        else:
-            short_result = "was successful."
-            self.msg["Subject"] = self.title.format(target=self.target) + short_result
-            html = self.html.format(
-                target=self.target.capitalize(), results=short_result, cont=""
-            )
+        if not failed_containers:
+            return
+
+        short_result = "failed."
+        self.msg["Subject"] = self.title.format(target=self.target) + short_result
+        html = self.html.format(
+            target=self.target.capitalize(),
+            results=short_result,
+            cont="<br>Failed containers: <br>" + "<br>".join(failed_containers),
+        )
 
         self.msg.attach(MIMEText(html, "html"))
         s = smtplib.SMTP("localhost")
