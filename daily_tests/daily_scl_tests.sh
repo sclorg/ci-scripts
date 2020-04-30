@@ -13,8 +13,7 @@ httpd-container \
 mariadb-container \
 redis-container \
 mysql-container \
-mongodb-container \
-golang-container
+mongodb-container
 "
 
 
