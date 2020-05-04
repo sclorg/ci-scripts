@@ -30,7 +30,10 @@ mkdir -p "${RESULT_DIR}"
 
 function clone_repo() {
     local repo_name=$1; shift
-    git clone "https://github.com/sclorg/${repo_name}.git"
+    # Sometimes clonning failed with an error
+    # The requested URL returned error: 500. Save it into log for info
+    git clone "https://github.com/sclorg/${repo_name}.git" || \
+        { echo "Repository ${repo_name} was not clonned." > ${RESULT_DIR}/${repo_name}.log; return 1 ; }
     cd "${repo_name}" || { echo "Repository ${repo_name} does not exist. Skipping." && return 1 ; }
     git submodule update --init
     git submodule update --remote
