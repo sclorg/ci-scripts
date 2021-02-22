@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# The script prepares RHEL 7 machine for testing SCL images
+# it creates ssh_config file and ./cleanup.sh file
+# It also copies sources into OpenStack Slave machine
 set -ex
 
 RESTAG=$1

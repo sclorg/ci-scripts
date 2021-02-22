@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# The script executes test for RHSCL image.
+# The script executes also conu tests if they are present
 set -ex
 
 TARGET_OS=$1

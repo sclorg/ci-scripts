@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This script adds git config configuration file into environment
+# it also updates generated branch and shows diff
 set -ex
 
 git config --global user.name "SCLorg Jenkins"
