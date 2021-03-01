@@ -33,7 +33,8 @@ EOF
 chmod a+x .cleanup.sh
 
 # Copy sources and prepare shared sources (build scripts)
-rsync -avzP -e 'ssh -F ssh_config' $(pwd)/ host:sources
+git clone https://github.com/sclorg/ci-scripts.git $(pwd)/ci-scripts
+rsync -azP -e 'ssh -F ssh_config' $(pwd)/ host:sources
 ssh -F ssh_config host 'cd sources && git submodule update --init'
 # prepare CentOS machine for working with docker
 ssh -F ssh_config host 'ci-scripts/jenkins_ci/prepare-centos-docker.sh'
