@@ -19,7 +19,8 @@ git_fetch = subprocess.check_output(
 )
 print(git_fetch)
 git_checkout = subprocess.check_output(
-    ["git", "checkout", f"origin/pr/{pull_number}/head"], shell=True
+    ["git", "checkout", "origin/pr/{pull_number}/head".format(pull_number=pull_number)],
+    shell=True,
 )
 print(git_checkout)
 git_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], shell=True)
@@ -29,12 +30,14 @@ build_log = {
     "description": "Build started.",
     "public": False,
     "target_url": "$BUILD_URL/consoleText",
-    "context": f"Jenkins-CI for {context}",
+    "context": "Jenkins-CI for {context}".format(context=context),
     "state": "pending",
 }
 
 req = requests.post(
-    f"https://api.github.com/repos/{gituser}/{gitproject}/statuses/{git_commit}",
+    "https://api.github.com/repos/{gituser}/{gitproject}/statuses/{git_commit}".format(
+        gituser=gituser, gitproject=gitproject, git_commit=git_commit
+    ),
     data=json.dumps(build_log),
     auth=("$GITHUB_USERNAME", "$GITHUB_TOKEN"),
 )
