@@ -37,4 +37,4 @@ git clone https://github.com/sclorg/ci-scripts.git $(pwd)/ci-scripts
 rsync -azP -e 'ssh -F ssh_config' $(pwd)/ host:sources
 ssh -F ssh_config host 'cd sources && git submodule update --init'
 # prepare CentOS machine for working with docker
-ssh -F ssh_config host 'ci-scripts/jenkins_ci/prepare-centos-docker.sh'
+ssh -F ssh_config host 'cd sources && ./ci-scripts/jenkins_ci/prepare-centos-docker.sh'

@@ -5,7 +5,6 @@
 set -ex
 
 TARGET_OS=$1
-cd sources
 
 function run_conu() {
     if [ -f ./test/run-conu ]; then
