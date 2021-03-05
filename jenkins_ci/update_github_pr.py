@@ -24,5 +24,5 @@ req = requests.post(
         gituser=gituser, gitproject=gitproject, git_commit=git_commit
     ),
     data=json.dumps(build_log),
-    auth=(os.environ["GITHUB_USERNAME"], os.environ["GITHUB_TOKEN"]),
+    auth=("rhscl-automation", os.environ["GITHUB_TOKEN"]),
 )

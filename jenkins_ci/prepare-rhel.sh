@@ -34,6 +34,7 @@ EOF
 chmod a+x .cleanup.sh
 
 # Copy sources and prepare shared sources (build scripts)
-git clone https://github.com/sclorg/ci-scripts.git $(pwd)/ci-scripts
+
+
 rsync -azP -e 'ssh -F ssh_config' $(pwd)/ host:sources
 ssh -F ssh_config host 'cd sources && git submodule update --init'
