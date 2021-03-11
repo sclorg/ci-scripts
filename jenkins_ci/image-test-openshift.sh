@@ -14,7 +14,12 @@ tmplib=$(mktemp)
 curl https://raw.githubusercontent.com/sclorg/container-common-scripts/master/test-lib-openshift.sh >"$tmplib"
 source common/test-lib-openshift.sh
 echo "Starting a local cluster before running the tests..."
-ct_os_cluster_up && echo "A local cluster started successfully before running the tests." || echo "ERROR: A local cluster not started before starting the tests."
+if ct_os_cluster_up; then
+  echo "A local cluster started successfully before running the tests."
+else
+  echo "ERROR: A local cluster not started before starting the tests."
+  exit 1
+fi
 sleep 10
 
 make test-openshift TARGET="${TARGET_OS}" UPDATE_BASE=1 TAG_ON_SUCCESS=true
