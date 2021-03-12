@@ -13,18 +13,16 @@ yum -y install  http://cbs.centos.org/kojifiles/packages/docker/1.13.1/87.git07f
                         http://cbs.centos.org/kojifiles/packages/docker/1.13.1/87.git07f3374.el7/x86_64/docker-client-1.13.1-87.git07f3374.el7.x86_64.rpm \
                         http://cbs.centos.org/kojifiles/packages/docker/1.13.1/87.git07f3374.el7/x86_64/docker-common-1.13.1-87.git07f3374.el7.x86_64.rpm \
                         http://cbs.centos.org/kojifiles/packages/docker/1.13.1/87.git07f3374.el7/x86_64/docker-rhel-push-plugin-1.13.1-87.git07f3374.el7.x86_64.rpm
-# WORKAROUND - installing newer source-to-image from Fedora Rawhide, needed for running conu tests (sclorg/s2i-ruby-container/pull/167)
-#              IMHO, the best way to solve is to do epel build  (epel is enabled already)
-yum -y install rh-python36-python-virtualenv origin-clients distgen \
-               https://kojipkgs.fedoraproject.org//packages/source-to-image/1.1.7/3.fc29/x86_64/source-to-image-1.1.7-3.fc29.x86_64.rpm #source-to-image
+
+yum -y install rh-python36-python-virtualenv origin-clients distgen
 
 sed -i \"s|OPTIONS='|OPTIONS='--insecure-registry 172.30.0.0/16 |\" /etc/sysconfig/docker; iptables -F
 service docker start
 
-# Install docker-squash and conu
+# Install docker-squash
 scl enable rh-python36 -- virtualenv --python python3 /usr/local/python-tools
 . /usr/local/python-tools/bin/activate
-pip install docker-squash conu
+pip install docker-squash
 echo ". /usr/local/python-tools/bin/activate" > /root/.bashrc
 # Hack docker-squash --version - 1.0.5 is required
 # (TEMPORARY FIX - until all images contain fixed https://github.com/sclorg/container-common-scripts/pull/100
