@@ -21,7 +21,7 @@ function post_data() {
 
 for version in $(grep "VERSIONS = " Makefile | sed "s|VERSIONS = ||"); do
   for image in $(make tag TARGET=${TARGET_OS} VERSIONS=${version} | grep -- '-> Tagging image' | cut -d' ' -f 6 | sed "s/'//g"); do
-    echo "Updating summary for ${{image}}"
+    echo "Updating summary for ${image}"
     description=$(docker inspect --format='{{.Config.Labels.description}}' ${image} || "")
     if [ ${#description} -gt 100 ] ; then
       description="${description:0:96}..."
