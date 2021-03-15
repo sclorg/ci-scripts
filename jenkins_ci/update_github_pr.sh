@@ -12,4 +12,4 @@ git checkout origin/pr/$pull_number/head
 
 GIT_COMMIT=$(git rev-parse HEAD)
 
-python ${CI_SCRIPTS}/update_github_pr.py "$CONTEXT" "$GIT_USER" "$GIT_PROJECT" "$GIT_COMMIT"
+python "${CI_SCRIPTS}"/update_github_pr.py "$CONTEXT" "$GIT_USER" "$GIT_PROJECT" "$GIT_COMMIT"
