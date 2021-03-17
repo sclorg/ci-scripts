@@ -9,6 +9,18 @@ import os
 commit_url = sys.argv[1]
 gitproject = sys.argv[2]
 
+if commit_url == "":
+    print("ERROR: commit_url as a first parameter is not specified.")
+    sys.exit(1)
+
+if gitproject == "":
+    print("ERROR: gitproject, like s2i-nodejs-container is not specified.")
+    sys.exit(1)
+
+if "BUILD_NUMBER" not in os.environ:
+    print("ERROR: BUILD_NUMBER does exist as environment variable.")
+    sys.exit(1)
+
 diff = ""
 with open("./diff", "r") as f:
     diff = f.read()

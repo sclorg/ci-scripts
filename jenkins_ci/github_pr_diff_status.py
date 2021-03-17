@@ -10,6 +10,19 @@ git_commit = sys.argv[1]
 gituser = sys.argv[2]
 gitproject = sys.argv[3]
 
+if git_commit == "":
+    print("ERROR: git_commit as first parameter is not specified.")
+    sys.exit(1)
+
+if gituser == "":
+    print("ERROR: gitproject, like sclorg is not specified.")
+    sys.exit(1)
+
+if gitproject == "":
+    print("ERROR: gitproject, like s2i-nodejs-container is not specified.")
+    sys.exit(1)
+
+
 status = {
     "state": "success",
     "target_url": os.environ["DIFF_GIST_URL"],
