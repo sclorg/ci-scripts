@@ -40,11 +40,11 @@ COMMIT_JSON=$(curl -u ${GITHUB_USERNAME}:"$GITHUB_TOKEN" -s https://api.github.c
 COMMIT_URL=$(echo "${COMMIT_JSON}" | python -c "import sys, json; api_res=json.load(sys.stdin); print api_res['html_url'];")
 
 # Uploads diff into GitHub gist
-python "${CI_SCRIPTS}"/upload_diff.py "${COMMIT_URL}" "${GITPROJECT}"
+python "${CI_SCRIPTS}"/github_gist_upload_diff.py "${COMMIT_URL}" "${GITPROJECT}"
 
 . diff_url.prop
 
 #Update PR status
-python "${CI_SCRIPTS}"/upload_diff_status.py "${GIT_COMMIT}" "${GITUSER}" "${GITPROJECT}"
+python "${CI_SCRIPTS}"/github_pr_diff_status.py "${GIT_COMMIT}" "${GITUSER}" "${GITPROJECT}"
 
 rm diff
