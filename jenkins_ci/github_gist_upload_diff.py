@@ -5,16 +5,22 @@ import json
 import requests
 import sys
 import os
+import argparse
 
-commit_url = sys.argv[1]
-gitproject = sys.argv[2]
+parser = argparse.ArgumentParser()
+parser.add_argument("--commit-url", help="Git commit where the diff is POST")
+parser.add_argument("--gitproject", help="GitHub project organization")
+args = parser.parse_args()
 
-if commit_url == "":
-    print("ERROR: commit_url as a first parameter is not specified.")
+commit_url = args.commit_url
+gitproject = args.gitproject
+
+if not commit_url:
+    print("ERROR: commit_url parameter is missing.")
     sys.exit(1)
 
-if gitproject == "":
-    print("ERROR: gitproject, like s2i-nodejs-container is not specified.")
+if not gitproject:
+    print("ERROR: gitproject paramater, like s2i-nodejs-container is not specified.")
     sys.exit(1)
 
 if "BUILD_NUMBER" not in os.environ:

@@ -5,23 +5,29 @@ import json
 import requests
 import os
 import sys
+import argparse
 
-git_commit = sys.argv[1]
-gituser = sys.argv[2]
-gitproject = sys.argv[3]
+parser = argparse.ArgumentParser()
+parser.add_argument("--git-commit", help="Git commit where the diff is POST")
+parser.add_argument("--gituser", help="GitHub user organization")
+parser.add_argument("--gitproject", help="GitHub project organization")
+args = parser.parse_args()
 
-if git_commit == "":
+git_commit = args.git_commit
+gituser = args.gituser
+gitproject = args.gitproject
+
+if not git_commit:
     print("ERROR: git_commit as first parameter is not specified.")
     sys.exit(1)
 
-if gituser == "":
+if not gituser:
     print("ERROR: gitproject, like sclorg is not specified.")
     sys.exit(1)
 
-if gitproject == "":
+if not gitproject:
     print("ERROR: gitproject, like s2i-nodejs-container is not specified.")
     sys.exit(1)
-
 
 status = {
     "state": "success",
