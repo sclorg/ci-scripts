@@ -36,6 +36,7 @@ status = {
     "context": "diff",
 }
 
+print(status)
 html_url = "https://api.github.com/repos/{gituser}/{gitproject}/statuses/{git_commit}".format(
     gituser=gituser, gitproject=gitproject, git_commit=git_commit
 )

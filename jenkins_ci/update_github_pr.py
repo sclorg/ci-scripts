@@ -47,11 +47,12 @@ if "BUILD_URL" not in os.environ:
 build_log = {
     "description": "Build started.",
     "public": False,
-    "target_url": "$BUILD_URL/consoleText",
+    "target_url": "{build_url}/consoleText".format(build_url=os.environ["BUILD_URL"]),
     "context": "Jenkins-CI for {context}".format(context=context),
     "state": "pending",
 }
 
+print(build_log)
 req = requests.post(
     "https://api.github.com/repos/{gituser}/{gitproject}/statuses/{git_commit}".format(
         gituser=gituser, gitproject=gitproject, git_commit=git_commit
