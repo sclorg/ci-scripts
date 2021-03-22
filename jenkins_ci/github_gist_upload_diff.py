@@ -40,6 +40,7 @@ gist = {
     "files": {filename: {"content": diff}},
 }
 
+print(gist)
 req = requests.post(
     "https://api.github.com/gists",
     data=json.dumps(gist),
