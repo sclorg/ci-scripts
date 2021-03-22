@@ -11,3 +11,7 @@ if git ls-remote --exit-code origin generated &>/dev/null; then
   ./common/update-generated.sh
   git diff origin/generated..generated
 fi
+
+# ./common/update-generated.sh deletes ci-scripts for some reason.
+# It needs to be fixed
+git clone https://github.com/sclorg/ci-scripts.git ci-scripts
