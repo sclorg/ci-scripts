@@ -54,7 +54,7 @@ gist = {
         ): {"content": build_log}
     },
 }
-print(gist)
+
 req = requests.post(
     "https://api.github.com/gists",
     data=json.dumps(gist),
