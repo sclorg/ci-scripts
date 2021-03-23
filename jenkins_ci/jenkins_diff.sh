@@ -45,6 +45,6 @@ python "${CI_SCRIPTS}"/github_gist_upload_diff.py --commit-url="${COMMIT_URL}" -
 . diff_url.prop
 
 #Update PR status
-python "${CI_SCRIPTS}"/github_pr_diff_status.py --git-commit="${GIT_COMMIT}" --gituser="${GITUSER}" --gitproject"${GITPROJECT}"
+python "${CI_SCRIPTS}"/github_pr_diff_status.py --git-commit="${GIT_COMMIT}" --gituser="${GITUSER}" --gitproject="${GITPROJECT}"
 
 rm diff
