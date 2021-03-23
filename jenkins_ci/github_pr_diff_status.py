@@ -46,4 +46,4 @@ req = requests.post(
 )
 
 api_res = json.loads(req.content)
-
+print(api_res)
