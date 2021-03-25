@@ -14,4 +14,6 @@ fi
 
 # ./common/update-generated.sh deletes ci-scripts for some reason.
 # It needs to be fixed
-git clone https://github.com/sclorg/ci-scripts.git ci-scripts
+if [[ ! -d "ci-scripts" ]]; then
+  git clone https://github.com/sclorg/ci-scripts.git ci-scripts
+fi
