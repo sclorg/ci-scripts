@@ -12,6 +12,6 @@ GIT_COMMIT=$(git rev-parse HEAD)
 curl -Ss "$BUILD_URL/consoleText" > build_log
 curl -Ss "$BUILD_URL/api/json" > build_log.json
 
-python "${CI_SCRIPTS}"/github_gist_log.py --context="$CONTEXT" --gituser="$GIT_USER" --gitproject="$GIT_PROJECT" --git-commit="$GIT_COMMIT"
+python ./ci-scripts/jenkins_ci/github_gist_log.py --context="$CONTEXT" --gituser="$GIT_USER" --gitproject="$GIT_PROJECT" --git-commit="$GIT_COMMIT"
 
 rm build_log build_log.json
