@@ -34,6 +34,7 @@ Scripts which prepares OpenStack instance and running tests
   for testing container in RHEL by PR `[test] | [test-openshift] | [test-openshift-4]`
 * run-tests.sh - used by [image-test.yaml](https://github.com/sclorg/rhscl-container-ci/yaml/builders/image-test.yaml)
   for testing containers by PR comment `[test]`
+* run-container-common-scripts.sh - used by [container-common-scripts-test.yaml](https://github.com/sclorg/rhscl-container-ci/blob/master/yaml/jobs/misc/container-common-scripts-test.yaml) for testing containers by PR comment `[test]`
 
 Scripts which updates PR informaction
 * jenkins_diff.sh - used by [upload-diff.yaml](https://github.com/sclorg/rhscl-container-ci/yaml/publishers/upload-diff.yaml)
