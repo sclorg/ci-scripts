@@ -14,9 +14,10 @@ yum -y install  http://cbs.centos.org/kojifiles/packages/docker/1.13.1/87.git07f
                         http://cbs.centos.org/kojifiles/packages/docker/1.13.1/87.git07f3374.el7/x86_64/docker-common-1.13.1-87.git07f3374.el7.x86_64.rpm \
                         http://cbs.centos.org/kojifiles/packages/docker/1.13.1/87.git07f3374.el7/x86_64/docker-rhel-push-plugin-1.13.1-87.git07f3374.el7.x86_64.rpm
 
-yum -y install rh-python36-python-virtualenv origin-clients distgen
+yum -y install rh-python36-python-virtualenv origin-clients distgen \
+              https://kojipkgs.fedoraproject.org//packages/source-to-image/1.1.7/3.fc29/x86_64/source-to-image-1.1.7-3.fc29.x86_64.rpm #source-to-image
 
-sed -i \"s|OPTIONS='|OPTIONS='--insecure-registry 172.30.0.0/16 |\" /etc/sysconfig/docker; iptables -F
+sed -i "s|OPTIONS='|OPTIONS='--insecure-registry 172.30.0.0/16 |" /etc/sysconfig/docker; iptables -F
 service docker start
 
 # Install docker-squash
@@ -27,7 +28,7 @@ echo ". /usr/local/python-tools/bin/activate" > /root/.bashrc
 # Hack docker-squash --version - 1.0.5 is required
 # (TEMPORARY FIX - until all images contain fixed https://github.com/sclorg/container-common-scripts/pull/100
 # https://github.com/sclorg/container-common-scripts/issues/101)
-echo 'docker-squash() {{ if [ "$1" == "--version" ]; then echo "1.0.5"; else eval $(which docker-squash) $@ 1>&2; fi }}' >> /root/.bashrc
+echo 'docker-squash() { if [ "$1" == "--version" ]; then echo "1.0.5"; else eval $(which docker-squash) $@ 1>&2; fi }' >> /root/.bashrc
 echo 'export -f docker-squash' >> /root/.bashrc
 
 # Enable sudo for ssh (required by test cases)
