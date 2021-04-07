@@ -6,7 +6,7 @@
 set -ex
 
 RESTAG=$1
-rconnection="--connection http://10.0.149.99:49100/"
+rconnection="--connection http://10.0.148.162:49100/"
 
 resalloc $rconnection ticket --tag $RESTAG > ticket
 ticket=$(cat ticket)
