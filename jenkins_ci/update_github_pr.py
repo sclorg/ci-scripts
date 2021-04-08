@@ -48,7 +48,7 @@ build_log = {
     "description": "Build started.",
     "public": False,
     "target_url": "{build_url}/consoleText".format(build_url=os.environ["BUILD_URL"]),
-    "context": "Jenkins-CI for {context}".format(context=context),
+    "context": "SCLorg-CI for {context}".format(context=context),
     "state": "pending",
 }
 
