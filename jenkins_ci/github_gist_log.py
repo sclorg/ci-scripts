@@ -76,7 +76,7 @@ dist_git_url = {
     "description": "Build finished",
     "public": False,
     "target_url": api_res["html_url"],
-    "context": "Jenkins-CI for {context}".format(context=context),
+    "context": "SCLorg-CI for {context}".format(context=context),
     "state": build_state,
 }
 
