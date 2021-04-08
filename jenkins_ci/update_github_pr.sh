@@ -16,13 +16,13 @@ if [ x"${CONTEXT}" == "xcentos7" ] || [ x"${CONTEXT}" == "xfedora" ]; then
   exit 0
 fi
 
-if [ x"${GITUSER}" == "x" ]; then
-  echo "The second parameter GITUSER to upload_diff.sh has to be specified."
+if [ x"${GIT_USER}" == "x" ]; then
+  echo "The second parameter GIT_USER to upload_diff.sh has to be specified."
   exit 1
 fi
 
-if [ x"${GITPROJECT}" == "x" ]; then
-  echo "The third parameter GITPROJECT to upload_diff.sh has to be specified."
+if [ x"${GIT_PROJECT}" == "x" ]; then
+  echo "The third parameter GIT_PROJECT to upload_diff.sh has to be specified."
   exit 1
 fi
 
