@@ -47,3 +47,5 @@ req = requests.post(
 
 api_res = json.loads(req.content)
 print(api_res)
+
+sys.exit(0)

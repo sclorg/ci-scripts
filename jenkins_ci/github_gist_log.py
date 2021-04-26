@@ -90,3 +90,5 @@ req = requests.post(
 # Save Gist URL to a file which will be read by evironment variable injector
 with open("build_log_url.prop", "w") as f:
     f.write("BUILD_GIST_URL=" + api_res["html_url"] + "\n")
+
+sys.exit(0)
