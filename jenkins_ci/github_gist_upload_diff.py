@@ -50,3 +50,5 @@ api_res = json.loads(req.content)
 # Save Gist URL to a file which will be read by environment variable injector
 with open("diff_url.prop", "w") as f:
     f.write("export DIFF_GIST_URL={0}".format(api_res["html_url"]) + "\n")
+
+sys.exit(0)

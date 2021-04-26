@@ -60,3 +60,5 @@ req = requests.post(
     data=json.dumps(build_log),
     auth=("rhscl-automation", os.environ["GITHUB_TOKEN"]),
 )
+
+sys.exit(0)
