@@ -29,7 +29,7 @@ cat > .cleanup.sh << EOF
 set -ex
 
 resalloc $rconnection ticket-close "$ticket"
-rm ticket ssh_config
+rm ticket ssh_config || true
 EOF
 chmod a+x .cleanup.sh
 
