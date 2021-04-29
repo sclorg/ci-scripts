@@ -11,7 +11,7 @@ if [ x"${CONTEXT}" == "x" ]; then
   exit 1
 fi
 
-if [ x"${CONTEXT}" == "xcentos7" ] || [ x"${CONTEXT}" == "xfedora" ]; then
+if [[ ! x"${CONTEXT}" =~ ^rhel* ]]; then
   echo "We do not use github2fedmsg in CentOS CI."
   exit 0
 fi
