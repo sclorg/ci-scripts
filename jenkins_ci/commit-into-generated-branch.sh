@@ -4,8 +4,11 @@
 # it also updates generated branch and shows diff
 set -ex
 
+pushd .. > /dev/null
 git config --global user.name "SCLorg Jenkins"
 git config --global user.email "sclorg@redhat.com"
+
+popd >> /dev/null
 
 if git ls-remote --exit-code origin generated &>/dev/null; then
   ./common/update-generated.sh
