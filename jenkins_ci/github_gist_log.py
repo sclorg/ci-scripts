@@ -80,7 +80,7 @@ if "result" in build_json and build_json["result"] == "SUCCESS":
 else:
     build_state = "failure"
 
-print("update dist-git-url"
+print("update dist-git-url")
 if not force:
     html_url = api_res["html_url"]
 else:
