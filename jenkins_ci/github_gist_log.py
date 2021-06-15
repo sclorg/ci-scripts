@@ -52,6 +52,7 @@ if not force:
     with open("build_log.json", "r") as f_json:
         build_json = json.loads(f_json.read())
 
+    print("Build gist")
     gist = {
         "description": git_commit,
         "public": False,
@@ -61,7 +62,7 @@ if not force:
             ): {"content": build_log}
         },
     }
-
+    print("Send request to gist")
     req = requests.post(
         "https://api.github.com/gists",
         data=json.dumps(gist),
@@ -79,6 +80,7 @@ if "result" in build_json and build_json["result"] == "SUCCESS":
 else:
     build_state = "failure"
 
+print("update dist-git-url"
 if not force:
     html_url = api_res["html_url"]
 else:
@@ -91,6 +93,7 @@ dist_git_url = {
     "state": build_state,
 }
 
+print("Post status of GitHub pull request")
 req = requests.post(
     "https://api.github.com/repos/{gituser}/{gitproject}/statuses/{git_commit}".format(
         gituser=gituser, gitproject=gitproject, git_commit=git_commit
