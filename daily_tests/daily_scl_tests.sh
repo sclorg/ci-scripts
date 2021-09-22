@@ -23,7 +23,7 @@ shift
 [[ -z "$1" ]] && { echo "You have to specify type of the test to run. test, test-openshift, test-openshift-4" && exit 1 ; }
 TESTS="$1"
 
-TMP_DIR="/tmp/daily_scl_tests-$TARGET"
+TMP_DIR="/tmp/daily_scl_tests-$TARGET-$TESTS"
 RESULT_DIR="${TMP_DIR}/results/"
 REQ_ID=""
 if [[ -d "${TMP_DIR}" ]]; then
