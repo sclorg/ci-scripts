@@ -60,7 +60,7 @@ function check_state() {
   # Wait till job is not finished. As soon as state is complete or failure then go to the finish action
   while [ "$state" == "running" ] || [ "$state" == "new" ] || [ "$state" == "pending" ] || [ "$state" == "queued" ]; do
     # Wait 30s. We do not need to query Testing Farm each second
-    sleep 30
+    sleep 300
     curl $CMD > job.json
     state=$(jq -r .state job.json)
   cat job.json
@@ -85,7 +85,7 @@ function final_report() {
     new_state="failure"
   fi
   if [[ x"$new_state" == "failure" ]]; then
-    curl $TF_LOG/$REQ_ID/pipeline.log > "${RESULT_DIR}/${repo}.log"
+    curl $TF_ENDPOINT/requests/$REQ_ID/pipeline.log > "${RESULT_DIR}/${repo}.log"
   fi
   echo "New State: $new_state"
   echo "Infra state: $infra_error"
