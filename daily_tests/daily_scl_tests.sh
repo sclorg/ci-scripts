@@ -50,7 +50,7 @@ function iterate_over_all_containers() {
       cd ${TMP_DIR} || exit
       local log_name="${TMP_DIR}/${repo}.log"
       clone_repo "${repo}"
-      make ${TESTS} TARGET=${OS} > "${log_name}" 2>&1
+      make ${TESTS} TARGET=${OS} | tee "${log_name}"
       if [[ $? -ne 0 ]]; then
           cp "${log_name}" "${RESULT_DIR}/"
       fi
