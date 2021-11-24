@@ -1,0 +1,30 @@
+---
+- name: Installation RHSCL nightly builds
+  hosts: all
+
+
+- tasks:
+    - name: Install import packages
+      package:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - curl
+        - jq
+        - cronie
+        - postfix
+
+    - name: Start and enable crond service
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      with_items:
+        - crond
+        - postfix
+
+# Schedule NightlyBuild at 1 am each day
+# * 1 * * 1-5 /home/fedora/ci-scripts/run_nightly_tests.sh rhel7 test
+# * 1 * * 1-5 /home/fedora/ci-scripts/run_nightly_tests.sh rhel8 test
+# * 1 * * 1-5 /home/fedora/ci-scripts/run_nightly_tests.sh centos7 test
+# * 1 * * 1-5 /home/fedora/ci-scripts/run_nightly_tests.sh fedora test
