@@ -22,6 +22,7 @@ shift
 [[ -z "$1" ]] && { echo "You have to specify type of the test to run. test, test-openshift, test-openshift-4" && exit 1 ; }
 TESTS="$1"
 
+PWD=$(pwd)
 TMP_DIR="/tmp/daily_scl_tests-$TARGET-$TESTS"
 RESULT_DIR="${TMP_DIR}/results/"
 REQ_ID=""
@@ -57,4 +58,5 @@ function iterate_over_all_containers() {
 
 iterate_over_all_containers
 
+cd ${PWD}
 python3 ./send_results.py "${RESULT_DIR}" "${OS}" "${TESTS}" phracek@redhat.com phracek@redhat.com

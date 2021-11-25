@@ -24,6 +24,7 @@ if [[ "$TESTS" != "test" ]] && [[ "$TESTS" != "test-openshift" ]] && [[ "$TESTS"
   exit 1
 fi
 
+MAIL_TEXT_FILE=$(mktemp /tmp/mail_text.XXXXXX)
 curl -L https://url.corp.redhat.com/fmf-data > /tmp/fmf_data
 source /tmp/fmf_data
 
@@ -46,6 +47,11 @@ function final_report() {
   fi
   if [[ x"$new_state" == "failure" ]]; then
     curl $TF_LOG/$REQ_ID/pipeline.log > "${RESULT_DIR}/${repo}.log"
+    echo "Testing Farm for ${TARGET} failed because of infrastructure problems" >> ${MAIL_TEXT_FILE}
+    echo "Reason of this failure is in the attachment" >> /tmp/mail_text
+    echo "Please contact Testing Farm team for solving this infrastructure problem" >> ${MAIL_TEXT_FILE}
+    mail -vs "Testing Farm infrastructure problem for ${TARGET}" -r phracek@redhat.com -a ${MAIL_TEXT_FILE} phracek@redhat.com #,hhorak@redhat.com,zmiklank@redhat.com
+    rm -f ${MAIL_TEXT_FILE}
   fi
   echo "New State: $new_state"
   echo "Infra state: $infra_error"
@@ -84,11 +90,11 @@ function check_testing_farm_status() {
   state=$(jq -r .state job.json)
   # Wait till job is not finished. As soon as state is complete or failure then go to the finish action
   while [ "$state" == "running" ] || [ "$state" == "new" ] || [ "$state" == "pending" ] || [ "$state" == "queued" ]; do
-    # Wait 60s. We do not need to query Testing Farm each second
-    sleep 60
+    # Wait 300s. We do not need to query Testing Farm each second
+    sleep 300
     curl $CMD > job.json
     state=$(jq -r .state job.json)
-  cat job.json
+    cat job.json
   done
 }
 
