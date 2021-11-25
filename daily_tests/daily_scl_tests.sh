@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 SCL_CONTAINERS="s2i-base-container \
 s2i-nodejs-container \
 s2i-php-container \
@@ -23,6 +25,10 @@ shift
 TESTS="$1"
 
 PWD=$(pwd)
+echo "Current working directory is: ${PWD}"
+echo "List is:"
+ls -la
+
 TMP_DIR="/tmp/daily_scl_tests-$TARGET-$TESTS"
 RESULT_DIR="${TMP_DIR}/results/"
 REQ_ID=""
@@ -58,5 +64,5 @@ function iterate_over_all_containers() {
 
 iterate_over_all_containers
 
-cd ${PWD}
+cd "${PWD}"
 python3 ./send_results.py "${RESULT_DIR}" "${OS}" "${TESTS}" phracek@redhat.com phracek@redhat.com
