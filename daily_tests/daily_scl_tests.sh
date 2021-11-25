@@ -14,8 +14,7 @@ nginx-container \
 httpd-container \
 mariadb-container \
 redis-container \
-mysql-container \
-mongodb-container
+mysql-container
 "
 
 [[ -z "$1" ]] && { echo "You have to specify target to build SCL images. centos7, rhel7 or fedora" && exit 1 ; }
@@ -24,8 +23,8 @@ shift
 [[ -z "$1" ]] && { echo "You have to specify type of the test to run. test, test-openshift, test-openshift-4" && exit 1 ; }
 TESTS="$1"
 
-PWD=$(pwd)
-echo "Current working directory is: ${PWD}"
+CUR_WD=$(pwd)
+echo "Current working directory is: ${CUR_WD}"
 echo "List is:"
 ls -la
 
@@ -63,6 +62,8 @@ function iterate_over_all_containers() {
 }
 
 iterate_over_all_containers
+cd "${CUR_WD}"
+ls -la
 
-cd "${PWD}"
+python --version
 python3 ./send_results.py "${RESULT_DIR}" "${OS}" "${TESTS}" phracek@redhat.com phracek@redhat.com
