@@ -57,4 +57,4 @@ function iterate_over_all_containers() {
 
 iterate_over_all_containers
 
-python3 ../send_results.py "${RESULT_DIR}" "${OS}" "${TESTS}" phracek@redhat.com phracek@redhat.com
+python3 ./send_results.py "${RESULT_DIR}" "${OS}" "${TESTS}" phracek@redhat.com phracek@redhat.com
