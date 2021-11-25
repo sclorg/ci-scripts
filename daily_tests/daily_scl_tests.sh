@@ -66,4 +66,4 @@ cd "${CUR_WD}"
 ls -la
 
 python --version
-python3 ./send_results.py "${RESULT_DIR}" "${OS}" "${TESTS}" phracek@redhat.com phracek@redhat.com pkubat@redhat.com hhorak@redhat.com lbalhar@redhat.com zmiklank@redhat.com
+python ./send_results.py "${RESULT_DIR}" "${OS}" "${TESTS}" phracek@redhat.com phracek@redhat.com pkubat@redhat.com hhorak@redhat.com lbalhar@redhat.com zmiklank@redhat.com
