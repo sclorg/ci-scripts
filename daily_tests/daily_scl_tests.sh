@@ -54,7 +54,7 @@ function iterate_over_all_containers() {
       cd ${TMP_DIR} || exit
       local log_name="${TMP_DIR}/${repo}.log"
       clone_repo "${repo}"
-      make ${TESTS} TARGET=${OS} | tee "${log_name}"
+      make ${TESTS} TARGET=${OS} > "${log_name}" 2>&1
       if [[ $? -ne 0 ]]; then
           cp "${log_name}" "${RESULT_DIR}/"
       fi
@@ -62,8 +62,8 @@ function iterate_over_all_containers() {
 }
 
 iterate_over_all_containers
-cd "${CUR_WD}"
-ls -la
 
-python --version
+cd "${CUR_WD}"
+ls -la "${RESULT_DIR}"
+
 python ./send_results.py "${RESULT_DIR}" "${OS}" "${TESTS}" phracek@redhat.com phracek@redhat.com pkubat@redhat.com hhorak@redhat.com lbalhar@redhat.com zmiklank@redhat.com
