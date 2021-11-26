@@ -13,6 +13,12 @@
         - jq
         - cronie
         - postfix
+        - mailx
+
+    - name: Add relay host
+      lineinfile:
+        path: /etc/postfix/main.cf
+        regexp: '^relayhost = '
 
     - name: Start and enable crond service
       service:
@@ -22,6 +28,17 @@
       with_items:
         - crond
         - postfix
+
+    - name: Copy a warning script that the machine is managed by ansible
+      copy:
+        src: "files/warning.sh"
+        dest: "/home/fedora/warning.sh"
+
+    - name: Add warning text instead of installe
+      lineinfile:
+        path: /home/fedora/.bashrc
+        line: 'source warning.sh'
+        state: present
 
 # Schedule NightlyBuild at 1 am each day
 # * 1 * * 1-5 /home/fedora/ci-scripts/run_nightly_tests.sh rhel7 test
