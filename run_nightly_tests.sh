@@ -13,6 +13,7 @@ elif [[ "$TARGET" == "rhel7" ]]; then
   COMPOSE="RHEL-7-LatestUpdated"
 elif [[ "$TARGET" == "centos7" ]]; then
   COMPOSE="CentOS-7-latest"
+  TESTING_TARGET="${TARGET}"
 elif [[ "$TARGET" == "fedora" ]]; then
   COMPOSE="CentOS-7-latest"
 else
@@ -67,13 +68,17 @@ function final_report() {
 
 function schedule_testing_farm_request() {
   echo "Schedule job for: $TARGET" | tee -a ${LOG}
+  TESTING_PLAN="${TARGET}"
+  if [[ "$TARGET" == "fedora" ]]; then
+    TESTING_PLAN="centos7"
+  fi
   cat << EOF > request.json
     {
       "api_key": "$API_KEY",
       "test": {"fmf": {
       "url": "https://gitlab.cee.redhat.com/platform-eng-core-services/sclorg-tmt-plans",
       "ref": "master",
-      "name": "nightly-container-${TARGET}"
+      "name": "nightly-container-${TESTING_PLAN}"
       }},
       "environments": [{
       "arch": "x86_64",
