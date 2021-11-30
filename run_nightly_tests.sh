@@ -26,7 +26,10 @@ if [[ "$TESTS" != "test" ]] && [[ "$TESTS" != "test-openshift" ]] && [[ "$TESTS"
   exit 1
 fi
 
-cd $HOME
+JOB_JSON="job-${TARGET}.json"
+REQUEST_JSON="request-${TARGET}.json"
+RESPONSE_JSON="response-${TARGET}.json"
+cd /home/fedora
 if [[ ! -d "${LOGS_DIR}" ]]; then
   mkdir -p "${LOGS_DIR}"
 fi
@@ -40,10 +43,10 @@ echo "TARGET is: ${TARGET} and test is: ${TESTS}" | tee -a ${LOG}
 
 function final_report() {
   echo "FINAL REPORT for ${REQ_ID}" | tee -a ${LOG}
-  curl $TF_ENDPOINT/requests/$REQ_ID > job.json
-  cat job.json | tee -a ${LOG}
-  state=$(jq -r .state job.json)
-  result=$(jq -r .result.overall job.json)
+  curl $TF_ENDPOINT/requests/$REQ_ID > "${JOB_JSON}"
+  cat "${JOB_JSON}" | tee -a ${LOG}
+  state=$(jq -r .state "${JOB_JSON}")
+  result=$(jq -r .result.overall "${JOB_JSON}")
   echo "STATE: $state" | tee -a ${LOG}
   echo "RESULT: $result" | tee -a ${LOG}
   new_state="success"
@@ -72,7 +75,7 @@ function schedule_testing_farm_request() {
   if [[ "$TARGET" == "fedora" ]]; then
     TESTING_PLAN="centos7"
   fi
-  cat << EOF > request.json
+  cat << EOF > ${REQUEST_JSON}
     {
       "api_key": "$API_KEY",
       "test": {"fmf": {
@@ -89,9 +92,9 @@ function schedule_testing_farm_request() {
       }}]
     }
 EOF
-  cat request.json | tee -a ${LOG}
-  curl $TF_ENDPOINT/requests --data @request.json --header "Content-Type: application/json" --output response.json
-  REQ_ID=$(jq -r .id response.json)
+  cat "${REQUEST_JSON}" | tee -a ${LOG}
+  curl $TF_ENDPOINT/requests --data @request.json --header "Content-Type: application/json" --output "${RESPONSE_JSON}"
+  REQ_ID=$(jq -r .id "${RESPONSE_JSON}")
   echo "$REQ_ID" | tee -a ${LOG}
 }
 
@@ -99,14 +102,14 @@ function check_testing_farm_status() {
   echo "Check state for $REQ_ID" | tee -a ${LOG}
   CMD="$TF_ENDPOINT/requests/$REQ_ID"
   echo "Command for checking state is: ${CMD}" | tee -a ${LOG}
-  curl $CMD > job.json
-  state=$(jq -r .state job.json)
+  curl $CMD > "${JOB_JSON}"
+  state=$(jq -r .state "${JOB_JSON}")
   # Wait till job is not finished. As soon as state is complete or failure then go to the finish action
   while [ "$state" == "running" ] || [ "$state" == "new" ] || [ "$state" == "pending" ] || [ "$state" == "queued" ]; do
     # Wait 300s. We do not need to query Testing Farm each second
     sleep 300
-    curl $CMD > job.json
-    state=$(jq -r .state job.json)
+    curl $CMD > "${JOB_JSON}"
+    state=$(jq -r .state "${JOB_JSON}")
     date | tee -a ${LOG}
     echo "$state" | tee -a ${LOG}
   done
