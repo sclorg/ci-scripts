@@ -1,5 +1,6 @@
 #!/bin/bash
 
+LOGS_DIR="/home/fedora/logs"
 [[ -z "$1" ]] && { echo "You have to specify target to build SCL images. centos7, rhel7 or fedora" && exit 1 ; }
 TARGET="$1"
 shift
@@ -24,15 +25,26 @@ if [[ "$TESTS" != "test" ]] && [[ "$TESTS" != "test-openshift" ]] && [[ "$TESTS"
   exit 1
 fi
 
-MAIL_TEXT_FILE=$(mktemp /tmp/mail_text.XXXXXX)
+cd $HOME
+if [[ ! -d "${LOGS_DIR}" ]]; then
+  mkdir -p "${LOGS_DIR}"
+fi
+
+LOG="${LOGS_DIR}/$TARGET-$TESTS.log"
+date > ${LOG}
 curl -L https://url.corp.redhat.com/fmf-data > /tmp/fmf_data
 source /tmp/fmf_data
 
+echo "TARGET is: ${TARGET} and test is: ${TESTS}" | tee -a ${LOG}
+
 function final_report() {
+  echo "FINAL REPORT for ${REQ_ID}" | tee -a ${LOG}
   curl $TF_ENDPOINT/requests/$REQ_ID > job.json
-  cat job.json
+  cat job.json | tee -a ${LOG}
   state=$(jq -r .state job.json)
   result=$(jq -r .result.overall job.json)
+  echo "STATE: $state" | tee -a ${LOG}
+  echo "RESULT: $result" | tee -a ${LOG}
   new_state="success"
   infra_error=" "
   echo "State is $state and result is: $result"
@@ -47,25 +59,21 @@ function final_report() {
   fi
   if [[ x"$new_state" == "failure" ]]; then
     curl $TF_LOG/$REQ_ID/pipeline.log > "${RESULT_DIR}/${repo}.log"
-    echo "Testing Farm for ${TARGET} failed because of infrastructure problems" >> ${MAIL_TEXT_FILE}
-    echo "Reason of this failure is in the attachment" >> /tmp/mail_text
-    echo "Please contact Testing Farm team for solving this infrastructure problem" >> ${MAIL_TEXT_FILE}
-    mail -vs "Testing Farm infrastructure problem for ${TARGET}" -r phracek@redhat.com -a ${MAIL_TEXT_FILE} phracek@redhat.com #,hhorak@redhat.com,zmiklank@redhat.com
-    rm -f ${MAIL_TEXT_FILE}
   fi
-  echo "New State: $new_state"
-  echo "Infra state: $infra_error"
+  echo "New State: $new_state" | tee -a ${LOG}
+  echo "Infra state: $infra_error" | tee -a ${LOG}
 }
 
 
 function schedule_testing_farm_request() {
+  echo "Schedule job for: $TARGET" | tee -a ${LOG}
   cat << EOF > request.json
     {
       "api_key": "$API_KEY",
       "test": {"fmf": {
       "url": "https://gitlab.cee.redhat.com/platform-eng-core-services/sclorg-tmt-plans",
       "ref": "master",
-      "name": "nightly-container-$TARGET"
+      "name": "nightly-container-${TARGET}"
       }},
       "environments": [{
       "arch": "x86_64",
@@ -76,16 +84,16 @@ function schedule_testing_farm_request() {
       }}]
     }
 EOF
-  cat request.json
+  cat request.json | tee -a ${LOG}
   curl $TF_ENDPOINT/requests --data @request.json --header "Content-Type: application/json" --output response.json
-  cat response.json
   REQ_ID=$(jq -r .id response.json)
-  echo "$REQ_ID"
+  echo "$REQ_ID" | tee -a ${LOG}
 }
 
 function check_testing_farm_status() {
-  echo "Check state for $REQ_ID"
+  echo "Check state for $REQ_ID" | tee -a ${LOG}
   CMD="$TF_ENDPOINT/requests/$REQ_ID"
+  echo "Command for checking state is: ${CMD}" | tee -a ${LOG}
   curl $CMD > job.json
   state=$(jq -r .state job.json)
   # Wait till job is not finished. As soon as state is complete or failure then go to the finish action
@@ -94,7 +102,8 @@ function check_testing_farm_status() {
     sleep 300
     curl $CMD > job.json
     state=$(jq -r .state job.json)
-    cat job.json
+    date | tee -a ${LOG}
+    echo "$state" | tee -a ${LOG}
   done
 }
 
