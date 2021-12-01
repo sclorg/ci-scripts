@@ -26,6 +26,6 @@ else
     MESSAGE="${MESSAGE}- ${log}\n"
     ATTACHMENTS="${ATTACHMENTS} -a ${RESULT_DIR}/$log"
   done
-  echo -e "${MESSAGE}" | mail -s "${SUBJECT}" ${ATTACHMENTS} -r phracek@redhat.com phracek@redhat.com pkubat@redhat.com hhorak@redhat.com lbalhar@redhat.com zmiklank@redhat.com
+  echo -e "${MESSAGE}" | mail -s "${SUBJECT}" ${ATTACHMENTS} -r phracek@redhat.com phracek@redhat.com zmiklank@redhat.com #pkubat@redhat.com hhorak@redhat.com lbalhar@redhat.com
   #python ./send_results.py "${RESULT_DIR}" "${TARGET}" "${TESTS}" phracek@redhat.com phracek@redhat.com pkubat@redhat.com hhorak@redhat.com lbalhar@redhat.com zmiklank@redhat.com
 fi

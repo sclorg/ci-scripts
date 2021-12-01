@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 LOGS_DIR="/home/fedora/logs"
 [[ -z "$1" ]] && { echo "You have to specify target to build SCL images. centos7, rhel7 or fedora" && exit 1 ; }
 TARGET="$1"
@@ -93,7 +95,9 @@ function schedule_testing_farm_request() {
     }
 EOF
   cat "${REQUEST_JSON}" | tee -a ${LOG}
-  curl $TF_ENDPOINT/requests --data @${REQUEST_JSON} --header "Content-Type: application/json" --output "${RESPONSE_JSON}"
+  CMD="$TF_ENDPOINT/requests --data @${REQUEST_JSON} --header \"Content-Type: application/json\" --output ${RESPONSE_JSON}"
+  echo "${CMD}" | tee -a ${LOG}
+  curl $CMD
   REQ_ID=$(jq -r .id "${RESPONSE_JSON}")
   echo "$REQ_ID" | tee -a ${LOG}
 }
@@ -108,9 +112,11 @@ function check_testing_farm_status() {
   while [ "$state" == "running" ] || [ "$state" == "new" ] || [ "$state" == "pending" ] || [ "$state" == "queued" ]; do
     # Wait 300s. We do not need to query Testing Farm each second
     sleep 300
-    curl $CMD > "${JOB_JSON}"
-    state=$(jq -r .state "${JOB_JSON}")
     date | tee -a ${LOG}
+    echo "${CMD}" | tee -a "${LOG}"
+    curl $CMD > "${JOB_JSON}"
+    cat "${JOB_JSON}" | tee -a ${LOG}
+    state=$(jq -r .state "${JOB_JSON}")
     echo "$state" | tee -a ${LOG}
   done
 }
