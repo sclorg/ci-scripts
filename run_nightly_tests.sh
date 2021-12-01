@@ -96,6 +96,7 @@ function schedule_testing_farm_request() {
 EOF
   cat "${REQUEST_JSON}" | tee -a ${LOG}
   curl $TF_ENDPOINT/requests --data @${REQUEST_JSON} --header "Content-Type: application/json" --output ${RESPONSE_JSON}
+  cat "${RESPONSE_JSON}" | tee -a ${LOG}
   REQ_ID=$(jq -r .id "${RESPONSE_JSON}")
   echo "$REQ_ID" | tee -a ${LOG}
 }
