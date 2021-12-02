@@ -28,9 +28,9 @@ if [[ "$TESTS" != "test" ]] && [[ "$TESTS" != "test-openshift" ]] && [[ "$TESTS"
   exit 1
 fi
 
-JOB_JSON="job-${TARGET}.json"
-REQUEST_JSON="request-${TARGET}.json"
-RESPONSE_JSON="response-${TARGET}.json"
+JOB_JSON="job-${TARGET}-${TESTS}.json"
+REQUEST_JSON="request-${TARGET}-${TESTS}.json"
+RESPONSE_JSON="response-${TARGET}-${TESTS}.json"
 cd /home/fedora
 if [[ ! -d "${LOGS_DIR}" ]]; then
   mkdir -p "${LOGS_DIR}"
