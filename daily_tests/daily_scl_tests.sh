@@ -60,6 +60,12 @@ function iterate_over_all_containers() {
       fi
     done
 }
+if [[ "${TESTS}" == "test-openshift-4" ]]; then
+  # Download kubeconfig
+  curl -L https://url.corp.redhat.com/ocp-kubeconfig >/root/.kube/config
+  # Download kubepasswd
+  curl -L https://url.corp.redhat.com/kube >/root/.kube/ocp-kube
+fi
 
 iterate_over_all_containers
 

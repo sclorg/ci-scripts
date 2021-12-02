@@ -12,7 +12,7 @@ TMP_DIR="/tmp/daily_scl_tests-$TARGET-$TESTS"
 RESULT_DIR="${TMP_DIR}/results/"
 ls -la "${RESULT_DIR}"
 
-SUBJECT="RHSCL nightly build testing for target ${TARGET}"
+SUBJECT="RHSCL nightly build testing for target ${TARGET}-${TESTS}"
 ls -A "${RESULT_DIR}"
 if [[ -z $(ls -A "${RESULT_DIR}") ]]; then
   mail -s "${SUBJECT} was successful" -r phracek@redhat.com phracek@redhat.com
