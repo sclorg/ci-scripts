@@ -15,11 +15,11 @@ ls -la "${RESULT_DIR}"
 SUBJECT="RHSCL nightly build testing for target ${TARGET}-${TESTS}"
 ls -A "${RESULT_DIR}"
 if [[ -z $(ls -A "${RESULT_DIR}") ]]; then
-  mail -s "${SUBJECT} was successful" -r phracek@redhat.com phracek@redhat.com
+  mail -s "${SUBJECT} was successful" -r phracek@redhat.com phracek@redhat.com zmiklank@redhat.com
 else
   SUBJECT="${SUBJECT} failed."
   MESSAGE="${SUBJECT}\n"
-  cd "${RESULT_DIR}"
+  cd "${RESULT_DIR}" || exit 1
   ATTACHMENTS=""
   ls -1 *.log
   for log in `ls -1 *.log`; do
