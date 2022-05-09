@@ -58,7 +58,6 @@ LOG="${LOGS_DIR}/$TARGET-$TESTS.log"
 date > "${LOG}"
 curl -L https://url.corp.redhat.com/fmf-data > /tmp/fmf_data
 source /tmp/fmf_data
-API_KEY="${API_KEY}_${API_RANCH}"
 
 echo "TARGET is: ${TARGET} and test is: ${TESTS}" | tee -a "${LOG}"
 
