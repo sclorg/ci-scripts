@@ -11,7 +11,7 @@ TESTS="$1"
 
 TMT_REPO="https://gitlab.cee.redhat.com/platform-eng-core-services/sclorg-tmt-plans"
 TMT_BRANCH="master"
-API_RANCH="PRIVATE"
+API_KEY="API_KEY_PRIVATE"
 if [[ "$TARGET" == "rhel8" ]]; then
   COMPOSE="RHEL-8-Updated"
 elif [[ "$TARGET" == "rhel7" ]]; then
@@ -20,22 +20,22 @@ elif [[ "$TARGET" == "centos7" ]]; then
   COMPOSE="CentOS-7"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_BRANCH="main"
-  API_RANCH="PUBLIC"
+  API_KEY="API_KEY_PUBLIC"
 elif [[ "$TARGET" == "fedora" ]]; then
   COMPOSE="Fedora-latest"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_BRANCH="main"
-  API_RANCH="PUBLIC"
+  API_KEY="API_KEY_PUBLIC"
 elif [[ "$TARGET" == "c9s" ]]; then
   COMPOSE="CentOS-Stream-9"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_BRANCH="main"
-  API_RANCH="PUBLIC"
+  API_KEY="API_KEY_PUBLIC"
 elif [[ "$TARGET" == "c8s" ]]; then
   COMPOSE="CentOS-Stream-8"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_BRANCH="main"
-  API_RANCH="PUBLIC"
+  API_KEY="API_KEY_PUBLIC"
 else
   echo "This target is not supported"
   exit 1
@@ -94,7 +94,7 @@ function schedule_testing_farm_request() {
   echo "Schedule job for: $TARGET" | tee -a "${LOG}"
   cat << EOF > "${REQUEST_JSON}"
     {
-      "api_key": "$API_KEY",
+      "api_key": "${!API_KEY}",
       "test": {"fmf": {
       "url": "${TMT_REPO}",
       "ref": "${TMT_BRANCH}",
