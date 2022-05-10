@@ -14,27 +14,33 @@ TMT_BRANCH="master"
 API_KEY="API_KEY_PRIVATE"
 if [[ "$TARGET" == "rhel8" ]]; then
   COMPOSE="RHEL-8-Updated"
+  TFT_PLAN="nightly-container-$TARGET"
 elif [[ "$TARGET" == "rhel7" ]]; then
   COMPOSE="RHEL-7-LatestUpdated"
+  TFT_PLAN="nightly-container-$TARGET"
 elif [[ "$TARGET" == "centos7" ]]; then
   COMPOSE="CentOS-7"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_BRANCH="main"
+  TFT_PLAN="nightly-container-centos-7"
   API_KEY="API_KEY_PUBLIC"
 elif [[ "$TARGET" == "fedora" ]]; then
   COMPOSE="Fedora-latest"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_BRANCH="main"
+  TFT_PLAN="nightly-container-f"
   API_KEY="API_KEY_PUBLIC"
 elif [[ "$TARGET" == "c9s" ]]; then
   COMPOSE="CentOS-Stream-9"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_BRANCH="main"
+  TFT_PLAN="nightly-container-centos-stream-9"
   API_KEY="API_KEY_PUBLIC"
 elif [[ "$TARGET" == "c8s" ]]; then
   COMPOSE="CentOS-Stream-8"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_BRANCH="main"
+  TFT_PLAN="nightly-container-centos-stream-8"
   API_KEY="API_KEY_PUBLIC"
 else
   echo "This target is not supported"
@@ -97,7 +103,7 @@ function schedule_testing_farm_request() {
       "test": {"fmf": {
       "url": "${TMT_REPO}",
       "ref": "${TMT_BRANCH}",
-      "name": "nightly-container-${TARGET}"
+      "name": "${TFT_PLAN}"
       }},
       "environments": [{
       "arch": "x86_64",
