@@ -29,3 +29,6 @@ else
   echo -e "${MESSAGE}" | mail -s "${SUBJECT}" ${ATTACHMENTS} -r phracek@redhat.com phracek@redhat.com zmiklank@redhat.com pkubat@redhat.com hhorak@redhat.com lbalhar@redhat.com
   #python ./send_results.py "${RESULT_DIR}" "${TARGET}" "${TESTS}" phracek@redhat.com phracek@redhat.com pkubat@redhat.com hhorak@redhat.com lbalhar@redhat.com zmiklank@redhat.com
 fi
+
+echo "Let's wait couple seconds (10s) to deliver the mail."
+sleep 10
