@@ -19,29 +19,25 @@ elif [[ "$TARGET" == "rhel7" ]]; then
   COMPOSE="RHEL-7-LatestUpdated"
   TFT_PLAN="nightly-container-$TARGET"
 elif [[ "$TARGET" == "centos7" ]]; then
-  COMPOSE="CentOS-7"
+  COMPOSE="CentOS-7-latest"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_BRANCH="main"
   TFT_PLAN="nightly-container-centos-7"
-  API_KEY="API_KEY_PUBLIC"
 elif [[ "$TARGET" == "fedora" ]]; then
-  COMPOSE="Fedora-latest"
+  COMPOSE="Fedora-36-Updated"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_BRANCH="main"
   TFT_PLAN="nightly-container-f"
-  API_KEY="API_KEY_PUBLIC"
 elif [[ "$TARGET" == "c9s" ]]; then
   COMPOSE="CentOS-Stream-8"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_BRANCH="main"
   TFT_PLAN="nightly-container-centos-stream-8"
-  API_KEY="API_KEY_PUBLIC"
 elif [[ "$TARGET" == "c8s" ]]; then
   COMPOSE="CentOS-Stream-8"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_BRANCH="main"
   TFT_PLAN="nightly-container-centos-stream-8"
-  API_KEY="API_KEY_PUBLIC"
 else
   echo "This target is not supported"
   exit 1
