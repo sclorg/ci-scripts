@@ -5,7 +5,7 @@ set -ex
 
 TARGET_OS=$1
 
-make test TARGET="${TARGET_OS}" UPDATE_BASE=1 TAG_ON_SUCCESS=true
+make test TARGET="${TARGET_OS}" TAG_ON_SUCCESS=true
 for remote in $(git remote | grep test_); do
   git checkout "$remote"/master
   git submodule update --init
