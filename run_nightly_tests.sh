@@ -12,12 +12,13 @@ TESTS="$1"
 TMT_REPO="https://gitlab.cee.redhat.com/platform-eng-core-services/sclorg-tmt-plans"
 TMT_BRANCH="master"
 API_KEY="API_KEY_PRIVATE"
+TFT_PLAN="nightly-container-$TARGET"
 if [[ "$TARGET" == "rhel8" ]]; then
   COMPOSE="RHEL-8-Updated"
-  TFT_PLAN="nightly-container-$TARGET"
 elif [[ "$TARGET" == "rhel7" ]]; then
   COMPOSE="RHEL-7-LatestUpdated"
-  TFT_PLAN="nightly-container-$TARGET"
+elif [[ "$TARGET" == "rhel9" ]]; then
+  COMPOSE="RHEL-9.0.0-Nightly"
 elif [[ "$TARGET" == "centos7" ]]; then
   COMPOSE="CentOS-7-latest"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
