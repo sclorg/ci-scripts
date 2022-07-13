@@ -52,4 +52,9 @@ else
   SUMMARY="$SUMMARY $OS are all in Grade A."
 fi
 
+{
+  echo "In case the information is wrong, please reach out phracek@redhat.com, pkubat@redhat.com or hhorak@redhat.com."
+  echo "Or file an issue here: https://github.com/sclorg/ci-scripts/issues"
+} >> "${GRADES_LOG}"
+
 mail -s "$SUMMARY" -r phracek@redhat.com phracek@redhat.com pkubat@redhat.com hhorak@redhat.com lfriedma@redhat.com snanda@redhat.com < "${GRADES_LOG}"
