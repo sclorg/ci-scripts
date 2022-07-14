@@ -62,9 +62,9 @@ function iterate_over_all_containers() {
 }
 if [[ "${TESTS}" == "test-openshift-4" ]]; then
   # Download kubeconfig
-  curl -L https://url.corp.redhat.com/ocp-kubeconfig >/root/.kube/config
+  curl -L https://url.corp.redhat.com/ocp4-kubeconfig >/root/.kube/config
   # Download kubepasswd
-  curl -L https://url.corp.redhat.com/kube >/root/.kube/ocp-kube
+  curl -L https://url.corp.redhat.com/ocp4-kubepasswd >/root/.kube/ocp-kube
 fi
 
 iterate_over_all_containers
