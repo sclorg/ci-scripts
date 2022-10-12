@@ -3,7 +3,7 @@
 set -x
 
 OS=$1
-[[ -z $OS ]] && { echo "OS for checking grades was not specified." && echo "Command is: $0 <RHEL7|RHEL8>" && exit 1 ; }
+[[ -z $OS ]] && { echo "OS for checking grades was not specified." && echo "Command is: $0 <RHEL7|RHEL8|RHEL9>" && exit 1 ; }
 
 LOGS_DIR="/home/fedora/logs"
 SCRIPT_LOG="$LOGS_DIR/grades-$OS.log"
@@ -15,6 +15,10 @@ if [[ "$OS" == "RHEL7" ]]; then
 elif [[ "$OS" == "RHEL8" ]]; then
   GRADES_LOG="$HOME/logs/rhel8-grades"
   RHCWT_CONFIG="rhel8.yaml"
+
+elif [[ "$OS" == "RHEL9" ]]; then
+  GRADES_LOG="$HOME/logs/rhel9-grades"
+  RHCWT_CONFIG="rhel9.yaml"
 fi
 
 date | tee $SCRIPT_LOG
