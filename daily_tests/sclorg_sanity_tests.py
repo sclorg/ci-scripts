@@ -225,7 +225,6 @@ class SclOrgSanityChecker(object):
         print(self.data_dict)
 
     def run_check(self):
-        failed_repos = []
         for repo in self.data_dict:
             self.report_file = Path(self.log_dir) / f"{repo}.log"
             self.repo = repo
@@ -242,10 +241,10 @@ class SclOrgSanityChecker(object):
                 if sanity_ok:
                     os.unlink(self.report_file)
                 else:
-                    if repo not in failed_repos:
-                        failed_repos.append(repo)
-                    global_result_flag = False
-        print(f"Report text file is located here {self.report_file}")
+                    if repo not in self.failed_repos:
+                        self.failed_repos.append(repo)
+                    self.global_result_flag = False
+        print(f"Report text files are located here {self.log_dir}")
         rmtree(self.tmp_path_dir)
 
     def send_email(self):
@@ -254,7 +253,7 @@ class SclOrgSanityChecker(object):
             return
         if self.global_result_flag:
             subject_msg = "SCLORG: sanity checker did not hit any issue in https://github/sclorg containers"
-            message = f"SCLORG sanity checker did not hit any issues for {SCLORG_REPOS}"
+            message = f"SCLORG sanity checker did not hit any issues for https://github/sclorg containers."
         else:
             subject_msg = "SCLORG: sanity checker hit some issues in https://github/sclorg containers"
             message = f"SCLORG sanity checker hit some issues in these repositories:\n"
@@ -262,8 +261,8 @@ class SclOrgSanityChecker(object):
         send_from = "phracek@redhat.com"
         send_to = ["phracek@redhat.com", "pkubat@redhat.com", "hhorak@redhat.com", "zmiklank@redhat.com"]
         msg = MIMEMultipart()
-        msg['From'] = send_from
-        msg['To'] = send_to
+        msg['From'] = ', '.join(send_from)
+        msg['To'] = ', '.join(send_to)
         msg['Subject'] = subject_msg
         msg.attach(MIMEText(message))
         if not self.global_result_flag:
