@@ -58,6 +58,9 @@ class SclOrgSanityChecker(object):
         self.report_text_filename: str = ""
         self.args = self.parse_args()
         self.data_dict: Dict = {}
+        self.failed_repos: List[str] = []
+        self.global_result_flag: bool = True
+        self.log_dir = os.getcwd()
 
     def write_to_textfile(self, msg):
         print(msg)
@@ -77,17 +80,28 @@ class SclOrgSanityChecker(object):
 
     def parse_args(self):
         parser = argparse.ArgumentParser(
-            description="SanityChecker program go through all "
+            description="GitHubSanityChecker program go through all "
                         "https://github.com/sclorg container images and "
                         "detects if .exclude, .devel-repo are obsolete or missing."
+                        "The output logs are stored in current working directory."
         )
+        parser.add_argument(
+            "--send-email", action="store_true", help="The logs are send over SMTP mail.", default=False
+        )
+        parser.add_argument("--log-dir", help="The logs are stored in user defined directory")
 
         return parser.parse_args()
 
-    def prepare(self):
+    def prepare(self) -> bool:
+        if self.args.log_dir:
+            if not os.path.exists(self.args.log_dir):
+                print("Log dir you specified by --log-dir parameter does not exist.")
+                return False
+            self.log_dir = self.args.log_dir
         self.create_tmp_dir()
         self.download_and_load_lifecycle_file()
         self.collect_data()
+        return True
 
     def check_files(self, ver: str) -> List[str]:
         checked_files = []
@@ -118,7 +132,6 @@ class SclOrgSanityChecker(object):
 
     def check_exclude_file_not_dockerfile(self, ver: str, os_ver: str):
         ret_val = True
-        print(f"Check .exclude file for {ver}.")
         if self.exclude_file_exists(ver=ver, os_ver=os_ver) and not self.dockerfile_exists(ver=ver, os_ver=os_ver):
             self.write_to_textfile(
                 f"For version {ver} .exclude-{os_ver} is present in {ver}"
@@ -126,11 +139,12 @@ class SclOrgSanityChecker(object):
             )
             self.write_to_textfile(f"Think about for removal .exclude-{os_ver}.")
             ret_val = False
+        if not ret_val:
+            print(f"Check .exclude file and not Dockerfile hit some issue for {ver} in repo {self.repo}.")
         return ret_val
 
     def check_devel_repo_file(self, ver: str, os_ver: str):
         ret_val = True
-        print(f"Check .devel_repo file for {ver}.")
         if self.devel_repo_exists(ver=ver, os_ver=os_ver) and self.dockerfile_exists(ver=ver, os_ver=os_ver):
             # TODO Check if .devel-repo file can not be removed
             self.write_to_textfile(
@@ -140,11 +154,12 @@ class SclOrgSanityChecker(object):
                 "Check if image is not already GA."
             )
             ret_val = False
+        if not ret_val:
+            print(f"Check for .devel-repo and Dockerfile hit some issue for {ver} in repo {self.repo}.")
         return ret_val
 
     def check_tested_version(self, ver: str, os_ver: str):
         ret_val = True
-        print(f"Check .exclude and Dockerfile for ver {ver}")
         # from datetime import date
         # today = date.today()
         # ymd = today.strftime("%Y%m%d")
@@ -170,6 +185,8 @@ class SclOrgSanityChecker(object):
                 f"Please think about usage '.devel-repo-{os_ver}' or check if image does not reach EOL."
             )
             ret_val = False
+        if not ret_val:
+            print(f"Check for .exclude and Dockerfile hit some issue for {ver} in repo {self.repo}.")
         return ret_val
 
     def get_all_supported_versions(self, repo_name: str):
@@ -208,14 +225,13 @@ class SclOrgSanityChecker(object):
         print(self.data_dict)
 
     def run_check(self):
-        global_result_flag = True
         failed_repos = []
         for repo in self.data_dict:
-            self.report_file = Path(os.getcwd()) / f"{repo}.log"
+            self.report_file = Path(self.log_dir) / f"{repo}.log"
             self.repo = repo
             for ver in self.data_dict[repo]:
                 sanity_ok = True
-                self.write_to_textfile(f"--- {ver}:")
+                self.write_to_textfile(f"--- repo: {self.repo} and version: {ver}:")
                 for os_ver in OS_HOSTS:
                     if not self.check_exclude_file_not_dockerfile(ver, os_ver):
                         sanity_ok = False
@@ -229,19 +245,20 @@ class SclOrgSanityChecker(object):
                     if repo not in failed_repos:
                         failed_repos.append(repo)
                     global_result_flag = False
-        self.send_email(failed_repos=failed_repos, result=global_result_flag)
         print(f"Report text file is located here {self.report_file}")
         rmtree(self.tmp_path_dir)
 
-    def send_email(self, failed_repos, result: bool = False):
-        print(failed_repos)
-        if result:
+    def send_email(self):
+        if not self.args.send_email:
+            print("Sending email is not allowed")
+            return
+        if self.global_result_flag:
             subject_msg = "SCLORG: sanity checker did not hit any issue in https://github/sclorg containers"
             message = f"SCLORG sanity checker did not hit any issues for {SCLORG_REPOS}"
         else:
             subject_msg = "SCLORG: sanity checker hit some issues in https://github/sclorg containers"
             message = f"SCLORG sanity checker hit some issues in these repositories:\n"
-            message += "\n".join(failed_repos)
+            message += "\n".join(self.failed_repos)
         send_from = "phracek@redhat.com"
         send_to = ["phracek@redhat.com", "pkubat@redhat.com", "hhorak@redhat.com", "zmiklank@redhat.com"]
         msg = MIMEMultipart()
@@ -249,9 +266,9 @@ class SclOrgSanityChecker(object):
         msg['To'] = send_to
         msg['Subject'] = subject_msg
         msg.attach(MIMEText(message))
-        if not result:
+        if not self.global_result_flag:
             import glob
-            log_files = glob.glob(f"{os.getcwd()}/*.log")
+            log_files = glob.glob(f"{self.log_dir}/*.log")
             for log in log_files:
                 attach = MIMEApplication(open(log, 'r').read(), Name=os.path.basename(str(log)))
                 attach.add_header('Content-Disposition', 'attachment; filename="{}"'.format(os.path.basename(str(log))))
@@ -263,6 +280,9 @@ class SclOrgSanityChecker(object):
 
 if __name__ == "__main__":
     sanity_checker = SclOrgSanityChecker()
-    sanity_checker.prepare()
+    if not sanity_checker.prepare():
+        print("Preparation for GitHub Sanity checker has failed. Please look what's wrong.")
+        sys.exit(1)
     sanity_checker.run_check()
+    sanity_checker.send_email()
     sys.exit(0)
