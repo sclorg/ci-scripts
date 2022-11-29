@@ -30,6 +30,8 @@ ls -la
 
 TMP_DIR="/tmp/daily_scl_tests-$TARGET-$TESTS"
 RESULT_DIR="${TMP_DIR}/results/"
+KUBECONFIG=/root/.kube/config
+KUBEPASSWD=/root/.kube/ocp-kube
 REQ_ID=""
 if [[ -d "${TMP_DIR}" ]]; then
     rm -rf "${TMP_DIR:?}/"
@@ -48,6 +50,19 @@ function clone_repo() {
     git submodule update --remote
 }
 
+function clean_ocp4() {
+    if [[ "${TESTS}" == "test-openshift-4" ]]; then
+      oc project default
+      PASS=$(cat "${KUBEPASSWD}")
+      oc login --username=kubeadmin --insecure-skip-tls-verify=true --password="${PASS}" --server=https://api.core-serv-ocp.hosted.psi.rdu2.redhat.com:6443
+      export PATH="/usr/local/oc-v4/bin:$PATH"
+      oc projects | grep sclorg | xargs oc delete projects
+      oc delete all --all
+      # Sleep couple seconds till OpenShift is not back again.
+      sleep 10
+    fi
+}
+
 function iterate_over_all_containers() {
     for repo in ${SCL_CONTAINERS}; do
       REQ_ID=""
@@ -58,13 +73,14 @@ function iterate_over_all_containers() {
       if [[ $? -ne 0 ]]; then
           cp "${log_name}" "${RESULT_DIR}/"
       fi
+      clean_ocp4
     done
 }
 if [[ "${TESTS}" == "test-openshift-4" ]]; then
   # Download kubeconfig
-  curl -L https://url.corp.redhat.com/ocp4-kubeconfig >/root/.kube/config
+  curl -L https://url.corp.redhat.com/ocp4-kubeconfig >$KUBECONFIG
   # Download kubepasswd
-  curl -L https://url.corp.redhat.com/ocp4-kubepasswd >/root/.kube/ocp-kube
+  curl -L https://url.corp.redhat.com/ocp4-kubepasswd >$KUBEPASSWD
 fi
 
 iterate_over_all_containers
