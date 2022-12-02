@@ -18,7 +18,7 @@ if [[ "$TARGET" == "rhel8" ]]; then
 elif [[ "$TARGET" == "rhel7" ]]; then
   COMPOSE="RHEL-7-LatestUpdated"
 elif [[ "$TARGET" == "rhel9" ]]; then
-  COMPOSE="RHEL-9.0.0-Nightly"
+  COMPOSE="RHEL-9.1.0-Nightly"
 elif [[ "$TARGET" == "centos7" ]]; then
   COMPOSE="CentOS-7-latest"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
