@@ -258,6 +258,9 @@ class SclOrgSanityChecker(object):
             subject_msg = "SCLORG: sanity checker hit some issues in https://github/sclorg containers"
             message = f"SCLORG sanity checker hit some issues in these repositories:\n"
             message += "\n".join(self.failed_repos)
+        message += "\nIn case the information is wrong, please reach out " \
+                   "phracek@redhat.com, pkubat@redhat.com or hhorak@redhat.com.\n"
+        message += "Or file an issue here: https://github.com/sclorg/ci-scripts/issues"
         send_from = "phracek@redhat.com"
         send_to = ["phracek@redhat.com", "pkubat@redhat.com", "hhorak@redhat.com", "zmiklank@redhat.com"]
         msg = MIMEMultipart()
