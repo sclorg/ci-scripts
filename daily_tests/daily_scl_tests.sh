@@ -56,8 +56,9 @@ function clean_ocp4() {
       PASS=$(cat "${KUBEPASSWD}")
       oc login --username=kubeadmin --insecure-skip-tls-verify=true --password="${PASS}" --server=https://api.core-serv-ocp.hosted.psi.rdu2.redhat.com:6443
       export PATH="/usr/local/oc-v4/bin:$PATH"
-      oc projects | grep sclorg | xargs oc delete projects
-      oc delete all --all
+      oc projects | grep sclorg
+      # oc projects | grep sclorg | xargs oc delete project
+      # oc delete all --all
       # Sleep couple seconds till OpenShift is not back again.
       sleep 10
     fi
