@@ -28,7 +28,7 @@ else
   done
   MESSAGE="${MESSAGE}\nIn case the information is wrong, please reach out phracek@redhat.com, pkubat@redhat.com or hhorak@redhat.com.\n"
   MESSAGE="${MESSAGE}\nOr file an issue here: https://github.com/sclorg/ci-scripts/issues"
-  echo -e "${MESSAGE}" | mail -s "${SUBJECT}" ${ATTACHMENTS} -r phracek@redhat.com phracek@redhat.com zmiklank@redhat.com pkubat@redhat.com hhorak@redhat.com lbalhar@redhat.com
+  echo -e "${MESSAGE}" | mail -s "${SUBJECT}" ${ATTACHMENTS} -r phracek@redhat.com phracek@redhat.com zmiklank@redhat.com pkubat@redhat.com hhorak@redhat.com lbalhar@redhat.com fjanus@redhat.com
   #python ./send_results.py "${RESULT_DIR}" "${TARGET}" "${TESTS}" phracek@redhat.com phracek@redhat.com pkubat@redhat.com hhorak@redhat.com lbalhar@redhat.com zmiklank@redhat.com
 fi
 
