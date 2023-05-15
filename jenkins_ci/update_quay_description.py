@@ -63,7 +63,7 @@ if __name__ == "__main__":
         sys.exit(1)
     if len(readme_as_list) > 100:
         readme_as_list = readme_as_list[:98]
-        readme_as_list.append("```\n<br>\n")
+        readme_as_list.append("\n<br>\n")
         readme_as_list.append(f"Learn more at <https://github.com/sclorg/{github_repo}/{context}/README.md>")
     
     readme = "".join(readme_as_list)
