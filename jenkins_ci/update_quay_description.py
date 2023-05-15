@@ -44,7 +44,6 @@ def load_readme_as_list(dir: str) -> Optional[List[str]]:
 
 def update_description(readme: str) -> int:
     api_request_path = f"https://quay.io/api/v1/repository/{registry_namespace}/{image_name}{suffix}"
-    print(api_request_path)
     headers = {"Content-Type": "application/json",
                "Authorization": f"Bearer {token}"}
     data = {"description": readme}
