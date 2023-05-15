@@ -71,3 +71,4 @@ if __name__ == "__main__":
     if request_status != 200:
         print_api_error(request_status)
         sys.exit(1)
+    print("Operation successful")
