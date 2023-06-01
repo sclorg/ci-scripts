@@ -3,19 +3,20 @@
 set -x
 
 SCL_CONTAINERS="s2i-base-container \
-s2i-nodejs-container \
-s2i-php-container \
-s2i-perl-container \
-s2i-ruby-container \
-s2i-python-container \
-postgresql-container \
-varnish-container \
-nginx-container \
-httpd-container \
-mariadb-container \
-redis-container \
-mysql-container
+s2i-nodejs-container
 "
+
+# s2i-php-container \
+  #s2i-perl-container \
+  #s2i-ruby-container \
+  #s2i-python-container \
+  #postgresql-container \
+  #varnish-container \
+  #nginx-container \
+  #httpd-container \
+  #mariadb-container \
+  #redis-container \
+  #mysql-container
 
 [[ -z "$1" ]] && { echo "You have to specify target to build SCL images. centos7, rhel7 or fedora" && exit 1 ; }
 TARGET="$1"
@@ -28,7 +29,8 @@ echo "Current working directory is: ${CUR_WD}"
 echo "List is:"
 ls -la
 
-TMP_DIR="/tmp/daily_scl_tests-$TARGET-$TESTS"
+DAILY_TEST_DIR="/var/tmp/daily_scl_tests/"
+TMP_DIR="$DAILY_TEST_DIR/$TARGET-$TESTS"
 RESULT_DIR="${TMP_DIR}/results/"
 KUBECONFIG=/root/.kube/config
 KUBEPASSWD=/root/.kube/ocp-kube
