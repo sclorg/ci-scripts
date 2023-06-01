@@ -28,7 +28,8 @@ echo "Current working directory is: ${CUR_WD}"
 echo "List is:"
 ls -la
 
-TMP_DIR="/tmp/daily_scl_tests-$TARGET-$TESTS"
+DAILY_TEST_DIR="/var/tmp/daily_scl_tests/"
+TMP_DIR="$DAILY_TEST_DIR/$TARGET-$TESTS"
 RESULT_DIR="${TMP_DIR}/results/"
 KUBECONFIG=/root/.kube/config
 KUBEPASSWD=/root/.kube/ocp-kube

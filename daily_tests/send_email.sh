@@ -8,14 +8,15 @@ shift
 [[ -z "$1" ]] && { echo "You have to specify type of the test to run. test, test-openshift, test-openshift-4" && exit 1 ; }
 TESTS="$1"
 
-TMP_DIR="/tmp/daily_scl_tests-$TARGET-$TESTS"
+TMP_DIR="/var/tmp/daily_scl_tests/$TARGET-$TESTS"
 RESULT_DIR="${TMP_DIR}/results/"
 ls -la "${RESULT_DIR}"
 
 SUBJECT="RHSCL nightly build testing for target ${TARGET}-${TESTS}"
 ls -A "${RESULT_DIR}"
 if [[ -z $(ls -A "${RESULT_DIR}") ]]; then
-  mail -s "${SUBJECT} was successful" -r phracek@redhat.com phracek@redhat.com zmiklank@redhat.com < /dev/null
+  #mail -s "${SUBJECT} was successful" -r phracek@redhat.com phracek@redhat.com zmiklank@redhat.com < /dev/null
+  mail -s "${SUBJECT} was successful" -r phracek@redhat.com phracek@redhat.com < /dev/null
 else
   SUBJECT="${SUBJECT} failed."
   MESSAGE="${SUBJECT}\n"
@@ -28,8 +29,8 @@ else
   done
   MESSAGE="${MESSAGE}\nIn case the information is wrong, please reach out phracek@redhat.com, pkubat@redhat.com or hhorak@redhat.com.\n"
   MESSAGE="${MESSAGE}\nOr file an issue here: https://github.com/sclorg/ci-scripts/issues"
-  echo -e "${MESSAGE}" | mail -s "${SUBJECT}" ${ATTACHMENTS} -r phracek@redhat.com phracek@redhat.com zmiklank@redhat.com pkubat@redhat.com hhorak@redhat.com lbalhar@redhat.com fjanus@redhat.com
-  #python ./send_results.py "${RESULT_DIR}" "${TARGET}" "${TESTS}" phracek@redhat.com phracek@redhat.com pkubat@redhat.com hhorak@redhat.com lbalhar@redhat.com zmiklank@redhat.com
+  echo -e "${MESSAGE}" | mail -s "${SUBJECT}" ${ATTACHMENTS} -r phracek@redhat.com phracek@redhat.com
+  #echo -e "${MESSAGE}" | mail -s "${SUBJECT}" ${ATTACHMENTS} -r phracek@redhat.com phracek@redhat.com zmiklank@redhat.com pkubat@redhat.com hhorak@redhat.com lbalhar@redhat.com  fjanus@redhat.com
 fi
 
 echo "Let's wait couple seconds (10s) to deliver the mail."
