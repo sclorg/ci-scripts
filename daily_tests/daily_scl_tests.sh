@@ -29,15 +29,11 @@ echo "Current working directory is: ${CUR_WD}"
 echo "List is:"
 ls -la
 
-DAILY_TEST_DIR="/var/tmp/daily_scl_tests/"
-TMP_DIR="$DAILY_TEST_DIR/$TARGET-$TESTS"
+TMP_DIR="${TMT_PLAN_DATA}/$TARGET-$TESTS"
 RESULT_DIR="${TMP_DIR}/results/"
 KUBECONFIG=/root/.kube/config
 KUBEPASSWD=/root/.kube/ocp-kube
 REQ_ID=""
-if [[ -d "${TMP_DIR}" ]]; then
-    rm -rf "${TMP_DIR:?}/"
-fi
 
 mkdir -p "${RESULT_DIR}"
 
@@ -93,4 +89,4 @@ iterate_over_all_containers
 
 cd "${CUR_WD}"
 
-./daily_tests/send_email.sh "${TARGET}" "${TESTS}"
+#./daily_tests/send_email.sh "${TARGET}" "${TESTS}"
