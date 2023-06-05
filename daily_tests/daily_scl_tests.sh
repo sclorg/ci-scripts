@@ -73,7 +73,7 @@ function iterate_over_all_containers() {
       pushd /root/sclorg-tmt-plans && ./set_devel_repo.sh "sclorg/${repo}" "$TARGET" "${TMP_DIR}/${repo}"
       # Switch back to tmp container-repo name
       popd
-      make "${TESTS}" TARGET="${TARGET}" 2>&1 | tee -a "${log_name}"
+      make "${TESTS}" TARGET="${TARGET}" > "${log_name}" 2>&1
       if [[ $? -ne 0 ]]; then
           cp "${log_name}" "${RESULT_DIR}/"
       fi
