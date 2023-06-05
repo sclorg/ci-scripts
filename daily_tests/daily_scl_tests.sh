@@ -18,6 +18,8 @@ s2i-nodejs-container
   #redis-container \
   #mysql-container
 
+env
+
 [[ -z "$1" ]] && { echo "You have to specify target to build SCL images. centos7, rhel7 or fedora" && exit 1 ; }
 TARGET="$1"
 shift
