@@ -31,7 +31,7 @@ echo "Current working directory is: ${CUR_WD}"
 echo "List is:"
 ls -la
 
-TMP_DIR="${TMT_PLAN_DATA}/$TARGET-$TESTS"
+TMP_DIR="${TMT_PLAN_DATA}"
 RESULT_DIR="${TMP_DIR}/results/"
 KUBECONFIG=/root/.kube/config
 KUBEPASSWD=/root/.kube/ocp-kube
@@ -73,7 +73,7 @@ function iterate_over_all_containers() {
       pushd /root/sclorg-tmt-plans && ./set_devel_repo.sh "sclorg/${repo}" "$TARGET" "${TMP_DIR}/${repo}"
       # Switch back to tmp container-repo name
       popd
-      make "${TESTS}" TARGET="${TARGET}" > "${log_name}" 2>&1
+      make "${TESTS}" TARGET="${TARGET}" 2>&1 | tee -a "${log_name}"
       if [[ $? -ne 0 ]]; then
           cp "${log_name}" "${RESULT_DIR}/"
       fi
