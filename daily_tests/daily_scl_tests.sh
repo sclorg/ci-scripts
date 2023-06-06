@@ -4,21 +4,18 @@ set -x
 
 SCL_CONTAINERS="s2i-base-container \
 s2i-nodejs-container
+s2i-php-container \
+s2i-perl-container \
+s2i-ruby-container \
+s2i-python-container \
+postgresql-container \
+varnish-container \
+nginx-container \
+httpd-container \
+mariadb-container \
+redis-container \
+mysql-container
 "
-
-# s2i-php-container \
-  #s2i-perl-container \
-  #s2i-ruby-container \
-  #s2i-python-container \
-  #postgresql-container \
-  #varnish-container \
-  #nginx-container \
-  #httpd-container \
-  #mariadb-container \
-  #redis-container \
-  #mysql-container
-
-env
 
 [[ -z "$1" ]] && { echo "You have to specify target to build SCL images. centos7, rhel7 or fedora" && exit 1 ; }
 TARGET="$1"
@@ -90,5 +87,3 @@ fi
 iterate_over_all_containers
 
 cd "${CUR_WD}"
-
-#./daily_tests/send_email.sh "${TARGET}" "${TESTS}"
