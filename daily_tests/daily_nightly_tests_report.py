@@ -14,21 +14,14 @@ default_mails = ["phracek@redhat.com", "hhorak@redhat.com", "pkubat@redhat.com",
 
 SCLORG_MAILS = {
     # Format is 'repo_name', and list of mails to infor
-    "s2i-perl-container": [""],
-    "s2i-nodejs-container": [""],
-    "s2i-php-container": [""],
     "s2i-ruby-container": ["jprokop@redhat.com"],
     "s2i-python-container": ["lbalhar@redhat.com"],
     "postgresql-container": ["fjanus@redhat.com"],
-    "redis-container": [""],
-    "varnish-container": [""],
-    "mysql-container": [""],
-    "mariadb-container": [""],
-    "nginx-container": [""]
 }
 
 
 TEST_CASES = {
+    # Format is test for OS and king of test, what TMT Plan is used and MSG to mail
     ("fedora-test", "nightly-container-f", "Fedora test results:"),
     ("centos7-test", "nightly-container-centos-7", "CentOS 7 test results:"),
     ("centos7-openshift", "nightly-container-centos-7", "CentOS 7 OpenShift 3 test results:"),
@@ -43,8 +36,7 @@ TEST_CASES = {
     ("rhel9-test-openshift-4", "nightly-container-rhel9", "RHEL-9 OpenShift 4 test results:"),
 }
 
-# This is reference link to internal repository
-
+# The default directory used for nightly build
 RESULT_DIR = "/var/tmp/daily_scl_tests"
 
 
@@ -86,6 +78,9 @@ class NightlyTestsReport(object):
         return True
 
     def collect_data(self):
+        # Collect data to class dictionary
+        # self.data_dict['tmt'] item is used for Testing Farm errors per each OS and test case
+        # self.data_dict[test_case] contains failed logs for given test case. E.g. 'fedora-test'
         self.data_dict["tmt"] = []
         for test_case, plan, _ in TEST_CASES:
             path_dir = Path(RESULT_DIR) / test_case
@@ -93,16 +88,18 @@ class NightlyTestsReport(object):
                 print(f"The test case {path_dir} does not exists that is weird")
                 self.data_dict["tmt"].append(f"Nightly build tests for {test_case} is not finished or did not run. Check nightly build machine for logs.")
                 continue
+            # It looks like TMT is still running for long time
             if (path_dir / "tmt_running").exists():
                 self.data_dict["tmt"].append(f"tmt tests for case {test_case} is still running."
                                              f"Look at it on nightly-build machine.")
                 continue
+            # TMT command failed for some reason. Look at logs for given namespace
+            # /var/tmp/daily_scl_tests/<test_case>/log.txt file
             if (path_dir / "tmt_failed").exists():
                 self.data_dict["tmt"].append(f"tmt command has failed for test case {test_case}."
                                              f"Look at it on nightly-build machine.")
                 continue
             data_dir = path_dir / "plans" / plan / "data"
-            print(f"Check if directory {data_dir} exists.")
             if not data_dir.is_dir():
                 print(f"Data dir for test case {test_case} does not exist."
                       f"It looks like tmt command failed. See logs on nightly-build machine")
@@ -111,11 +108,9 @@ class NightlyTestsReport(object):
             failed_containers = list(results_dir.rglob("*.log"))
             if not failed_containers:
                 continue
-            print(f"Failed containers are: {failed_containers}")
+            print(f"Failed containers are for {test_case} are: {failed_containers}")
             for cont in failed_containers:
                 mime_name = f"{test_case}-{cont.name}"
-                if cont.name in SCLORG_MAILS:
-                    self.add_email.extend(SCLORG_MAILS[cont.name])
                 attach = MIMEApplication(open(cont, 'r').read(), Name=mime_name)
                 attach.add_header('Content-Disposition', 'attachment; filename="{}"'.format(mime_name))
                 self.mime_msg.attach(attach)
@@ -123,6 +118,7 @@ class NightlyTestsReport(object):
         print(self.data_dict)
 
     def generate_email_body(self):
+        # Function for generation mail body
         if self.data_dict["tmt"]:
             tmt_failures = '\n'.join(self.data_dict["tmt"])
             self.body += f"Nightly builds Testing Farm failures:\n{tmt_failures}\n\n"
@@ -138,8 +134,15 @@ class NightlyTestsReport(object):
         self.body += "Or file an issue here: https://github.com/sclorg/ci-scripts/issues"
         print(self.body)
 
-    def generate_email_recepients(self):
-        pass
+    def generate_emails(self):
+        for test_case, plan, _ in TEST_CASES:
+            if test_case not in self.data_dict:
+                continue
+            for _, name in self.data_dict[test_case]:
+                for cont, mails in SCLORG_MAILS.items():
+                    if str(Path(name).with_suffix('')) != cont:
+                        continue
+                    self.add_email.extend([ml for ml in mails if ml not in self.add_email])
 
     def send_email(self):
         if not self.args.send_email:
@@ -149,11 +152,9 @@ class NightlyTestsReport(object):
 
         send_from = "phracek@redhat.com"
         send_to = default_mails + self.add_email
-        print(send_to)
-        send_to = "phracek@redhat.com"
 
-        self.mime_msg['From'] = send_from#', '.join(send_from)
-        self.mime_msg['To'] = send_to #', '.join(send_to)
+        self.mime_msg['From'] = ', '.join(send_from)
+        self.mime_msg['To'] = ', '.join(send_to)
         self.mime_msg['Subject'] = subject_msg
         self.mime_msg.attach(MIMEText(self.body))
         smtp = smtplib.SMTP("127.0.0.1")
@@ -168,5 +169,6 @@ if __name__ == "__main__":
         sys.exit(1)
     ntr.collect_data()
     ntr.generate_email_body()
+    ntr.generate_emails()
     ntr.send_email()
     sys.exit(0)
