@@ -10,34 +10,35 @@ shift
 TESTS="$1"
 
 TMT_REPO="https://gitlab.cee.redhat.com/platform-eng-core-services/sclorg-tmt-plans"
-TMT_BRANCH="master"
+DAILY_TEST_DIR="/var/tmp/daily_scl_tests"
+TMT_DIR="sclorg-tmt-plans"
 API_KEY="API_KEY_PRIVATE"
 TFT_PLAN="nightly-container-$TARGET"
 if [[ "$TARGET" == "rhel8" ]]; then
-  COMPOSE="RHEL-8-Updated"
+  COMPOSE="1MT-RHEL-8.8.0-updates"
 elif [[ "$TARGET" == "rhel7" ]]; then
-  COMPOSE="RHEL-7-LatestUpdated"
+  COMPOSE="1MT-RHEL-7.9-updates"
 elif [[ "$TARGET" == "rhel9" ]]; then
-  COMPOSE="RHEL-9.1.0-Nightly"
+  COMPOSE="1MT-RHEL-9.2.0-updates"
 elif [[ "$TARGET" == "centos7" ]]; then
-  COMPOSE="CentOS-7-latest"
+  COMPOSE="1MT-CentOS-7"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
-  TMT_BRANCH="main"
+  TMT_DIR="sclorg-testing-farm"
   TFT_PLAN="nightly-container-centos-7"
 elif [[ "$TARGET" == "fedora" ]]; then
-  COMPOSE="Fedora-36-Updated"
+  COMPOSE="1MT-Fedora-37"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
-  TMT_BRANCH="main"
+  TMT_DIR="sclorg-testing-farm"
   TFT_PLAN="nightly-container-f"
 elif [[ "$TARGET" == "c9s" ]]; then
-  COMPOSE="CentOS-Stream-8"
+  COMPOSE="1MT-CentOS-Stream-9"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
-  TMT_BRANCH="main"
+  TMT_DIR="sclorg-testing-farm"
   TFT_PLAN="nightly-container-centos-stream-8"
 elif [[ "$TARGET" == "c8s" ]]; then
-  COMPOSE="CentOS-Stream-8"
+  COMPOSE="1MT-CentOS-Stream-8"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
-  TMT_BRANCH="main"
+  TMT_DIR="sclorg-testing-farm"
   TFT_PLAN="nightly-container-centos-stream-8"
 else
   echo "This target is not supported"
@@ -49,96 +50,35 @@ if [[ "$TESTS" != "test" ]] && [[ "$TESTS" != "test-openshift" ]] && [[ "$TESTS"
   exit 1
 fi
 
-JOB_JSON="job-${TARGET}-${TESTS}.json"
-REQUEST_JSON="request-${TARGET}-${TESTS}.json"
-RESPONSE_JSON="response-${TARGET}-${TESTS}.json"
+COMPOSE=$(tmt -q run provision -h minute --list-images | grep $COMPOSE | head -n 1 | tr -d '[:space:]')
+WORK_DIR=$(mktemp -d -p "/var/tmp")
+git clone "$TMT_REPO" "$WORK_DIR/$TMT_DIR"
+CWD=$(pwd)
 cd /home/fedora || { echo "Could not switch to /home/fedora"; exit 1; }
 if [[ ! -d "${LOGS_DIR}" ]]; then
   mkdir -p "${LOGS_DIR}"
 fi
-
+echo "COMPOSE is $COMPOSE" | tee -a ${LOG}
+if [ -d "${DAILY_TEST_DIR}/${TARGET}-$TESTS" ]; then
+  rm -rf "${DAILY_TEST_DIR}/${TARGET}-$TESTS"
+fi
 LOG="${LOGS_DIR}/$TARGET-$TESTS.log"
 date > "${LOG}"
 curl -L https://url.corp.redhat.com/fmf-data > /tmp/fmf_data
 source /tmp/fmf_data
 
+cd "$WORK_DIR/$TMT_DIR" || { echo "Could not switch to $WORK_DIR/$TMT_DIR"; exit 1; }
 echo "TARGET is: ${TARGET} and test is: ${TESTS}" | tee -a "${LOG}"
-
-function final_report() {
-  echo "FINAL REPORT for ${REQ_ID}" | tee -a "${LOG}"
-  curl "$TF_ENDPOINT/requests/$REQ_ID" > "${JOB_JSON}"
-  cat "${JOB_JSON}" | tee -a "${LOG}"
-  state=$(jq -r .state "${JOB_JSON}")
-  result=$(jq -r .result.overall "${JOB_JSON}")
-  echo "STATE: $state" | tee -a "${LOG}"
-  echo "RESULT: $result" | tee -a "${LOG}"
-  new_state="success"
-  infra_error=" "
-  echo "State is $state and result is: $result"
-  if [ "$state" == "complete" ]; then
-    if [ "$result" != "passed" ]; then
-      new_state="failure"
-    fi
-  else
-    # Mark job in case of infrastructure issues. Report to Testing Farm team
-    infra_error=" - Infra problems"
-    new_state="failure"
-  fi
-  if [[ x"$new_state" == x"failure" ]]; then
-    curl "$TF_LOG/$REQ_ID/pipeline.log" > "${RESULT_DIR}/${TARGET}.log"
-  fi
-  echo "New State: $new_state" | tee -a "${LOG}"
-  echo "Infra state: $infra_error" | tee -a "${LOG}"
-}
-
-
-function schedule_testing_farm_request() {
-  echo "Schedule job for: $TARGET" | tee -a "${LOG}"
-  cat << EOF > "${REQUEST_JSON}"
-    {
-      "api_key": "${!API_KEY}",
-      "test": {"fmf": {
-      "url": "${TMT_REPO}",
-      "ref": "${TMT_BRANCH}",
-      "name": "${TFT_PLAN}"
-      }},
-      "environments": [{
-      "arch": "x86_64",
-      "os": {"compose": "$COMPOSE"},
-      "variables": {
-        "TEST": "$TESTS",
-        "OS": "$TARGET"
-      }}]
-    }
-EOF
-  cat "${REQUEST_JSON}" | tee -a "${LOG}"
-  curl "$TF_ENDPOINT/requests" --data @${REQUEST_JSON} --header "Content-Type: application/json" --output "${RESPONSE_JSON}"
-  cat "${RESPONSE_JSON}" | tee -a "${LOG}"
-  REQ_ID=$(jq -r .id "${RESPONSE_JSON}")
-  echo "$REQ_ID" | tee -a "${LOG}"
-}
-
-function check_testing_farm_status() {
-  echo "Check state for $REQ_ID" | tee -a "${LOG}"
-  CMD="$TF_ENDPOINT/requests/$REQ_ID"
-  echo "Command for checking state is: ${CMD}" | tee -a "${LOG}"
-  curl $CMD > "${JOB_JSON}"
-  state=$(jq -r .state "${JOB_JSON}")
-  # Wait till job is not finished. As soon as state is complete or failure then go to the finish action
-  while [ "$state" == "running" ] || [ "$state" == "new" ] || [ "$state" == "pending" ] || [ "$state" == "queued" ]; do
-    # Wait 300s. We do not need to query Testing Farm each second
-    sleep 300
-    date | tee -a "${LOG}"
-    echo "${CMD}" | tee -a "${LOG}"
-    curl "$CMD" > "${JOB_JSON}"
-    cat "${JOB_JSON}" | tee -a "${LOG}"
-    state=$(jq -r .state "${JOB_JSON}")
-    echo "$state" | tee -a "${LOG}"
-  done
-}
-
-schedule_testing_farm_request
-
-check_testing_farm_status
-
-final_report
+touch "${DAILY_TEST_DIR}/$TARGET-$TESTS/tmt_running"
+TMT_COMMAND="tmt run -v -v -d -d --all -e OS=$TARGET -e TEST=$TESTS --id ${DAILY_TEST_DIR}/$TARGET-$TESTS plan --name $TFT_PLAN provision --how minute --auto-select-network --image ${COMPOSE}"
+echo "TMT command is: $TMT_COMMAND" | tee -a "${LOG}"
+$TMT_COMMAND | tee -a "${LOG}"
+if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+  echo "TMT command $TMT_COMMAND has failed. See logs here ${LOG}"
+  touch "${DAILY_TEST_DIR}/$TARGET-$TESTS/tmt_failed"
+else
+  touch "${DAILY_TEST_DIR}/$TARGET-$TESTS/tmt_success"
+fi
+rm -f "${DAILY_TEST_DIR}/$TARGET-$TESTS/tmt_running"
+cd "$CWD" || exit 1
+rm -rf "$WORK_DIR"
