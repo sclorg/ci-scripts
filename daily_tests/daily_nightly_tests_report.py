@@ -153,7 +153,7 @@ class NightlyTestsReport(object):
         send_from = "phracek@redhat.com"
         send_to = default_mails + self.add_email
 
-        self.mime_msg['From'] = ', '.join(send_from)
+        self.mime_msg['From'] = send_from
         self.mime_msg['To'] = ', '.join(send_to)
         self.mime_msg['Subject'] = subject_msg
         self.mime_msg.attach(MIMEText(self.body))
