@@ -70,11 +70,11 @@ source /tmp/fmf_data
 cd "$WORK_DIR/$TMT_DIR" || { echo "Could not switch to $WORK_DIR/$TMT_DIR"; exit 1; }
 echo "TARGET is: ${TARGET} and test is: ${TESTS}" | tee -a "${LOG}"
 touch "${DAILY_TEST_DIR}/$TARGET-$TESTS/tmt_running"
-TMT_COMMAND="tmt run -v -v -d -d --all -e OS=$TARGET -e TEST=$TESTS --id ${DAILY_TEST_DIR}/$TARGET-$TESTS plan --name $TFT_PLAN provision --how minute --auto-select-network --image ${COMPOSE}"
+TMT_COMMAND="tmt run -v -v -d -d --all -e OS=$TARGET -e TEST=$TESTS --id ${DAILY_TEST_DIR}/$TARGET-$TESTS plan --name $TFT_PLAN provision --how minute  --image ${COMPOSE}"
 echo "TMT command is: $TMT_COMMAND" | tee -a "${LOG}"
-$TMT_COMMAND | tee -a "${LOG}"
-if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
-  echo "TMT command $TMT_COMMAND has failed. See logs here ${LOG}"
+$TMT_COMMAND > "${LOG}" 2>&1
+if [[ $? -ne 0 ]]; then
+  echo "TMT command $TMT_COMMAND has failed."
   touch "${DAILY_TEST_DIR}/$TARGET-$TESTS/tmt_failed"
 else
   touch "${DAILY_TEST_DIR}/$TARGET-$TESTS/tmt_success"
