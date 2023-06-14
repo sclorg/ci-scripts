@@ -67,9 +67,11 @@ function iterate_over_all_containers() {
       cd ${TMP_DIR} || exit
       local log_name="${TMP_DIR}/${repo}.log"
       clone_repo "${repo}"
-      pushd /root/sclorg-tmt-plans && ./set_devel_repo.sh "sclorg/${repo}" "$TARGET" "${TMP_DIR}/${repo}"
-      # Switch back to tmp container-repo name
-      popd
+      if [[ -d "/root/sclorg-tmt-plans" ]]; then
+        pushd /root/sclorg-tmt-plans && ./set_devel_repo.sh "sclorg/${repo}" "$TARGET" "${TMP_DIR}/${repo}"
+        # Switch back to tmp container-repo name
+        popd
+      fi
       make "${TESTS}" TARGET="${TARGET}" > "${log_name}" 2>&1
       if [[ $? -ne 0 ]]; then
           cp "${log_name}" "${RESULT_DIR}/"
@@ -83,6 +85,8 @@ if [[ "${TESTS}" == "test-openshift-4" ]]; then
   # Download kubepasswd
   curl -L https://url.corp.redhat.com/ocp4-kubepasswd >$KUBEPASSWD
 fi
+
+git clone https://gitlab.cee.redhat.com/platform-eng-core-services/sclorg-tmt-plans /root/sclorg-tmt-plans
 
 iterate_over_all_containers
 
