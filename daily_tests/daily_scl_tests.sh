@@ -32,7 +32,6 @@ TMP_DIR="${TMT_PLAN_DATA}"
 RESULT_DIR="${TMP_DIR}/results/"
 KUBECONFIG=/root/.kube/config
 KUBEPASSWD=/root/.kube/ocp-kube
-REQ_ID=""
 
 mkdir -p "${RESULT_DIR}"
 
@@ -49,6 +48,7 @@ function clone_repo() {
 
 function clean_ocp4() {
     if [[ "${TESTS}" == "test-openshift-4" ]]; then
+      echo "Cleaning OpenShift 4 environment"
       oc project default
       PASS=$(cat "${KUBEPASSWD}")
       oc login --username=kubeadmin --insecure-skip-tls-verify=true --password="${PASS}" --server=https://api.core-serv-ocp.hosted.psi.rdu2.redhat.com:6443
@@ -63,7 +63,6 @@ function clean_ocp4() {
 
 function iterate_over_all_containers() {
     for repo in ${SCL_CONTAINERS}; do
-      REQ_ID=""
       cd ${TMP_DIR} || exit
       local log_name="${TMP_DIR}/${repo}.log"
       clone_repo "${repo}"
@@ -74,12 +73,16 @@ function iterate_over_all_containers() {
       fi
       make "${TESTS}" TARGET="${TARGET}" > "${log_name}" 2>&1
       if [[ $? -ne 0 ]]; then
-          cp "${log_name}" "${RESULT_DIR}/"
+        echo "Tests for container $repo has failed."
+        cp "${log_name}" "${RESULT_DIR}/"
+        echo "Show the last 100 lines from file: ${RESULT_DIR}/${log_name}"
+        tail -100 "${RESULT_DIR}/${log_name}"
       fi
       clean_ocp4
     done
 }
 if [[ "${TESTS}" == "test-openshift-4" ]]; then
+    echo "Testing OpenShift 4 is enabled"
   # Download kubeconfig
   curl -L https://url.corp.redhat.com/ocp4-kubeconfig >$KUBECONFIG
   # Download kubepasswd
