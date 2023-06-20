@@ -2,19 +2,20 @@
 
 set -x
 
-SCL_CONTAINERS="s2i-base-container \
+SCL_CONTAINERS="\
+s2i-base-container
 s2i-nodejs-container
-s2i-php-container \
-s2i-perl-container \
-s2i-ruby-container \
-s2i-python-container \
-postgresql-container \
-varnish-container \
-nginx-container \
-httpd-container \
-mariadb-container \
-redis-container \
+s2i-php-container
+s2i-perl-container
+s2i-ruby-container
+s2i-python-container
+varnish-container
+nginx-container
+httpd-container
+redis-container
 mysql-container
+mariadb-container
+postgresql-container
 "
 
 [[ -z "$1" ]] && { echo "You have to specify target to build SCL images. centos7, rhel7 or fedora" && exit 1 ; }
@@ -81,6 +82,7 @@ function iterate_over_all_containers() {
       clean_ocp4
     done
 }
+
 if [[ "${TESTS}" == "test-openshift-4" ]]; then
     echo "Testing OpenShift 4 is enabled"
   # Download kubeconfig
