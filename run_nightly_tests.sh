@@ -34,7 +34,7 @@ elif [[ "$TARGET" == "c9s" ]]; then
   COMPOSE="1MT-CentOS-Stream-9"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_DIR="sclorg-testing-farm"
-  TFT_PLAN="nightly-container-centos-stream-8"
+  TFT_PLAN="nightly-container-centos-stream-9"
 elif [[ "$TARGET" == "c8s" ]]; then
   COMPOSE="1MT-CentOS-Stream-8"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
@@ -62,6 +62,7 @@ echo "COMPOSE is $COMPOSE" | tee -a ${LOG}
 if [ -d "${DAILY_TEST_DIR}/${TARGET}-$TESTS" ]; then
   rm -rf "${DAILY_TEST_DIR}/${TARGET}-$TESTS"
 fi
+mkdir -p "${DAILY_TEST_DIR}/${TARGET}-$TESTS"
 LOG="${LOGS_DIR}/$TARGET-$TESTS.log"
 date > "${LOG}"
 curl -L https://url.corp.redhat.com/fmf-data > /tmp/fmf_data
