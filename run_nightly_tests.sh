@@ -73,7 +73,7 @@ echo "TARGET is: ${TARGET} and test is: ${TESTS}" | tee -a "${LOG}"
 touch "${DAILY_TEST_DIR}/$TARGET-$TESTS/tmt_running"
 TMT_COMMAND="tmt run -v -v -d -d --all -e OS=$TARGET -e TEST=$TESTS --id ${DAILY_TEST_DIR}/$TARGET-$TESTS plan --name $TFT_PLAN provision --how minute --auto-select-network --image ${COMPOSE}"
 echo "TMT command is: $TMT_COMMAND" | tee -a "${LOG}"
-out=$(TMT_COMMAND); exitcode=$?; echo "$out" >> "${LOG}"
+out=$($TMT_COMMAND); exitcode=$?; echo "$out" >> "${LOG}"
 if [[ "$exitcode" != "0" ]]; then
   echo "TMT command $TMT_COMMAND has failed."
   touch "${DAILY_TEST_DIR}/$TARGET-$TESTS/tmt_failed"
