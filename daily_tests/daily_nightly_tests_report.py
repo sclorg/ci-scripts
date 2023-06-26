@@ -23,8 +23,6 @@ SCLORG_MAILS = {
 TEST_CASES = {
     # Format is test for OS and king of test, what TMT Plan is used and MSG to mail
     ("fedora-test", "nightly-container-f", "Fedora test results:"),
-    ("centos7-test", "nightly-container-centos-7", "CentOS 7 test results:"),
-    ("centos7-openshift", "nightly-container-centos-7", "CentOS 7 OpenShift 3 test results:"),
     ("c9s-test", "nightly-container-centos-stream-9", "CentOS Stream 9 test results:"),
     ("c8s-test", "nightly-container-centos-stream-8", "CentOS Stream 8 test results:"),
     ("rhel7-test", "nightly-container-rhel7", "RHEL-7 test results:"),
