@@ -76,8 +76,8 @@ function iterate_over_all_containers() {
       if [[ $? -ne 0 ]]; then
         echo "Tests for container $repo has failed."
         cp "${log_name}" "${RESULT_DIR}/"
-        echo "Show the last 100 lines from file: ${RESULT_DIR}/${log_name}"
-        tail -100 "${RESULT_DIR}/${log_name}"
+        echo "Show the last 100 lines from file: ${RESULT_DIR}/${repo}.log"
+        tail -100 "${RESULT_DIR}/${repo}.log"
       fi
       clean_ocp4
     done

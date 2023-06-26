@@ -50,7 +50,6 @@ if [[ "$TESTS" != "test" ]] && [[ "$TESTS" != "test-openshift" ]] && [[ "$TESTS"
   exit 1
 fi
 
-COMPOSE=$(tmt -q run provision -h minute --list-images | grep $COMPOSE | head -n 1 | tr -d '[:space:]')
 WORK_DIR=$(mktemp -d -p "/var/tmp")
 git clone "$TMT_REPO" "$WORK_DIR/$TMT_DIR"
 CWD=$(pwd)
@@ -58,6 +57,7 @@ cd /home/fedora || { echo "Could not switch to /home/fedora"; exit 1; }
 if [[ ! -d "${LOGS_DIR}" ]]; then
   mkdir -p "${LOGS_DIR}"
 fi
+COMPOSE=$(tmt -q run provision -h minute --list-images | grep $COMPOSE | head -n 1 | tr -d '[:space:]')
 echo "COMPOSE is $COMPOSE" | tee -a ${LOG}
 if [ -d "${DAILY_TEST_DIR}/${TARGET}-$TESTS" ]; then
   rm -rf "${DAILY_TEST_DIR}/${TARGET}-$TESTS"
