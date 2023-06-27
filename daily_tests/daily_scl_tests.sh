@@ -13,10 +13,19 @@ varnish-container
 nginx-container
 httpd-container
 redis-container
-mysql-container
 mariadb-container
 postgresql-container
 "
+# Disable mysql-container
+# ---> 12:22:24     Storing version '8.0.32' information into the data dir '/var/lib/mysql/data/mysql_upgrade_info'
+  #=> sourcing 50-passwd-change.sh ...
+  #---> 12:23:07     Setting passwords ...
+  #---> 12:26:30     Shutting down MySQL ...
+  #mysqladmin: reload failed; error: 'Lost connection to MySQL server during query'
+  #/usr/share/container-scripts/mysql/common.sh: line 100:    74 Killed                  ${MYSQL_PREFIX}/libexec/mysqld --defaults-file=$MYSQL_DEFAULTS_FILE --skip-networking --socket=$MYSQL_LOCAL_SOCKET "$@"
+  #Test for image 'rhel8/mysql-80:1' FAILED (exit code: 1)
+  #    Created container 65a87f95db0c6e2fc513543e2daff9acfe8916b2bc4c32d8bcee2301309bd82e
+  #  Testing MySQL connection to 10.88.11.184...
 
 [[ -z "$1" ]] && { echo "You have to specify target to build SCL images. centos7, rhel7 or fedora" && exit 1 ; }
 TARGET="$1"
