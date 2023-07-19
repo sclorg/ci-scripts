@@ -17,20 +17,20 @@ from shutil import rmtree
 from git import Repo
 from git.exc import GitCommandError
 
-SCLORG_REPOS = [
+SCLORG_REPOS = {
     # Format is 'repo_name' and 'package_name'
-    ("s2i-perl-container", "perl"),
-    ("s2i-nodejs-container", "nodejs"),
-    ("s2i-php-container", "php"),
-    ("s2i-ruby-container", "ruby"),
-    ("s2i-python-container", "python"),
-    ("postgresql-container", "postgresql"),
-    ("redis-container", "redis"),
-    ("varnish-container", "varnish"),
-    ("mysql-container", "mysql"),
-    ("mariadb-container", "mariadb"),
-    ("nginx-container", "nginx")
-]
+    "s2i-perl-container": "perl",
+    "s2i-nodejs-container": "nodejs",
+    "s2i-php-container": "php",
+    "s2i-ruby-container": "ruby",
+    "s2i-python-container": "python",
+    "postgresql-container": "postgresql",
+    "redis-container": "redis",
+    "varnish-container": "varnish",
+    "mysql-container": "mysql",
+    "mariadb-container": "mariadb",
+    "nginx-container": "nginx"
+}
 
 
 OS_HOSTS = [
@@ -51,20 +51,24 @@ class SclOrgSanityChecker(object):
     def __init__(self):
         self.tmp_path_dir: Path
         self.repo = ""
+        self.pkg_name = ""
         self.app_stream: Dict = {}
         self.cwd = os.getcwd()
         self.tmp_path_repo: Path
-        self.report_file: str = ""
         self.report_text_filename: str = ""
         self.args = self.parse_args()
         self.data_dict: Dict = {}
         self.failed_repos: List[str] = []
         self.global_result_flag: bool = True
         self.log_dir = os.getcwd()
+        self.message = ""
 
-    def write_to_textfile(self, msg):
+    def update_message(self, msg):
+        self.message += f"{msg}" + "\n"
+
+    def write_to_textfile(self, msg, report_file):
         print(msg)
-        with open(self.report_file, "a") as fw:
+        with open(report_file, "a") as fw:
             fw.write(msg)
             fw.write("\n")
 
@@ -133,11 +137,11 @@ class SclOrgSanityChecker(object):
     def check_exclude_file_not_dockerfile(self, ver: str, os_ver: str):
         ret_val = True
         if self.exclude_file_exists(ver=ver, os_ver=os_ver) and not self.dockerfile_exists(ver=ver, os_ver=os_ver):
-            self.write_to_textfile(
-                f"For version {ver} .exclude-{os_ver} is present in {ver}"
+            self.update_message(
+                f"For version {ver} .exclude-{os_ver} is present "
                 f"but Dockerfile.{os_ver} not."
             )
-            self.write_to_textfile(f"Think about for removal .exclude-{os_ver}.")
+            self.update_message(f"Think about for removal .exclude-{os_ver}.")
             ret_val = False
         if not ret_val:
             print(f"Check .exclude file and not Dockerfile hit some issue for {ver} in repo {self.repo}.")
@@ -147,10 +151,10 @@ class SclOrgSanityChecker(object):
         ret_val = True
         if self.devel_repo_exists(ver=ver, os_ver=os_ver) and self.dockerfile_exists(ver=ver, os_ver=os_ver):
             # TODO Check if .devel-repo file can not be removed
-            self.write_to_textfile(
+            self.update_message(
                 f".devel-repo-{os_ver} is present in {ver} and Dockerfile.{os_ver}."
             )
-            self.write_to_textfile(
+            self.update_message(
                 "Check if image is not already GA."
             )
             ret_val = False
@@ -158,33 +162,53 @@ class SclOrgSanityChecker(object):
             print(f"Check for .devel-repo and Dockerfile hit some issue for {ver} in repo {self.repo}.")
         return ret_val
 
+    def is_eol_version(self, ver: str, os_ver: str) -> int:
+        from datetime import datetime
+        today = datetime.today().date()
+        pkg_dict = [x for x in self.app_stream["lifecycles"] if x["name"] == self.pkg_name]
+        print(f"OS is {os_ver} and version is {ver}")
+        for pkg in pkg_dict:
+            if pkg["stream"] != ver:
+                continue
+            if "enddate" not in pkg:
+                continue
+            # Get RHEL version without 'rhel' prefix
+            rhel_version = os_ver.lstrip("rhel")
+            if not pkg["initial_product_version"].startswith(rhel_version):
+                continue
+            print(pkg)
+            enddate = datetime.strptime(pkg["enddate"], "%Y%m%d").date()
+            print(f"{today} and {enddate}")
+            days_to_eol = (enddate - today).days
+            print(f"Count of days till EOL {days_to_eol}")
+            # Already reached EOL.
+            if days_to_eol < 0:
+                return 1
+            # Less then 30 days to EOL.
+            if days_to_eol < int(30):
+                return 2
+            else:
+                return 0
+
     def check_tested_version(self, ver: str, os_ver: str):
         ret_val = True
-        # from datetime import date
-        # today = date.today()
-        # ymd = today.strftime("%Y%m%d")
+        eol_flag = -1
         if self.exclude_file_exists(ver=ver, os_ver=os_ver) and self.dockerfile_exists(ver=ver, os_ver=os_ver):
-            # TODO Check if image can not be tested.
-            # if os_ver.startswith("rhel"):
-            #     pkg_dict = [x for x in self.app_stream["lifecycles"] if x["name"] == pkg_name]
-            #     enddate = ""
-            #     print(pkg_dict)
-            #     for pkg in pkg_dict:
-            #         if pkg["stream"] != ver:
-            #             continue
-            #         if enddate not in pkg_dict:
-            #             continue
-            #         print(pkg_dict)
-            #         enddate = pkg_dict["enddate"]
-            #         print(f"{ymd} and {enddate}")
-            self.write_to_textfile(
-                f"File .exclude-{os_ver} is present in and Dockerfile.{os_ver} as well. "
-                f"The version {ver} is not tested."
-            )
-            self.write_to_textfile(
-                f"Please think about usage '.devel-repo-{os_ver}' or check if image does not reach EOL."
-            )
-            ret_val = False
+            if os_ver.startswith("rhel"):
+                eol_flag = self.is_eol_version(ver=ver, os_ver=os_ver)
+            if eol_flag == 1:
+                self.update_message(
+                    f"File .exclude-{os_ver} is present and Dockerfile.{os_ver} as well. "
+                    f"The version {ver} is not tested because it reached EOL already."
+                )
+                ret_val = True
+            if eol_flag == 0:
+                self.update_message(f"File .exclude-{os_ver} is present and Dockerfile.{os_ver} as well."
+                                    f"The version {ver} does not reached EOL yet.")
+                ret_val = True
+            if eol_flag == 2:
+                self.update_message("The image will reach EOL during next 30 days.")
+                ret_val = False
         if not ret_val:
             print(f"Check for .exclude and Dockerfile hit some issue for {ver} in repo {self.repo}.")
         return ret_val
@@ -209,7 +233,7 @@ class SclOrgSanityChecker(object):
             return False
 
     def collect_data(self):
-        for repo, pkg_name in SCLORG_REPOS:
+        for repo, pkg_name in SCLORG_REPOS.items():
             if not self.clone_repository(repo_name=repo):
                 continue
             self.tmp_path_repo = self.tmp_path_dir / repo
@@ -226,24 +250,30 @@ class SclOrgSanityChecker(object):
 
     def run_check(self):
         for repo in self.data_dict:
-            self.report_file = Path(self.log_dir) / f"{repo}.log"
+            report_file = Path(self.log_dir) / f"{repo}.log"
             self.repo = repo
+            self.pkg_name = SCLORG_REPOS[repo]
+            sanity_ok = True
             for ver in self.data_dict[repo]:
-                sanity_ok = True
-                self.write_to_textfile(f"--- repo: {self.repo} and version: {ver}:")
+                self.message = f"--- repo: {self.repo} and version: {ver}:\n"
+                checker = True
                 for os_ver in OS_HOSTS:
                     if not self.check_exclude_file_not_dockerfile(ver, os_ver):
-                        sanity_ok = False
+                        checker = False
                     if not self.check_devel_repo_file(ver, os_ver):
-                        sanity_ok = False
+                        checker = False
                     if not self.check_tested_version(ver, os_ver):
-                        sanity_ok = False
-                if sanity_ok:
-                    os.unlink(self.report_file)
-                else:
-                    if repo not in self.failed_repos:
-                        self.failed_repos.append(repo)
-                    self.global_result_flag = False
+                        checker = False
+                if not checker:
+                    self.write_to_textfile(msg=self.message, report_file=report_file)
+                    sanity_ok = False
+            if sanity_ok:
+                if Path(report_file).exists():
+                    os.unlink(report_file)
+            else:
+                if repo not in self.failed_repos:
+                    self.failed_repos.append(repo)
+                self.global_result_flag = False
         print(f"Report text files are located here {self.log_dir}")
         rmtree(self.tmp_path_dir)
 
