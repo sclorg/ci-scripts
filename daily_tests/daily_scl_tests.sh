@@ -35,8 +35,6 @@ TESTS="$1"
 
 CUR_WD=$(pwd)
 echo "Current working directory is: ${CUR_WD}"
-echo "List is:"
-ls -la
 
 TMP_DIR="${TMT_PLAN_DATA}"
 RESULT_DIR="${TMP_DIR}/results/"
@@ -45,12 +43,17 @@ KUBEPASSWD=/root/.kube/ocp-kube
 
 mkdir -p "${RESULT_DIR}"
 
+function start_ocp3() {
+    cd /root/container-common-scripts || exit 1
+    bash test-lib-openshift.sh ct_os_cluster_up
+}
+
 function clone_repo() {
     local repo_name=$1; shift
     # Sometimes cloning failed with an error
     # The requested URL returned error: 500. Save it into log for info
     git clone "https://github.com/sclorg/${repo_name}.git" || \
-        { echo "Repository ${repo_name} was not clonned." > ${RESULT_DIR}/${repo_name}.log; return 1 ; }
+        { echo "Repository ${repo_name} was not cloned." > ${RESULT_DIR}/${repo_name}.log; return 1 ; }
     cd "${repo_name}" || { echo "Repository ${repo_name} does not exist. Skipping." && return 1 ; }
     git submodule update --init
     git submodule update --remote
@@ -73,6 +76,8 @@ function clean_ocp4() {
 
 function iterate_over_all_containers() {
     for repo in ${SCL_CONTAINERS}; do
+      # Do not shutting down OpenShift 3 cluster
+      export OS_CLUSTER_STARTED_BY_TEST=0
       cd ${TMP_DIR} || exit
       local log_name="${TMP_DIR}/${repo}.log"
       clone_repo "${repo}"
@@ -92,15 +97,22 @@ function iterate_over_all_containers() {
     done
 }
 
+git clone https://gitlab.cee.redhat.com/platform-eng-core-services/sclorg-tmt-plans /root/sclorg-tmt-plans
+git clone https://github.com/sclorg/container-common-scripts.git /root/container-common-scripts
+
+
 if [[ "${TESTS}" == "test-openshift-4" ]]; then
     echo "Testing OpenShift 4 is enabled"
-  # Download kubeconfig
-  curl -L https://url.corp.redhat.com/ocp4-kubeconfig >$KUBECONFIG
-  # Download kubepasswd
-  curl -L https://url.corp.redhat.com/ocp4-kubepasswd >$KUBEPASSWD
+    # Download kubeconfig
+    curl -L https://url.corp.redhat.com/ocp4-kubeconfig >$KUBECONFIG
+    # Download kubepasswd
+    curl -L https://url.corp.redhat.com/ocp4-kubepasswd >$KUBEPASSWD
 fi
 
-git clone https://gitlab.cee.redhat.com/platform-eng-core-services/sclorg-tmt-plans /root/sclorg-tmt-plans
+if [[ "${TESTS}" == "test-openshift" ]]; then
+    echo "Starting cluster on Nightly Build request"
+    start_ocp3
+fi
 
 iterate_over_all_containers
 
