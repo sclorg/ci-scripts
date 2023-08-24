@@ -26,7 +26,8 @@ TEST_CASES = {
     ("c9s-test", "nightly-container-centos-stream-9", "CentOS Stream 9 test results:"),
     ("c8s-test", "nightly-container-centos-stream-8", "CentOS Stream 8 test results:"),
     ("rhel7-test", "nightly-container-rhel7", "RHEL-7 test results:"),
-    ("rhel7-test-openshift", "nightly-container-rhel7", "RHEL-7 OpenShift 3 test results:"),
+    # Starting OpenShift 3 causing problems on RHEL-7. Suppressing it.
+    # ("rhel7-test-openshift", "nightly-container-rhel7", "RHEL-7 OpenShift 3 test results:"),
     ("rhel7-test-openshift-4", "nightly-container-rhel7", "RHEL-7 OpenShift 4 test results:"),
     ("rhel8-test", "nightly-container-rhel8", "RHEL-8 test results:"),
     ("rhel8-test-openshift-4", "nightly-container-rhel8", "RHEL-8 OpenShift 4 test results:"),
@@ -80,6 +81,7 @@ class NightlyTestsReport(object):
         # self.data_dict['tmt'] item is used for Testing Farm errors per each OS and test case
         # self.data_dict[test_case] contains failed logs for given test case. E.g. 'fedora-test'
         self.data_dict["tmt"] = []
+        self.data_dict["SUCCESS"] = []
         for test_case, plan, _ in TEST_CASES:
             path_dir = Path(RESULT_DIR) / test_case
             if not path_dir.is_dir():
@@ -105,6 +107,7 @@ class NightlyTestsReport(object):
             results_dir = data_dir / "results"
             failed_containers = list(results_dir.rglob("*.log"))
             if not failed_containers:
+                self.data_dict["SUCCESS"].append(test_case)
                 continue
             print(f"Failed containers are for {test_case} are: {failed_containers}")
             for cont in failed_containers:
@@ -120,6 +123,9 @@ class NightlyTestsReport(object):
         if self.data_dict["tmt"]:
             tmt_failures = '\n'.join(self.data_dict["tmt"])
             self.body += f"Nightly builds Testing Farm failures:\n{tmt_failures}\n\n"
+        if self.data_dict["SUCCESS"]:
+            success_tests = '\n'.join(self.data_dict["SUCCESS"])
+            self.body += f"These nightly builds were completely successful:\n{success_tests}\n\n"
         for test_case, plan, msg in TEST_CASES:
             if test_case not in self.data_dict:
                 continue
@@ -128,7 +134,7 @@ class NightlyTestsReport(object):
             for _, name in self.data_dict[test_case]:
                 self.body += f"{name}\n"
         self.body += "\nIn case the information is wrong, please reach out " \
-                   "phracek@redhat.com, pkubat@redhat.com or hhorak@redhat.com.\n"
+                   "phracek@redhat.com, pkubat@redhat.co., zmiklank@redhat.com or hhorak@redhat.com.\n"
         self.body += "Or file an issue here: https://github.com/sclorg/ci-scripts/issues"
         print(self.body)
 
