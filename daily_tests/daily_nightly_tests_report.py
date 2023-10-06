@@ -17,6 +17,7 @@ SCLORG_MAILS = {
     "s2i-ruby-container": ["jprokop@redhat.com"],
     "s2i-python-container": ["lbalhar@redhat.com"],
     "postgresql-container": ["fjanus@redhat.com"],
+    "s2i-perl-container": ["jplesnik@redhat.com", "mspacek@redhat.com"]
 }
 
 
