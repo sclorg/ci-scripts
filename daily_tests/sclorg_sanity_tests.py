@@ -35,7 +35,6 @@ SCLORG_REPOS = {
 
 OS_HOSTS = [
     "fedora",
-    "centos7",
     "c9s",
     "c8s",
     "rhel7",
@@ -246,11 +245,12 @@ class SclOrgSanityChecker(object):
                 self.data_dict[repo][ver] = self.check_files(ver)
             os.chdir(self.cwd)
             rmtree(self.tmp_path_dir / repo)
-        print(self.data_dict)
 
     def run_check(self):
         for repo in self.data_dict:
             report_file = Path(self.log_dir) / f"{repo}.log"
+            if report_file.exists():
+                report_file.unlink()
             self.repo = repo
             self.pkg_name = SCLORG_REPOS[repo]
             sanity_ok = True
@@ -267,8 +267,10 @@ class SclOrgSanityChecker(object):
                 if not checker:
                     self.write_to_textfile(msg=self.message, report_file=report_file)
                     sanity_ok = False
+                else:
+                    self.update_message(msg=f"{ver} is ok.")
             if sanity_ok:
-                if Path(report_file).exists():
+                if report_file.exists():
                     os.unlink(report_file)
             else:
                 if repo not in self.failed_repos:
