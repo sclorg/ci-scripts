@@ -44,7 +44,9 @@ OS_HOSTS = [
 
 # This is reference link to internal repository
 EOL_GA_URL = "https://url.corp.redhat.com/application-streams-yaml"
+DEVEL_REPO_URL = "https://url.corp.redhat.com/devel-images"
 
+SANITY_LOG = "sanity_log.txt"
 
 class SclOrgSanityChecker(object):
     def __init__(self):
@@ -58,21 +60,34 @@ class SclOrgSanityChecker(object):
         self.args = self.parse_args()
         self.data_dict: Dict = {}
         self.failed_repos: List[str] = []
+        self.success_repos: List[str] = []
         self.global_result_flag: bool = True
         self.log_dir = os.getcwd()
+        self.debug_log = Path(self.log_dir) / SANITY_LOG
         self.message = ""
+
+    def log_to_file(self, msg):
+        print(msg)
+        with open(self.debug_log, "a") as fw:
+            if isinstance(msg, Dict):
+                for key, value in msg.items():
+                    fw.write(f"{key}:{value}")
+                    fw.write("\n")
+                return
+            fw.write(msg)
+            fw.write("\n")
 
     def update_message(self, msg):
         self.message += f"{msg}" + "\n"
 
     def write_to_textfile(self, msg, report_file):
-        print(msg)
+        self.log_to_file(msg)
         with open(report_file, "a") as fw:
             fw.write(msg)
             fw.write("\n")
 
     def create_tmp_dir(self):
-        print("Create temporary directory for sanity checks.")
+        self.log_to_file(msg="Create temporary directory for sanity checks.")
         tmp_dir = TemporaryDirectory(suffix="sanity_tests")
         self.tmp_path_dir = Path(tmp_dir.name)
 
@@ -98,7 +113,7 @@ class SclOrgSanityChecker(object):
     def prepare(self) -> bool:
         if self.args.log_dir:
             if not os.path.exists(self.args.log_dir):
-                print("Log dir you specified by --log-dir parameter does not exist.")
+                self.log_to_file(msg="Log dir you specified by --log-dir parameter does not exist.")
                 return False
             self.log_dir = self.args.log_dir
         self.create_tmp_dir()
@@ -136,6 +151,7 @@ class SclOrgSanityChecker(object):
     def check_exclude_file_not_dockerfile(self, ver: str, os_ver: str):
         ret_val = True
         if self.exclude_file_exists(ver=ver, os_ver=os_ver) and not self.dockerfile_exists(ver=ver, os_ver=os_ver):
+            self.log_to_file(msg=f"Exclude file exists and Dockerfile not for {ver} and {os_ver}")
             self.update_message(
                 f"For version {ver} .exclude-{os_ver} is present "
                 f"but Dockerfile.{os_ver} not."
@@ -143,12 +159,13 @@ class SclOrgSanityChecker(object):
             self.update_message(f"Think about for removal .exclude-{os_ver}.")
             ret_val = False
         if not ret_val:
-            print(f"Check .exclude file and not Dockerfile hit some issue for {ver} in repo {self.repo}.")
+            self.log_to_file(msg=f"Check .exclude file and not Dockerfile hit some issue for {ver} in repo {self.repo}.")
         return ret_val
 
     def check_devel_repo_file(self, ver: str, os_ver: str):
         ret_val = True
         if self.devel_repo_exists(ver=ver, os_ver=os_ver) and self.dockerfile_exists(ver=ver, os_ver=os_ver):
+            self.log_to_file(msg=f".devel-repo exists and Dockerfile as well for {ver} and {os_ver}")
             # TODO Check if .devel-repo file can not be removed
             self.update_message(
                 f".devel-repo-{os_ver} is present in {ver} and Dockerfile.{os_ver}."
@@ -158,14 +175,14 @@ class SclOrgSanityChecker(object):
             )
             ret_val = False
         if not ret_val:
-            print(f"Check for .devel-repo and Dockerfile hit some issue for {ver} in repo {self.repo}.")
+            self.log_to_file(msg=f"Check for .devel-repo and Dockerfile hit some issue for {ver} in repo {self.repo}.")
         return ret_val
 
     def is_eol_version(self, ver: str, os_ver: str) -> int:
         from datetime import datetime
         today = datetime.today().date()
         pkg_dict = [x for x in self.app_stream["lifecycles"] if x["name"] == self.pkg_name]
-        print(f"OS is {os_ver} and version is {ver}")
+        self.log_to_file(msg=f"OS is {os_ver} and version is {ver}")
         for pkg in pkg_dict:
             if pkg["stream"] != ver:
                 continue
@@ -175,11 +192,11 @@ class SclOrgSanityChecker(object):
             rhel_version = os_ver.lstrip("rhel")
             if not pkg["initial_product_version"].startswith(rhel_version):
                 continue
-            print(pkg)
+            self.log_to_file(msg=pkg)
             enddate = datetime.strptime(pkg["enddate"], "%Y%m%d").date()
-            print(f"{today} and {enddate}")
+            self.log_to_file(msg=f"{today} and {enddate}")
             days_to_eol = (enddate - today).days
-            print(f"Count of days till EOL {days_to_eol}")
+            self.log_to_file(msg=f"Count of days till EOL {days_to_eol}")
             # Already reached EOL.
             if days_to_eol < 0:
                 return 1
@@ -193,9 +210,11 @@ class SclOrgSanityChecker(object):
         ret_val = True
         eol_flag = -1
         if self.exclude_file_exists(ver=ver, os_ver=os_ver) and self.dockerfile_exists(ver=ver, os_ver=os_ver):
+            self.log_to_file(msg=f"Exclude file exists and Dockerfile as well for {ver} and {os_ver}")
             if os_ver.startswith("rhel"):
                 eol_flag = self.is_eol_version(ver=ver, os_ver=os_ver)
             if eol_flag == 1:
+                self.log_to_file(msg=f"The version {ver} is not tested because it reached EOL already.")
                 self.update_message(
                     f"File .exclude-{os_ver} is present and Dockerfile.{os_ver} as well. "
                     f"The version {ver} is not tested because it reached EOL already."
@@ -209,13 +228,13 @@ class SclOrgSanityChecker(object):
                 self.update_message("The image will reach EOL during next 30 days.")
                 ret_val = False
         if not ret_val:
-            print(f"Check for .exclude and Dockerfile hit some issue for {ver} in repo {self.repo}.")
+            self.log_to_file(msg=f"Check for .exclude and Dockerfile hit some issue for {ver} in repo {self.repo}.")
         return ret_val
 
     def get_all_supported_versions(self, repo_name: str):
         versions = []
         if not (self.tmp_path_repo / "Makefile").exists():
-            print(f"Makefile for repository {repo_name} does not exist.")
+            self.log_to_file(msg=f"Makefile for repository {repo_name} does not exist.")
             return versions
         with open(self.tmp_path_repo / "Makefile") as f:
             ver_row = [x for x in f.readlines() if x.startswith("VERSIONS")][0]
@@ -224,7 +243,7 @@ class SclOrgSanityChecker(object):
 
     def clone_repository(self, repo_name: str):
         try:
-            print(f"Cloning repository {repo_name}")
+            self.log_to_file(msg=f"Cloning repository {repo_name}")
             repo = Repo.clone_from(f"https://github.com/sclorg/{repo_name}", to_path=self.tmp_path_dir / repo_name)
             return True
         except GitCommandError as ex:
@@ -248,6 +267,8 @@ class SclOrgSanityChecker(object):
 
     def run_check(self):
         for repo in self.data_dict:
+            self.log_to_file(msg=f"Repo to check {repo}...")
+            self.log_to_file(msg=f"Collected data: {self.data_dict[repo]}")
             report_file = Path(self.log_dir) / f"{repo}.log"
             if report_file.exists():
                 report_file.unlink()
@@ -258,30 +279,40 @@ class SclOrgSanityChecker(object):
                 self.message = f"--- repo: {self.repo} and version: {ver}:\n"
                 checker = True
                 for os_ver in OS_HOSTS:
+                    self.log_to_file(msg=f"Checked OS is: {os_ver}")
                     if not self.check_exclude_file_not_dockerfile(ver, os_ver):
                         checker = False
                     if not self.check_devel_repo_file(ver, os_ver):
                         checker = False
                     if not self.check_tested_version(ver, os_ver):
                         checker = False
+                self.log_to_file(msg=f"Checker for {ver} is {checker}")
                 if not checker:
                     self.write_to_textfile(msg=self.message, report_file=report_file)
                     sanity_ok = False
                 else:
                     self.update_message(msg=f"{ver} is ok.")
             if sanity_ok:
+                if repo not in self.success_repos:
+                    self.success_repos.append(repo)
                 if report_file.exists():
                     os.unlink(report_file)
             else:
                 if repo not in self.failed_repos:
                     self.failed_repos.append(repo)
                 self.global_result_flag = False
+            self.log_to_file(msg=f"Repo to check {repo} finished.")
         print(f"Report text files are located here {self.log_dir}")
         rmtree(self.tmp_path_dir)
 
     def send_email(self):
         if not self.args.send_email:
-            print("Sending email is not allowed")
+            self.log_to_file(msg="Sending email is not allowed")
+            message = f"SCLORG sanity checker hit some issues in these repositories:\n"
+            message += "\n".join(self.failed_repos)
+            message += f"\n\nThese repositories did not have any issues:\n\n"
+            message += ", ".join(self.success_repos)
+            self.log_to_file(msg=message)
             return
         if self.global_result_flag:
             subject_msg = "SCLORG: sanity checker did not hit any issue in https://github/sclorg containers"
@@ -290,6 +321,8 @@ class SclOrgSanityChecker(object):
             subject_msg = "SCLORG: sanity checker hit some issues in https://github/sclorg containers"
             message = f"SCLORG sanity checker hit some issues in these repositories:\n"
             message += "\n".join(self.failed_repos)
+            message += f"\n\nThese repositories did not have any issues:\n"
+            message += "\n".join(self.success_repos)
         message += "\nIn case the information is wrong, please reach out " \
                    "phracek@redhat.com, pkubat@redhat.com or hhorak@redhat.com.\n"
         message += "Or file an issue here: https://github.com/sclorg/ci-scripts/issues"
@@ -307,6 +340,9 @@ class SclOrgSanityChecker(object):
                 attach = MIMEApplication(open(log, 'r').read(), Name=os.path.basename(str(log)))
                 attach.add_header('Content-Disposition', 'attachment; filename="{}"'.format(os.path.basename(str(log))))
                 msg.attach(attach)
+        attach = MIMEApplication(open(self.debug_log, "r").read(), Name=SANITY_LOG)
+        attach.add_header('Content-Disposition', 'attachment; filename="{}"'.format(SANITY_LOG))
+        msg.attach(attach)
         smtp = smtplib.SMTP("127.0.0.1")
         smtp.sendmail(send_from, send_to, msg.as_string())
         smtp.close()
