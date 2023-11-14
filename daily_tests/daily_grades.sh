@@ -8,6 +8,7 @@ OS=$1
 LOGS_DIR="/home/fedora/logs"
 SCRIPT_LOG="$LOGS_DIR/grades-$OS.log"
 GRADE_FLAG=0
+GRADE_NONE=0
 if [[ "$OS" == "RHEL7" ]]; then
   GRADES_LOG="$HOME/logs/rhel7-grades"
   RHCWT_CONFIG="rhel7.yaml"
@@ -28,9 +29,17 @@ SUMMARY="[CS Image Grading] Grades for"
 function check_grades() {
   echo "GRADE_FLAG: $GRADE_FLAG" | tee -a "${SCRIPT_LOG}"
   while read -r line; do
-    if [[ ! "$line" == *"[A]"* ]]; then
+    if [[ "$line" == *"[B]"* ]]; then
       GRADE_FLAG=1
-      echo "GRADE_FLAG: $GRADE_FLAG" | tee -a "${SCRIPT_LOG}"
+      echo "GRADE_FLAG: $GRADE_FLAG for $line" | tee -a "${SCRIPT_LOG}"
+    fi
+    if [[ "$line" == *"[C]"* ]]; then
+      GRADE_FLAG=1
+      echo "GRADE_FLAG: $GRADE_FLAG for $line" | tee -a "${SCRIPT_LOG}"
+    fi
+    if [[ "$line" == *"[NONE]"* ]]; then
+      GRADE_NONE=1
+      echo "GRADE_NONE: $GRADE_NONE" | tee -a "${SCRIPT_LOG}"
     fi
   done < "$GRADES_LOG"
   return $GRADE_FLAG
@@ -57,6 +66,9 @@ else
 fi
 
 {
+  if [[ "$GRADE_NONE" == "1" ]]; then
+    echo "Some images were not found in container catalog. Please take a look on it."
+  fi
   echo "In case the information is wrong, please reach out phracek@redhat.com, pkubat@redhat.com or hhorak@redhat.com."
   echo "Or file an issue here: https://github.com/sclorg/ci-scripts/issues"
 } >> "${GRADES_LOG}"
