@@ -2,6 +2,9 @@
 
 set -x
 
+SCL_CONTAINERS_UPSTREAM="\
+s2i-nodejs-container
+"
 SCL_CONTAINERS="\
 s2i-base-container
 s2i-nodejs-container
@@ -75,26 +78,31 @@ function clean_ocp4() {
 }
 
 function iterate_over_all_containers() {
-    for repo in ${SCL_CONTAINERS}; do
-      # Do not shutting down OpenShift 3 cluster
-      export OS_CLUSTER_STARTED_BY_TEST=0
-      cd ${TMP_DIR} || exit
-      local log_name="${TMP_DIR}/${repo}.log"
-      clone_repo "${repo}"
-      if [[ -d "/root/sclorg-tmt-plans" ]]; then
-        pushd /root/sclorg-tmt-plans && ./set_devel_repo.sh "sclorg/${repo}" "$TARGET" "${TMP_DIR}/${repo}"
-        # Switch back to tmp container-repo name
-        popd
-      fi
-      make "${TESTS}" TARGET="${TARGET}" > "${log_name}" 2>&1
-      if [[ $? -ne 0 ]]; then
-        echo "Tests for container $repo has failed."
-        cp "${log_name}" "${RESULT_DIR}/"
-        echo "Show the last 100 lines from file: ${RESULT_DIR}/${repo}.log"
-        tail -100 "${RESULT_DIR}/${repo}.log"
-      fi
-      clean_ocp4
-    done
+  CONTAINTERS_TO_TEST=SCL_CONTAINERS
+  if [[ "${TESTS}" == "test-upstream" ]]; then
+    CONTAINTERS_TO_TEST=SCL_CONTAINERS_UPSTREAM
+  fi
+
+  for repo in ${CONTAINTERS_TO_TEST}; do
+    # Do not shutting down OpenShift 3 cluster
+    export OS_CLUSTER_STARTED_BY_TEST=0
+    cd ${TMP_DIR} || exit
+    local log_name="${TMP_DIR}/${repo}.log"
+    clone_repo "${repo}"
+    if [[ -d "/root/sclorg-tmt-plans" ]]; then
+      pushd /root/sclorg-tmt-plans && ./set_devel_repo.sh "sclorg/${repo}" "$TARGET" "${TMP_DIR}/${repo}"
+      # Switch back to tmp container-repo name
+      popd
+    fi
+    make "${TESTS}" TARGET="${TARGET}" > "${log_name}" 2>&1
+    if [[ $? -ne 0 ]]; then
+      echo "Tests for container $repo has failed."
+      cp "${log_name}" "${RESULT_DIR}/"
+      echo "Show the last 100 lines from file: ${RESULT_DIR}/${repo}.log"
+      tail -100 "${RESULT_DIR}/${repo}.log"
+    fi
+    clean_ocp4
+  done
 }
 
 git clone https://gitlab.cee.redhat.com/platform-eng-core-services/sclorg-tmt-plans /root/sclorg-tmt-plans
