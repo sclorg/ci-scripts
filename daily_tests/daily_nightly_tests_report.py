@@ -11,15 +11,19 @@ from pathlib import Path
 from typing import Dict, List
 
 default_mails = ["phracek@redhat.com", "hhorak@redhat.com", "pkubat@redhat.com", "zmiklank@redhat.com"]
+upstream_mails = ["lholmqui@redhat.com", "nodeshiftcore@redhat.com"]
 
 SCLORG_MAILS = {
     # Format is 'repo_name', and list of mails to infor
     "s2i-ruby-container": ["jprokop@redhat.com"],
     "s2i-python-container": ["lbalhar@redhat.com"],
     "postgresql-container": ["fjanus@redhat.com"],
-    "s2i-perl-container": ["jplesnik@redhat.com", "mspacek@redhat.com"]
+    "s2i-perl-container": ["jplesnik@redhat.com", "mspacek@redhat.com"],
 }
 
+SCLORG_UPSTREAM_TESTS_MAILS = {
+    "s2i-nodejs-container": ["lholmqui@redhat.com", "nodeshiftcore@redhat.com"],
+}
 
 TEST_CASES = {
     # Format is test for OS and king of test, what TMT Plan is used and MSG to mail
@@ -34,6 +38,12 @@ TEST_CASES = {
     ("rhel8-test-openshift-4", "nightly-container-rhel8", "RHEL-8 OpenShift 4 test results:"),
     ("rhel9-test", "nightly-container-rhel9", "RHEL-9 test results:"),
     ("rhel9-test-openshift-4", "nightly-container-rhel9", "RHEL-9 OpenShift 4 test results:"),
+}
+
+TEST_UPSTREAM_CASES = {
+    ("rhel7-test-upstream", "nightly-container-rhel7", "RHEL-7 Upstream test results:"),
+    ("rhel8-test-upstream", "nightly-container-rhel8", "RHEL-8 Upstream test results:"),
+    ("rhel9-test-upstream", "nightly-container-rhel9", "RHEL-9 Upstream test results:"),
 }
 
 # The default directory used for nightly build
@@ -56,6 +66,10 @@ class NightlyTestsReport(object):
         self.mime_msg = MIMEMultipart()
         self.body = ""
         self.add_email = []
+        if self.args.upstream_tests:
+            self.available_test_case = TEST_UPSTREAM_CASES
+        else:
+            self.available_test_case = TEST_CASES
 
     def parse_args(self):
         parser = argparse.ArgumentParser(
@@ -64,6 +78,9 @@ class NightlyTestsReport(object):
         )
         parser.add_argument(
             "--send-email", action="store_true", help="The logs are send over SMTP mail.", default=False
+        )
+        parser.add_argument(
+            "--upstream-tests", action="store_true", help="The logs are send over SMTP mail.", default=False
         )
         parser.add_argument("--log-dir", help="The logs are stored in user defined directory")
 
@@ -83,7 +100,7 @@ class NightlyTestsReport(object):
         # self.data_dict[test_case] contains failed logs for given test case. E.g. 'fedora-test'
         self.data_dict["tmt"] = []
         self.data_dict["SUCCESS"] = []
-        for test_case, plan, _ in TEST_CASES:
+        for test_case, plan, _ in self.available_test_case:
             path_dir = Path(RESULT_DIR) / test_case
             if not path_dir.is_dir():
                 print(f"The test case {path_dir} does not exists that is weird")
@@ -120,13 +137,18 @@ class NightlyTestsReport(object):
         print(self.data_dict)
 
     def generate_email_body(self):
+        body_failure = "Nightly builds Testing Farm failures:"
+        body_success = "These nightly builds were completely successful:"
+        if self.args.upstream_tests:
+            body_failure = "NodeJS upstream tests failures:"
+            body_success = "NodeJS upstream tests were completely successful:"
         # Function for generation mail body
         if self.data_dict["tmt"]:
             tmt_failures = '\n'.join(self.data_dict["tmt"])
-            self.body += f"Nightly builds Testing Farm failures:\n{tmt_failures}\n\n"
+            self.body += f"{body_failure}\n{tmt_failures}\n\n"
         if self.data_dict["SUCCESS"]:
             success_tests = '\n'.join(self.data_dict["SUCCESS"])
-            self.body += f"These nightly builds were completely successful:\n{success_tests}\n\n"
+            self.body += f"{body_success}\n{success_tests}\n\n"
         for test_case, plan, msg in TEST_CASES:
             if test_case not in self.data_dict:
                 continue
@@ -140,7 +162,7 @@ class NightlyTestsReport(object):
         print(self.body)
 
     def generate_emails(self):
-        for test_case, plan, _ in TEST_CASES:
+        for test_case, plan, _ in self.available_test_case:
             if test_case not in self.data_dict:
                 continue
             for _, name in self.data_dict[test_case]:
@@ -156,9 +178,12 @@ class NightlyTestsReport(object):
         subject_msg = "Nightly Build report test results over containers"
 
         send_from = "phracek@redhat.com"
-        send_to = default_mails + self.add_email
+        if self.args.upstream_tests:
+            send_to = upstream_mails
+        else:
+            send_to = default_mails + self.add_email
 
-        self.mime_msg['From'] = send_from
+        self.mime_msg['From'] = [send_from]
         self.mime_msg['To'] = ', '.join(send_to)
         self.mime_msg['Subject'] = subject_msg
         self.mime_msg.attach(MIMEText(self.body))
