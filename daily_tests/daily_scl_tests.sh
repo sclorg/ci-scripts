@@ -78,9 +78,9 @@ function clean_ocp4() {
 }
 
 function iterate_over_all_containers() {
-  CONTAINTERS_TO_TEST=SCL_CONTAINERS
+  CONTAINTERS_TO_TEST=$SCL_CONTAINERS
   if [[ "${TESTS}" == "test-upstream" ]]; then
-    CONTAINTERS_TO_TEST=SCL_CONTAINERS_UPSTREAM
+    CONTAINTERS_TO_TEST=$SCL_CONTAINERS_UPSTREAM
   fi
 
   for repo in ${CONTAINTERS_TO_TEST}; do
