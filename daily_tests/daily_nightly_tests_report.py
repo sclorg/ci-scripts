@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Dict, List
 
 default_mails = ["phracek@redhat.com", "hhorak@redhat.com", "pkubat@redhat.com", "zmiklank@redhat.com"]
-upstream_mails = ["lholmqui@redhat.com", "nodeshiftcore@redhat.com"]
+upstream_mails = ["phracek@redhat.com", "lholmqui@redhat.com", "nodeshiftcore@redhat.com"]
 
 SCLORG_MAILS = {
     # Format is 'repo_name', and list of mails to infor
