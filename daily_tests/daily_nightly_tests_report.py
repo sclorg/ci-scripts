@@ -134,14 +134,15 @@ class NightlyTestsReport(object):
                 attach.add_header('Content-Disposition', 'attachment; filename="{}"'.format(mime_name))
                 self.mime_msg.attach(attach)
             self.data_dict[test_case] = [(str(f), str(f.name)) for f in failed_containers]
-        print(self.data_dict)
+        print(f"collect data: {self.data_dict}")
 
     def generate_email_body(self):
-        body_failure = "Nightly builds Testing Farm failures:"
-        body_success = "These nightly builds were completely successful:"
         if self.args.upstream_tests:
             body_failure = "NodeJS upstream tests failures:"
             body_success = "NodeJS upstream tests were completely successful:"
+        else:
+            body_failure = "Nightly builds Testing Farm failures:"
+            body_success = "These nightly builds were completely successful:"
         # Function for generation mail body
         if self.data_dict["tmt"]:
             tmt_failures = '\n'.join(self.data_dict["tmt"])
@@ -149,17 +150,17 @@ class NightlyTestsReport(object):
         if self.data_dict["SUCCESS"]:
             success_tests = '\n'.join(self.data_dict["SUCCESS"])
             self.body += f"{body_success}\n{success_tests}\n\n"
-        for test_case, plan, msg in TEST_CASES:
+        for test_case, plan, msg in self.available_test_case:
             if test_case not in self.data_dict:
                 continue
-            print(self.data_dict[test_case])
+            print(f"generate_email_body: {self.data_dict[test_case]}")
             self.body += f"\n{msg}\nList of failed containers:\n"
             for _, name in self.data_dict[test_case]:
                 self.body += f"{name}\n"
         self.body += "\nIn case the information is wrong, please reach out " \
-                   "phracek@redhat.com, pkubat@redhat.co., zmiklank@redhat.com or hhorak@redhat.com.\n"
+                   "phracek@redhat.com, pkubat@redhat.com, zmiklank@redhat.com or hhorak@redhat.com.\n"
         self.body += "Or file an issue here: https://github.com/sclorg/ci-scripts/issues"
-        print(self.body)
+        print(f"Body to email: {self.body}")
 
     def generate_emails(self):
         for test_case, plan, _ in self.available_test_case:
@@ -175,7 +176,10 @@ class NightlyTestsReport(object):
         if not self.args.send_email:
             print("Sending email is not allowed")
             return
-        subject_msg = "Nightly Build report test results over containers"
+        if self.args.upstream_tests:
+            subject_msg = "Nightly Build report for NodeJS upstream tests"
+        else:
+            subject_msg = "Nightly Build report test results over containers"
 
         send_from = "phracek@redhat.com"
         if self.args.upstream_tests:
@@ -183,13 +187,14 @@ class NightlyTestsReport(object):
         else:
             send_to = default_mails + self.add_email
 
-        self.mime_msg['From'] = [send_from]
+        self.mime_msg['From'] = send_from
         self.mime_msg['To'] = ', '.join(send_to)
         self.mime_msg['Subject'] = subject_msg
         self.mime_msg.attach(MIMEText(self.body))
         smtp = smtplib.SMTP("127.0.0.1")
         smtp.sendmail(send_from, send_to, self.mime_msg.as_string())
         smtp.close()
+        print("Sending email finished")
 
 
 if __name__ == "__main__":
