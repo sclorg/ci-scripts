@@ -134,7 +134,7 @@ class NightlyTestsReport(object):
                 attach.add_header('Content-Disposition', 'attachment; filename="{}"'.format(mime_name))
                 self.mime_msg.attach(attach)
             self.data_dict[test_case] = [(str(f), str(f.name)) for f in failed_containers]
-        print(self.data_dict)
+        print(f"collect data: {self.data_dict}")
 
     def generate_email_body(self):
         if self.args.upstream_tests:
@@ -151,14 +151,14 @@ class NightlyTestsReport(object):
             success_tests = '\n'.join(self.data_dict["SUCCESS"])
             self.body += f"{body_success}\n{success_tests}\n\n"
         for test_case, plan, msg in self.available_test_case:
-            if test_case not in self.available_test_case:
+            if test_case not in self.data_dict:
                 continue
-            print(self.data_dict[test_case])
+            print(f"generate_email_body: {self.data_dict[test_case]}")
             self.body += f"\n{msg}\nList of failed containers:\n"
             for _, name in self.data_dict[test_case]:
                 self.body += f"{name}\n"
         self.body += "\nIn case the information is wrong, please reach out " \
-                   "phracek@redhat.com, pkubat@redhat.co., zmiklank@redhat.com or hhorak@redhat.com.\n"
+                   "phracek@redhat.com, pkubat@redhat.com, zmiklank@redhat.com or hhorak@redhat.com.\n"
         self.body += "Or file an issue here: https://github.com/sclorg/ci-scripts/issues"
         print(f"Body to email: {self.body}")
 
