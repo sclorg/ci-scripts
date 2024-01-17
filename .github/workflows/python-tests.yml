@@ -1,0 +1,20 @@
+---
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+name: Run Tox tests on ci-scripts
+jobs:
+  tox_test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: fedora-python/tox-github-action@main
+      with:
+        tox_env: py311
+        workdir: "ocp-stream-generator/"
+...
