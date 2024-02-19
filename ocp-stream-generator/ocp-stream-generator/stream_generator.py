@@ -38,7 +38,7 @@ class YamlLoader:
     @property
     def json_data(self):
         if not self.data:
-            with open(self.yaml_path,'r') as file:
+            with open(self.yaml_path,"r") as file:
                 self.data = yaml.safe_load(file)[0]
         return self.data
 
@@ -65,18 +65,18 @@ class ImagestreamFile:
 
 
     def __init__(self, file, header):
-        self.app_name = header['name']
-        self.app_pretty_name = header['pretty_name']
-        self.filename = file['filename']
+        self.app_name = header["name"]
+        self.app_pretty_name = header["pretty_name"]
+        self.filename = file["filename"]
         self.tags = []
-        for distro in file['distros']:
-            for app_version in distro['app_versions']:
-                _tag = Tag(header, distro['name'], version=app_version)
+        for distro in file["distros"]:
+            for app_version in distro["app_versions"]:
+                _tag = Tag(header, distro["name"], version=app_version)
                 self.tags.append(_tag)
-        _latest_distro = self.obtain_distro_for_latest(file['latest']);
+        _latest_distro = self.obtain_distro_for_latest(file["latest"]);
         if not _latest_distro:
             return
-        self.latest_tag = Tag(header, _latest_distro, latest=file['latest'])
+        self.latest_tag = Tag(header, _latest_distro, latest=file["latest"])
 
 
 class Tag:
@@ -99,7 +99,7 @@ class Tag:
 
     def obtain_version(self, version):
         if self.latest:
-            return self.latest.split('-',1)[0]
+            return self.latest.split("-",1)[0]
         else:
             return version
 
@@ -112,14 +112,14 @@ class Tag:
                 .replace("APP_NAME", self.app_name)
 
     def __init__(self, header, distro_name, version=None, latest=None):
-        self.category = header['category']
-        self.app_name = header['name']
-        self.app_pretty_name = header['pretty_name']
-        self.sample_repo = header['sample_repo']
+        self.category = header["category"]
+        self.app_name = header["name"]
+        self.app_pretty_name = header["pretty_name"]
+        self.sample_repo = header["sample_repo"]
         self.latest = latest
         self.version = self.obtain_version(version)
         self.distro_name = distro_name
-        self.description = header['description'] \
+        self.description = header["description"] \
             .replace("APP_VERSION", str(self.version)) \
             .replace("DISTRO_NAME", self.distro_name)
 
@@ -132,15 +132,15 @@ class Tag:
 class JsonBuilder:
     def create_header(self, data):
         _header = {}
-        _header['kind'] = "ImageStream"
-        _header['apiVersion'] = "image.openshift.io/v1"
-        _header['metadata'] =  {
+        _header["kind"] = "ImageStream"
+        _header["apiVersion"] = "image.openshift.io/v1"
+        _header["metadata"] =  {
                                  "name": data.app_name,
                                  "annotations": {
                                     "openshift.io/display-name": data.app_pretty_name
                                  }
                                }
-        _header['spec'] = {'tags': []}
+        _header["spec"] = {"tags": []}
         return _header
 
     def create_annotation(self, tag):
@@ -150,27 +150,27 @@ class JsonBuilder:
             _disp_name +=" (Latest)"
         else:
             _disp_name += " ("+ tag.distro_name +")"
-        _ann['openshift.io/display-name'] = _disp_name
-        _ann['openshift.io/provider-display-name'] =  "Red Hat, Inc."
-        _ann['description'] = tag.description
-        _ann['iconClass'] = "icon-" + tag.app_name
-        _ann['tags'] = tag.category + "," + tag.app_name
-        _ann['version'] = str(tag.version)
+        _ann["openshift.io/display-name"] = _disp_name
+        _ann["openshift.io/provider-display-name"] =  "Red Hat, Inc."
+        _ann["description"] = tag.description
+        _ann["iconClass"] = "icon-" + tag.app_name
+        _ann["tags"] = tag.category + "," + tag.app_name
+        _ann["version"] = str(tag.version)
         if tag.sample_repo != "":
-            _ann['sampleRepo'] = tag.sample_repo
+            _ann["sampleRepo"] = tag.sample_repo
         return _ann
 
 
     def add_tag(self, _json, tag):
         _tag = {}
-        _tag['name'] = tag.stream_name
-        _tag['annotations'] = self.create_annotation(tag)
+        _tag["name"] = tag.stream_name
+        _tag["annotations"] = self.create_annotation(tag)
         if tag.latest:
-            _tag['from'] = {"kind": "ImageStreamTag", "name": tag.image}
+            _tag["from"] = {"kind": "ImageStreamTag", "name": tag.image}
         else:
-            _tag['from'] = {"kind": "DockerImage", "name": tag.image}
-        _tag['referencePolicy'] = {"type": "Local"}
-        _json['spec']['tags'].append(_tag)
+            _tag["from"] = {"kind": "DockerImage", "name": tag.image}
+        _tag["referencePolicy"] = {"type": "Local"}
+        _json["spec"]["tags"].append(_tag)
         return _json
 
     def generate_json(self, isf_data):
@@ -189,7 +189,7 @@ def main():
     builder = JsonBuilder()
 
     isf_header = yaml_loader.json_data
-    is_files = isf_header.pop('imagestream_files')
+    is_files = isf_header.pop("imagestream_files")
     for isf in is_files:
         isf_data = ImagestreamFile(isf, isf_header)
         if not isf_data.is_correct:
@@ -197,6 +197,6 @@ def main():
         with open(isf_data.filename, "w") as json_file:
             json_file.write(builder.generate_json(isf_data)+ "\n")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main();
 
