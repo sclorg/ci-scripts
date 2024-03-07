@@ -95,7 +95,7 @@ class Tag:
         if self.latest:
             return "latest"
         else:
-            return str(self.version) + "-" + abbreviations[self.distro_name]
+            return f"{str(self.version)}-{abbreviations[self.distro_name]}"
 
     def obtain_version(self, version):
         if self.latest:
@@ -145,16 +145,16 @@ class JsonBuilder:
 
     def create_annotation(self, tag):
         _ann = {}
-        _disp_name = tag.app_pretty_name + " " + str(tag.version)
+        _disp_name = f"{tag.app_pretty_name} {str(tag.version)}"
         if tag.latest:
-            _disp_name +=" (Latest)"
+            _disp_name += " (Latest)"
         else:
-            _disp_name += " ("+ tag.distro_name +")"
+            _disp_name += f" ({tag.distro_name})"
         _ann["openshift.io/display-name"] = _disp_name
         _ann["openshift.io/provider-display-name"] =  "Red Hat, Inc."
         _ann["description"] = tag.description
-        _ann["iconClass"] = "icon-" + tag.app_name
-        _ann["tags"] = tag.category + "," + tag.app_name
+        _ann["iconClass"] = f"icon-{tag.app_name}"
+        _ann["tags"] = f"{tag.category},{tag.app_name}"
         _ann["version"] = str(tag.version)
         if tag.sample_repo != "":
             _ann["sampleRepo"] = tag.sample_repo
