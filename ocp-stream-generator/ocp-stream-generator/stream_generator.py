@@ -29,18 +29,18 @@ import sys
 from distribution_data import abbreviations, images, latest_description
 
 class YamlLoader:
-    data = None
+    _data = None
     yaml_path = None
 
     def __init__(self, yaml):
         self.yaml_path = yaml
 
     @property
-    def json_data(self):
-        if not self.data:
+    def data(self):
+        if not self._data:
             with open(self.yaml_path,"r") as file:
-                self.data = yaml.safe_load(file)[0]
-        return self.data
+                self._data = yaml.safe_load(file)[0]
+        return self._data
 
 
 class ImagestreamFile:
@@ -188,7 +188,7 @@ def main():
     yaml_loader = YamlLoader(sys.argv[1])
     builder = JsonBuilder()
 
-    isf_header = yaml_loader.json_data
+    isf_header = yaml_loader.data
     is_files = isf_header.pop("imagestream_files")
     for isf in is_files:
         isf_data = ImagestreamFile(isf, isf_header)
