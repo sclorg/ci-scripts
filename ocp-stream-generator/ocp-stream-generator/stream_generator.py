@@ -112,7 +112,7 @@ class Tag:
             return self.latest
         else:
             return images[self.distro_name][self.repo_access] \
-                .replace("APP_VERSION", str(self.version)) \
+                .replace("APP_VERSION", str(self.version).replace(".","")) \
                 .replace("APP_NAME", self.app_name)
 
     def __init__(self, header, distro_name, repo_access, version=None, latest=None):
