@@ -19,19 +19,19 @@ header = {"name": "test", "pretty_name": "Test", "sample_repo": "", "category": 
 
 
 def test_add_tag():
-    tag = Tag(header, "RHEL 8", version=1)
+    tag = Tag(header, "RHEL 8", "private", version=1)
     assert builder.add_tag({"spec": { "tags": []}}, tag)  ==  add_tag_result
 
 def test_add_latest_tag():
-    tag_latest = Tag(header, "RHEL8", latest="1-el8")
+    tag_latest = Tag(header, "RHEL8", "private", latest="1-el8")
     assert builder.add_tag({"spec": { "tags": []}}, tag_latest)  ==  add_tag_latest_result
 
 def test_create_annotation():
-    tag = Tag(header, "RHEL 8", version=1)
+    tag = Tag(header, "RHEL 8", "private", version=1)
     assert builder.create_annotation(tag) == create_annotation_result
 
 def test_create_annotation_latest():
-    latest_tag = Tag(header, "RHEL 8", latest="1-el8")
+    latest_tag = Tag(header, "RHEL 8", "private", latest="1-el8")
     assert builder.create_annotation(latest_tag) == create_annotation_latest_result
 
 def test_create_header():
