@@ -68,15 +68,18 @@ class ImagestreamFile:
         self.app_name = header["name"]
         self.app_pretty_name = header["pretty_name"]
         self.filename = file["filename"]
+        # hack - UBI images are both in public and private repos, need to
+        # distinguish between them based on filename
+        repo_access = "public" if "centos" in self.filename else "private"
         self.tags = []
         for distro in file["distros"]:
             for app_version in distro["app_versions"]:
-                _tag = Tag(header, distro["name"], version=app_version)
+                _tag = Tag(header, distro["name"], repo_access, version=app_version)
                 self.tags.append(_tag)
         _latest_distro = self.obtain_distro_for_latest(file["latest"]);
         if not _latest_distro:
             return
-        self.latest_tag = Tag(header, _latest_distro, latest=file["latest"])
+        self.latest_tag = Tag(header, _latest_distro, repo_access, latest=file["latest"])
 
 
 class Tag:
@@ -90,6 +93,7 @@ class Tag:
     app_pretty_name: str
     latest = None
     category: str
+    repo_access = None
 
     def obtain_stream_name(self):
         if self.latest:
@@ -107,11 +111,12 @@ class Tag:
         if self.latest:
             return self.latest
         else:
-            return images[self.distro_name] \
+            return images[self.distro_name][self.repo_access] \
                 .replace("APP_VERSION", str(self.version)) \
                 .replace("APP_NAME", self.app_name)
 
-    def __init__(self, header, distro_name, version=None, latest=None):
+    def __init__(self, header, distro_name, repo_access, version=None, latest=None):
+        self.repo_access = repo_access
         self.category = header["category"]
         self.app_name = header["name"]
         self.app_pretty_name = header["pretty_name"]

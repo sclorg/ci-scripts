@@ -20,14 +20,34 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-images = {"RHEL 7": "registry.redhat.io/rhscl/APP_NAME-APP_VERSION-rhel7:latest",
-          "RHEL 8": "registry.redhat.io/rhel8/APP_NAME-APP_VERSION:latest",
-          "RHEL 9": "registry.redhat.io/rhel9/APP_NAME-APP_VERSION:latest",
-          "UBI 7": "registry.redhat.io/ubi7/APP_NAME-APP_VERSION:latest",
-          "UBI 8": "registry.redhat.io/ubi8/APP_NAME-APP_VERSION:latest",
-          "UBI 9": "registry.redhat.io/ubi9/APP_NAME-APP_VERSION:latest",
-          "CentOS Stream 8": "quay.io/sclorg/APP_NAME-APP_VERSION-c8s:latest",
-          "CentOS Stream 9": "quay.io/sclorg/APP_NAME-APP_VERSION-c9s:latest"}
+images = {"RHEL 7": {
+            "private": "registry.redhat.io/rhscl/APP_NAME-APP_VERSION-rhel7:latest"
+            },
+          "RHEL 8": {
+            "private": "registry.redhat.io/rhel8/APP_NAME-APP_VERSION:latest"
+            },
+          "RHEL 9": {
+            "private": "registry.redhat.io/rhel9/APP_NAME-APP_VERSION:latest"
+            },
+          "UBI 7": {
+            "private": "registry.redhat.io/ubi7/APP_NAME-APP_VERSION:latest",
+            "public": "registry.access.redhat.com/ubi7/APP_NAME-APP_VERSION:latest"
+            },
+          "UBI 8": {
+            "private": "registry.redhat.io/ubi8/APP_NAME-APP_VERSION:latest",
+            "public": "registry.access.redhat.com/ubi8/APP_NAME-APP_VERSION:latest"
+            },
+          "UBI 9": {
+            "private": "registry.redhat.io/ubi9/APP_NAME-APP_VERSION:latest",
+            "public": "registry.access.redhat.com/ubi9/APP_NAME-APP_VERSION:latest"
+            },
+          "CentOS Stream 8": {
+            "public": "quay.io/sclorg/APP_NAME-APP_VERSION-c8s:latest"
+            },
+          "CentOS Stream 9": {
+            "public": "quay.io/sclorg/APP_NAME-APP_VERSION-c9s:latest"
+            }
+        }
 
 abbreviations ={"RHEL 7": "el7",
                 "RHEL 8": "el8",
