@@ -1,0 +1,55 @@
+---
+name: Imagestreamfiles check
+description: "Check imagestream generator generated files"
+
+inputs:
+  ref:
+    description: ref of the PR
+    required: true
+
+runs:
+  using: composite
+  steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Clone ci-script repo, install deps
+        shell: bash
+        id: sha
+        run: |
+          cd imagestreams/
+          git clone https://github.com/sclorg/ci-scripts.git ci-scripts
+          sudo apt -y update && sudo apt install -y python3-yaml
+          sha=$(git rev-parse HEAD)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Check imagestream files
+        id: check
+        shell: bash
+        run: |
+          result="success"
+          python ci-scripts/ocp-stream-generator/ocp-stream-generator/stream_generator.py imagestreams.yaml
+          git diff --exit-code -- imagestreams || result="failure"
+          echo "result=$result" >> "$GITHUB_OUTPUT"
+
+      - name: Set final commit status
+        uses: myrotvorets/set-commit-status-action@v2.0.0
+        with:
+          status: ${{ steps.check.outputs.result }}
+          context: "Imagestream files check"
+          sha: ${{ steps.sha.outputs.sha }}
+
+      - name: Exit on ERR
+        shell: bash
+        run: |
+          _result=${{ steps.check.outputs.result }}
+          if [ "$_result" == failure ]; then
+            git show -s -- imagestreams
+            echo "::error::Imagestream files are not regenerated properly."
+            echo "::warning::Please use 'sclorg/ci-scripts/ocp-stream-generator'"
+            echo "::warning::to regenerate them."
+            exit 1
+          fi
+...
