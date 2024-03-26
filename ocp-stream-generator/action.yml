@@ -29,8 +29,10 @@ runs:
         id: check
         shell: bash
         run: |
+          cd imagestreams/
           result="success"
           python ci-scripts/ocp-stream-generator/ocp-stream-generator/stream_generator.py imagestreams.yaml
+          cd ..
           git diff --exit-code -- imagestreams || result="failure"
           echo "result=$result" >> "$GITHUB_OUTPUT"
 
