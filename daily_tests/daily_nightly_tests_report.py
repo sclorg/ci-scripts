@@ -66,6 +66,7 @@ class NightlyTestsReport(object):
         self.mime_msg = MIMEMultipart()
         self.body = ""
         self.add_email = []
+        self.full_success = False
         if self.args.upstream_tests:
             self.available_test_case = TEST_UPSTREAM_CASES
         else:
@@ -100,6 +101,7 @@ class NightlyTestsReport(object):
         # self.data_dict[test_case] contains failed logs for given test case. E.g. 'fedora-test'
         self.data_dict["tmt"] = []
         self.data_dict["SUCCESS"] = []
+        failed_tests = False
         for test_case, plan, _ in self.available_test_case:
             path_dir = Path(RESULT_DIR) / test_case
             if not path_dir.is_dir():
@@ -129,11 +131,14 @@ class NightlyTestsReport(object):
                 continue
             print(f"Failed containers are for {test_case} are: {failed_containers}")
             for cont in failed_containers:
+                failed_tests = True
                 mime_name = f"{test_case}-{cont.name}"
                 attach = MIMEApplication(open(cont, 'r').read(), Name=mime_name)
                 attach.add_header('Content-Disposition', 'attachment; filename="{}"'.format(mime_name))
                 self.mime_msg.attach(attach)
             self.data_dict[test_case] = [(str(f), str(f.name)) for f in failed_containers]
+        if not failed_tests:
+            self.full_success = True
         print(f"collect data: {self.data_dict}")
 
     def generate_email_body(self):
@@ -176,10 +181,14 @@ class NightlyTestsReport(object):
         if not self.args.send_email:
             print("Sending email is not allowed")
             return
-        if self.args.upstream_tests:
-            subject_msg = "Nightly Build report for NodeJS upstream tests"
+        if self.full_success:
+            body_msg = "completely successful"
         else:
-            subject_msg = "Nightly Build report test results over containers"
+            body_msg = "some tests failed"
+        if self.args.upstream_tests:
+            subject_msg = f"Nightly Build report for NodeJS upstream tests - {body_msg}"
+        else:
+            subject_msg = f"Nightly Build report test results over containers - {body_msg}"
 
         send_from = "phracek@redhat.com"
         if self.args.upstream_tests:
