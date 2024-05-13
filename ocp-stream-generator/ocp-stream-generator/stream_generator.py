@@ -47,6 +47,7 @@ class ImagestreamFile:
     filename: str
     tags =  None
     latest_tag = None
+    custom_tags = None
     app_name: str
     app_pretty_name: str
     is_correct = True
@@ -74,64 +75,97 @@ class ImagestreamFile:
         self.tags = []
         for distro in file["distros"]:
             for app_version in distro["app_versions"]:
-                _tag = Tag(header, distro["name"], repo_access, version=app_version)
+                _tag = Tag(header, distro["name"], repo_access, app_version)
                 self.tags.append(_tag)
         _latest_distro = self.obtain_distro_for_latest(file["latest"]);
         if not _latest_distro:
             return
-        self.latest_tag = Tag(header, _latest_distro, repo_access, latest=file["latest"])
-
+        self.latest_tag = LatestTag(header, _latest_distro, repo_access, file["latest"])
+        self.custom_tags = []
+        if "custom_tags" in file:
+            for custom_tag in file["custom_tags"]:
+                _tag = CustomTag(header, repo_access, custom_tag)
+                self.custom_tags.append(_tag)
 
 class Tag:
     stream_name: str
-    version: int
+    app_version: int
     distro_name: str
     image: str
     description: str
     sample_repo = None
     app_name: str
     app_pretty_name: str
-    latest = None
     category: str
     repo_access = None
+    kind: str
 
     def obtain_stream_name(self):
-        if self.latest:
-            return "latest"
-        else:
-            return f"{str(self.version)}-{abbreviations[self.distro_name]}"
-
-    def obtain_version(self, version):
-        if self.latest:
-            return self.latest.split("-",1)[0]
-        else:
-            return version
+        return f"{str(self.app_version)}-{abbreviations[self.distro_name]}"
 
     def obtain_image(self):
-        if self.latest:
-            return self.latest
-        else:
-            return images[self.distro_name][self.repo_access] \
-                .replace("APP_VERSION", str(self.version).replace(".","")) \
-                .replace("APP_NAME", self.app_name)
+        return images[self.distro_name][self.repo_access] \
+            .replace("APP_VERSION", str(self.app_version).replace(".","")) \
+            .replace("APP_NAME", self.app_name)
 
-    def __init__(self, header, distro_name, repo_access, version=None, latest=None):
+    def obtain_description(self, header):
+        return header["description"] \
+            .replace("APP_VERSION", str(self.app_version)) \
+            .replace("DISTRO_NAME", self.distro_name)
+
+    def obtain_display_name(self):
+        return f"{self.app_pretty_name} {str(self.app_version)} ({self.distro_name})"
+
+    def __init__(self, header, distro_name, repo_access, app_version):
         self.repo_access = repo_access
         self.category = header["category"]
         self.app_name = header["name"]
         self.app_pretty_name = header["pretty_name"]
         self.sample_repo = header["sample_repo"]
-        self.latest = latest
-        self.version = self.obtain_version(version)
+        self.app_version = app_version
         self.distro_name = distro_name
-        self.description = header["description"] \
-            .replace("APP_VERSION", str(self.version)) \
-            .replace("DISTRO_NAME", self.distro_name)
-
+        self.description = self.obtain_description(header)
         self.image = self.obtain_image()
         self.stream_name = self.obtain_stream_name()
-        if self.latest:
-            self.description += latest_description
+        self.kind = "DockerImage"
+        self.display_name = self.obtain_display_name()
+
+
+class CustomTag(Tag):
+    def __init__(self, header, repo_access, custom_tag):
+        self.app_version = custom_tag["app_version"]
+        self.stream_name = custom_tag["name"]
+        self.distro_name = custom_tag["distro"]
+        self.description = self.obtain_description(header)
+        self.kind = "DockerImage"
+
+        self.repo_access = repo_access
+        self.category = header["category"]
+        self.app_name = header["name"]
+        self.app_pretty_name = header["pretty_name"]
+        self.sample_repo = header["sample_repo"]
+        self.description = self.obtain_description(header)
+        self.image = self.obtain_image()
+        self.display_name = self.obtain_display_name()
+
+class LatestTag(Tag):
+    def obtain_description(self, header):
+        return super().obtain_description(header) + latest_description
+
+    def __init__(self, header, distro_name, repo_access, stream_name):
+        self.app_version = stream_name.split("-",1)[0]
+        # the stream name (e.g., 12-el8) is used in image field in latest tag
+        self.image = stream_name
+        self.stream_name = "latest"
+        self.distro_name = distro_name
+        self.description = self.obtain_description(header)
+        self.kind = "ImageStreamTag"
+        self.repo_access = repo_access
+        self.category = header["category"]
+        self.app_name = header["name"]
+        self.app_pretty_name = header["pretty_name"]
+        self.display_name = f"{self.app_pretty_name} {str(self.app_version)} (Latest)"
+        self.sample_repo = header["sample_repo"]
 
 
 class JsonBuilder:
@@ -150,17 +184,12 @@ class JsonBuilder:
 
     def create_annotation(self, tag):
         _ann = {}
-        _disp_name = f"{tag.app_pretty_name} {str(tag.version)}"
-        if tag.latest:
-            _disp_name += " (Latest)"
-        else:
-            _disp_name += f" ({tag.distro_name})"
-        _ann["openshift.io/display-name"] = _disp_name
+        _ann["openshift.io/display-name"] = tag.display_name
         _ann["openshift.io/provider-display-name"] =  "Red Hat, Inc."
         _ann["description"] = tag.description
         _ann["iconClass"] = f"icon-{tag.app_name}"
         _ann["tags"] = f"{tag.category},{tag.app_name}"
-        _ann["version"] = str(tag.version)
+        _ann["version"] = str(tag.app_version)
         if tag.sample_repo != "":
             _ann["sampleRepo"] = tag.sample_repo
         return _ann
@@ -170,10 +199,7 @@ class JsonBuilder:
         _tag = {}
         _tag["name"] = tag.stream_name
         _tag["annotations"] = self.create_annotation(tag)
-        if tag.latest:
-            _tag["from"] = {"kind": "ImageStreamTag", "name": tag.image}
-        else:
-            _tag["from"] = {"kind": "DockerImage", "name": tag.image}
+        _tag["from"] = {"kind": tag.kind, "name": tag.image}
         _tag["referencePolicy"] = {"type": "Local"}
         _json["spec"]["tags"].append(_tag)
         return _json
@@ -182,6 +208,8 @@ class JsonBuilder:
         _json = {}
         _json = self.create_header(isf_data)
         for tag in isf_data.tags:
+            _json = self.add_tag(_json, tag)
+        for tag in isf_data.custom_tags:
             _json = self.add_tag(_json, tag)
         self.add_tag(_json, isf_data.latest_tag)
         return json.dumps(_json, indent=2)
