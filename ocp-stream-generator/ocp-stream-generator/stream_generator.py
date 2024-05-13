@@ -215,10 +215,15 @@ class JsonBuilder:
         return json.dumps(_json, indent=2)
 
 def main():
-    if len(sys.argv) != 2:
-        print("please provide YAML conf file as first parameter of this script")
+    path_to_isfiles="."
+    if len(sys.argv) >= 2:
+        yaml_loader = YamlLoader(sys.argv[1])
+        if len(sys.argv) == 3:
+            path_to_isfiles = sys.argv[2]
+    else:
+        print("usage: stream_generator [YAML CONFIG] [OUTPUT DIR]")
+        print("OUTPUT DIR is \".\", if not specified otherwise")
         return 5
-    yaml_loader = YamlLoader(sys.argv[1])
     builder = JsonBuilder()
 
     isf_header = yaml_loader.data
@@ -227,7 +232,9 @@ def main():
         isf_data = ImagestreamFile(isf, isf_header)
         if not isf_data.is_correct:
             return 5
-        with open(isf_data.filename, "w") as json_file:
+        filename = f"{path_to_isfiles}/{isf_data.filename}"
+        print(f"generating {filename}")
+        with open(filename, "w") as json_file:
             json_file.write(builder.generate_json(isf_data)+ "\n")
 
 if __name__ == "__main__":
