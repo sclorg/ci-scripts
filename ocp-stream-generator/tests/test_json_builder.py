@@ -5,9 +5,12 @@ import sys
 import re
 from stream_generator import JsonBuilder
 from stream_generator import Tag
+from stream_generator import LatestTag
+from stream_generator import CustomTag
 from stream_generator import ImagestreamFile
 from data.data_json_builder import add_tag_result
 from data.data_json_builder import add_tag_latest_result
+from data.data_json_builder import add_tag_custom_result
 from data.data_json_builder import create_annotation_result
 from data.data_json_builder import create_annotation_latest_result
 from data.data_json_builder import create_header_result
@@ -19,19 +22,23 @@ header = {"name": "test", "pretty_name": "Test", "sample_repo": "", "category": 
 
 
 def test_add_tag():
-    tag = Tag(header, "RHEL 8", "private", version=1)
+    tag = Tag(header, "RHEL 8", "private", 1)
     assert builder.add_tag({"spec": { "tags": []}}, tag)  ==  add_tag_result
 
 def test_add_latest_tag():
-    tag_latest = Tag(header, "RHEL8", "private", latest="1-el8")
+    tag_latest = LatestTag(header, "RHEL 8", "private", "1-el8")
     assert builder.add_tag({"spec": { "tags": []}}, tag_latest)  ==  add_tag_latest_result
 
+def test_add_custom_tag():
+    tag_custom = CustomTag(header, "private", {"distro": "RHEL 8", "name": "some custom name", "app_version": "13"})
+    assert builder.add_tag({"spec": { "tags": []}}, tag_custom)  ==  add_tag_custom_result
+
 def test_create_annotation():
-    tag = Tag(header, "RHEL 8", "private", version=1)
+    tag = Tag(header, "RHEL 8", "private", 1)
     assert builder.create_annotation(tag) == create_annotation_result
 
 def test_create_annotation_latest():
-    latest_tag = Tag(header, "RHEL 8", "private", latest="1-el8")
+    latest_tag = LatestTag(header, "RHEL 8", "private", "1-el8")
     assert builder.create_annotation(latest_tag) == create_annotation_latest_result
 
 def test_create_header():
