@@ -65,7 +65,7 @@ fi
 mkdir -p "${DAILY_TEST_DIR}/${TARGET}-$TESTS"
 LOG="${LOGS_DIR}/$TARGET-$TESTS.log"
 date > "${LOG}"
-curl -L https://url.corp.redhat.com/fmf-data > /tmp/fmf_data
+curl --insecure -L https://url.corp.redhat.com/fmf-data > /tmp/fmf_data
 source /tmp/fmf_data
 
 cd "$WORK_DIR/$TMT_DIR" || { echo "Could not switch to $WORK_DIR/$TMT_DIR"; exit 1; }
