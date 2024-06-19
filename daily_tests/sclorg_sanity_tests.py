@@ -329,7 +329,7 @@ class SclOrgSanityChecker(object):
         send_from = "phracek@redhat.com"
         send_to = ["phracek@redhat.com", "pkubat@redhat.com", "hhorak@redhat.com", "zmiklank@redhat.com"]
         msg = MIMEMultipart()
-        msg['From'] = ', '.join(send_from)
+        msg['From'] = send_from
         msg['To'] = ', '.join(send_to)
         msg['Subject'] = subject_msg
         msg.attach(MIMEText(message))
