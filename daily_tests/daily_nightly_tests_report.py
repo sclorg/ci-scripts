@@ -29,10 +29,7 @@ TEST_CASES = {
     # Format is test for OS and king of test, what TMT Plan is used and MSG to mail
     ("fedora-test", "nightly-container-f", "Fedora test results:"),
     ("c9s-test", "nightly-container-centos-stream-9", "CentOS Stream 9 test results:"),
-    ("c8s-test", "nightly-container-centos-stream-8", "CentOS Stream 8 test results:"),
     # ("rhel7-test", "nightly-container-rhel7", "RHEL-7 test results:"),
-    # Starting OpenShift 3 causing problems on RHEL-7. Suppressing it.
-    # ("rhel7-test-openshift", "nightly-container-rhel7", "RHEL-7 OpenShift 3 test results:"),
     ("rhel7-test-openshift-4", "nightly-container-rhel7", "RHEL-7 OpenShift 4 test results:"),
     ("rhel8-test", "nightly-container-rhel8", "RHEL-8 test results:"),
     ("rhel8-test-openshift-4", "nightly-container-rhel8", "RHEL-8 OpenShift 4 test results:"),

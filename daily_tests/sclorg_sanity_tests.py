@@ -36,7 +36,6 @@ SCLORG_REPOS = {
 OS_HOSTS = [
     "fedora",
     "c9s",
-    "c8s",
     "rhel7",
     "rhel8",
     "rhel9"
@@ -47,6 +46,7 @@ EOL_GA_URL = "https://url.corp.redhat.com/application-streams-yaml"
 DEVEL_REPO_URL = "https://url.corp.redhat.com/devel-images"
 
 SANITY_LOG = "sanity_log.txt"
+
 
 class SclOrgSanityChecker(object):
     def __init__(self):

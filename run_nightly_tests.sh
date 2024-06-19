@@ -35,11 +35,6 @@ elif [[ "$TARGET" == "c9s" ]]; then
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_DIR="sclorg-testing-farm"
   TFT_PLAN="nightly-container-centos-stream-9"
-elif [[ "$TARGET" == "c8s" ]]; then
-  COMPOSE="1MT-CentOS-Stream-8"
-  TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
-  TMT_DIR="sclorg-testing-farm"
-  TFT_PLAN="nightly-container-centos-stream-8"
 else
   echo "This target is not supported"
   exit 1
