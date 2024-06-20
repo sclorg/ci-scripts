@@ -38,7 +38,6 @@ TEST_CASES = {
 }
 
 TEST_UPSTREAM_CASES = {
-    ("rhel7-test-upstream", "nightly-container-rhel7", "RHEL-7 Upstream test results:"),
     ("rhel8-test-upstream", "nightly-container-rhel8", "RHEL-8 Upstream test results:"),
     ("rhel9-test-upstream", "nightly-container-rhel9", "RHEL-9 Upstream test results:"),
 }
@@ -98,6 +97,7 @@ class NightlyTestsReport(object):
         # self.data_dict[test_case] contains failed logs for given test case. E.g. 'fedora-test'
         self.data_dict["tmt"] = []
         self.data_dict["SUCCESS"] = []
+        self.data_dict["SUCCESS_DATA"] = []
         failed_tests = False
         for test_case, plan, _ in self.available_test_case:
             path_dir = Path(RESULT_DIR) / test_case
@@ -125,6 +125,9 @@ class NightlyTestsReport(object):
             failed_containers = list(results_dir.rglob("*.log"))
             if not failed_containers:
                 self.data_dict["SUCCESS"].append(test_case)
+                if self.args.upstream_tests:
+                    success_logs = list((path_dir / "plans" / plan / "data").rglob("*.log"))
+                    self.data_dict["SUCCESS_DATA"].extend([(test_case, str(f), str(f.name)) for f in success_logs])
                 continue
             print(f"Failed containers are for {test_case} are: {failed_containers}")
             for cont in failed_containers:
@@ -152,6 +155,16 @@ class NightlyTestsReport(object):
         if self.data_dict["SUCCESS"]:
             success_tests = '\n'.join(self.data_dict["SUCCESS"])
             self.body += f"{body_success}\n{success_tests}\n\n"
+            if self.args.upstream_tests:
+                self.generate_succeess_containers()
+
+        self.generate_failed_containers()
+        self.body += "\nIn case the information is wrong, please reach out " \
+                     "phracek@redhat.com, pkubat@redhat.com, zmiklank@redhat.com or hhorak@redhat.com.\n"
+        self.body += "Or file an issue here: https://github.com/sclorg/ci-scripts/issues"
+        print(f"Body to email: {self.body}")
+
+    def generate_failed_containers(self):
         for test_case, plan, msg in self.available_test_case:
             if test_case not in self.data_dict:
                 continue
@@ -159,10 +172,13 @@ class NightlyTestsReport(object):
             self.body += f"\n{msg}\nList of failed containers:\n"
             for _, name in self.data_dict[test_case]:
                 self.body += f"{name}\n"
-        self.body += "\nIn case the information is wrong, please reach out " \
-                   "phracek@redhat.com, pkubat@redhat.com, zmiklank@redhat.com or hhorak@redhat.com.\n"
-        self.body += "Or file an issue here: https://github.com/sclorg/ci-scripts/issues"
-        print(f"Body to email: {self.body}")
+
+    def generate_succeess_containers(self):
+        for test_case, cont_path, log_name in self.data_dict["SUCCESS_DATA"]:
+            mime_name = f"{test_case}-{log_name}"
+            attach = MIMEApplication(open(cont_path, 'r').read(), Name=mime_name)
+            attach.add_header('Content-Disposition', 'attachment; filename="{}"'.format(mime_name))
+            self.mime_msg.attach(attach)
 
     def generate_emails(self):
         for test_case, plan, _ in self.available_test_case:
