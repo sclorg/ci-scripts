@@ -38,7 +38,6 @@ TEST_CASES = {
 }
 
 TEST_UPSTREAM_CASES = {
-    ("rhel7-test-upstream", "nightly-container-rhel7", "RHEL-7 Upstream test results:"),
     ("rhel8-test-upstream", "nightly-container-rhel8", "RHEL-8 Upstream test results:"),
     ("rhel9-test-upstream", "nightly-container-rhel9", "RHEL-9 Upstream test results:"),
 }
