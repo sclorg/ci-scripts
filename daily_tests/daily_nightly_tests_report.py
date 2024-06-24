@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 from pathlib import Path
 from typing import Dict, List
 
-default_mails = ["phracek@redhat.com", "hhorak@redhat.com", "pkubat@redhat.com", "zmiklank@redhat.com"]
+default_mails = ["phracek@redhat.com", "hhorak@redhat.com", "pkubat@redhat.com"]
 upstream_mails = ["phracek@redhat.com", "lholmqui@redhat.com", "nodeshiftcore@redhat.com"]
 
 SCLORG_MAILS = {
@@ -160,7 +160,7 @@ class NightlyTestsReport(object):
 
         self.generate_failed_containers()
         self.body += "\nIn case the information is wrong, please reach out " \
-                     "phracek@redhat.com, pkubat@redhat.com, zmiklank@redhat.com or hhorak@redhat.com.\n"
+                     "phracek@redhat.com, pkubat@redhat.com or hhorak@redhat.com.\n"
         self.body += "Or file an issue here: https://github.com/sclorg/ci-scripts/issues"
         print(f"Body to email: {self.body}")
 

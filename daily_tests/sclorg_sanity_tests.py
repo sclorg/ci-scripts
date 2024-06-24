@@ -327,7 +327,7 @@ class SclOrgSanityChecker(object):
                    "phracek@redhat.com, pkubat@redhat.com or hhorak@redhat.com.\n"
         message += "Or file an issue here: https://github.com/sclorg/ci-scripts/issues"
         send_from = "phracek@redhat.com"
-        send_to = ["phracek@redhat.com", "pkubat@redhat.com", "hhorak@redhat.com", "zmiklank@redhat.com"]
+        send_to = ["phracek@redhat.com", "pkubat@redhat.com", "hhorak@redhat.com"]
         msg = MIMEMultipart()
         msg['From'] = send_from
         msg['To'] = ', '.join(send_to)

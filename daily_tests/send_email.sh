@@ -15,7 +15,7 @@ ls -la "${RESULT_DIR}"
 SUBJECT="RHSCL nightly build testing for target ${TARGET}-${TESTS}"
 ls -A "${RESULT_DIR}"
 if [[ -z $(ls -A "${RESULT_DIR}") ]]; then
-  mail -s "${SUBJECT} was successful" -r phracek@redhat.com phracek@redhat.com zmiklank@redhat.com < /dev/null
+  mail -s "${SUBJECT} was successful" -r phracek@redhat.com phracek@redhat.com < /dev/null
 else
   SUBJECT="${SUBJECT} failed."
   MESSAGE="${SUBJECT}\n"
@@ -28,7 +28,7 @@ else
   done
   MESSAGE="${MESSAGE}\nIn case the information is wrong, please reach out phracek@redhat.com, pkubat@redhat.com or hhorak@redhat.com.\n"
   MESSAGE="${MESSAGE}\nOr file an issue here: https://github.com/sclorg/ci-scripts/issues"
-  echo -e "${MESSAGE}" | mail -s "${SUBJECT}" ${ATTACHMENTS} -r phracek@redhat.com phracek@redhat.com zmiklank@redhat.com pkubat@redhat.com hhorak@redhat.com lbalhar@redhat.com fjanus@redhat.com
+  echo -e "${MESSAGE}" | mail -s "${SUBJECT}" ${ATTACHMENTS} -r phracek@redhat.com phracek@redhat.com pkubat@redhat.com hhorak@redhat.com lbalhar@redhat.com fjanus@redhat.com
 fi
 
 echo "Let's wait couple seconds (10s) to deliver the mail."
