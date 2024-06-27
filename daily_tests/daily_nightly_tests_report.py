@@ -29,8 +29,6 @@ TEST_CASES = {
     # Format is test for OS and king of test, what TMT Plan is used and MSG to mail
     ("fedora-test", "nightly-container-f", "Fedora test results:"),
     ("c9s-test", "nightly-container-centos-stream-9", "CentOS Stream 9 test results:"),
-    # ("rhel7-test", "nightly-container-rhel7", "RHEL-7 test results:"),
-    ("rhel7-test-openshift-4", "nightly-container-rhel7", "RHEL-7 OpenShift 4 test results:"),
     ("rhel8-test", "nightly-container-rhel8", "RHEL-8 test results:"),
     ("rhel8-test-openshift-4", "nightly-container-rhel8", "RHEL-8 OpenShift 4 test results:"),
     ("rhel9-test", "nightly-container-rhel9", "RHEL-9 test results:"),
@@ -95,7 +93,7 @@ class NightlyTestsReport(object):
         # Collect data to class dictionary
         # self.data_dict['tmt'] item is used for Testing Farm errors per each OS and test case
         # self.data_dict[test_case] contains failed logs for given test case. E.g. 'fedora-test'
-        self.data_dict["tmt"] = []
+        self.data_dict["tmt"] = {"logs": [], "msg": []}
         self.data_dict["SUCCESS"] = []
         self.data_dict["SUCCESS_DATA"] = []
         failed_tests = False
@@ -103,23 +101,35 @@ class NightlyTestsReport(object):
             path_dir = Path(RESULT_DIR) / test_case
             if not path_dir.is_dir():
                 print(f"The test case {path_dir} does not exists that is weird")
-                self.data_dict["tmt"].append(f"Nightly build tests for {test_case} is not finished or did not run. Check nightly build machine for logs.")
+                self.data_dict["tmt"]["msg"].append(
+                    f"Nightly build tests for {test_case} is not finished or did not run."
+                    f"Check nightly build machine for logs."
+                )
                 continue
             # It looks like TMT is still running for long time
             if (path_dir / "tmt_running").exists():
-                self.data_dict["tmt"].append(f"tmt tests for case {test_case} is still running."
-                                             f"Look at it on nightly-build machine.")
+                self.data_dict["tmt"]["msg"].append(
+                    f"tmt tests for case {test_case} is still running."
+                    f"Look at log in attachment called '{test_case}-log.txt'."
+                )
+                self.data_dict["tmt"]["logs"].append((test_case, path_dir / "log.txt", "log.txt"))
                 continue
             # TMT command failed for some reason. Look at logs for given namespace
             # /var/tmp/daily_scl_tests/<test_case>/log.txt file
             if (path_dir / "tmt_failed").exists():
-                self.data_dict["tmt"].append(f"tmt command has failed for test case {test_case}."
-                                             f"Look at it on nightly-build machine.")
+                self.data_dict["tmt"]["msg"].append(
+                    f"tmt command has failed for test case {test_case}."
+                    f"Look at log in attachment called '{test_case}-log.txt'."
+                )
+                self.data_dict["tmt"]["logs"].append((test_case, path_dir / "log.txt", "log.txt"))
                 continue
             data_dir = path_dir / "plans" / plan / "data"
             if not data_dir.is_dir():
-                print(f"Data dir for test case {test_case} does not exist."
-                      f"It looks like tmt command failed. See logs on nightly-build machine")
+                self.data_dict["tmt"]["msg"].append(
+                    f"Data dir for test case {test_case} does not exist."
+                    f"Look at log in attachment called '{test_case}-log.txt'."
+                )
+                self.data_dict["tmt"]["logs"].append((test_case, path_dir / "log.txt", "log.txt"))
                 continue
             results_dir = data_dir / "results"
             failed_containers = list(results_dir.rglob("*.log"))
@@ -149,14 +159,15 @@ class NightlyTestsReport(object):
             body_failure = "Nightly builds Testing Farm failures:"
             body_success = "These nightly builds were completely successful:"
         # Function for generation mail body
-        if self.data_dict["tmt"]:
-            tmt_failures = '\n'.join(self.data_dict["tmt"])
+        if self.data_dict["tmt"]["msg"]:
+            tmt_failures = '\n'.join(self.data_dict["tmt"]["msg"])
             self.body += f"{body_failure}\n{tmt_failures}\n\n"
+            self.generate_tmt_logs_containers()
         if self.data_dict["SUCCESS"]:
             success_tests = '\n'.join(self.data_dict["SUCCESS"])
             self.body += f"{body_success}\n{success_tests}\n\n"
             if self.args.upstream_tests:
-                self.generate_succeess_containers()
+                self.generate_success_containers()
 
         self.generate_failed_containers()
         self.body += "\nIn case the information is wrong, please reach out " \
@@ -173,8 +184,15 @@ class NightlyTestsReport(object):
             for _, name in self.data_dict[test_case]:
                 self.body += f"{name}\n"
 
-    def generate_succeess_containers(self):
+    def generate_success_containers(self):
         for test_case, cont_path, log_name in self.data_dict["SUCCESS_DATA"]:
+            mime_name = f"{test_case}-{log_name}"
+            attach = MIMEApplication(open(cont_path, 'r').read(), Name=mime_name)
+            attach.add_header('Content-Disposition', 'attachment; filename="{}"'.format(mime_name))
+            self.mime_msg.attach(attach)
+
+    def generate_tmt_logs_containers(self):
+        for test_case, cont_path, log_name in self.data_dict["tmt"]["logs"]:
             mime_name = f"{test_case}-{log_name}"
             attach = MIMEApplication(open(cont_path, 'r').read(), Name=mime_name)
             attach.add_header('Content-Disposition', 'attachment; filename="{}"'.format(mime_name))
