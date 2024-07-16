@@ -6,7 +6,7 @@ LOGS_DIR="/home/fedora/logs"
 [[ -z "$1" ]] && { echo "You have to specify target to build SCL images. c9s, c8s, rhel8, centos7, rhel7 or fedora" && exit 1 ; }
 TARGET="$1"
 shift
-[[ -z "$1" ]] && { echo "You have to specify type of the test to run. test, test-openshift, test-openshift-4" && exit 1 ; }
+[[ -z "$1" ]] && { echo "You have to specify type of the test to run. test, test-openshift-pytest, test-openshift-4" && exit 1 ; }
 TESTS="$1"
 
 TMT_REPO="https://gitlab.cee.redhat.com/platform-eng-core-services/sclorg-tmt-plans"
@@ -20,11 +20,6 @@ elif [[ "$TARGET" == "rhel7" ]]; then
   COMPOSE="1MT-RHEL-7.9-updates"
 elif [[ "$TARGET" == "rhel9" ]]; then
   COMPOSE="1MT-RHEL-9.2.0-updates"
-elif [[ "$TARGET" == "centos7" ]]; then
-  COMPOSE="1MT-CentOS-7"
-  TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
-  TMT_DIR="sclorg-testing-farm"
-  TFT_PLAN="nightly-container-centos-7"
 elif [[ "$TARGET" == "fedora" ]]; then
   COMPOSE="1MT-Fedora-37"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
@@ -40,7 +35,7 @@ else
   exit 1
 fi
 
-if [[ "$TESTS" != "test" ]] && [[ "$TESTS" != "test-upstream" ]] && [[ "$TESTS" != "test-openshift" ]] && [[ "$TESTS" != "test-openshift-4" ]]; then
+if [[ "$TESTS" != "test" ]] && [[ "$TESTS" != "test-upstream" ]] && [[ "$TESTS" != "test-openshift-pytest" ]] && [[ "$TESTS" != "test-openshift-4" ]]; then
   echo "This test scenario is not enabled."
   exit 1
 fi
