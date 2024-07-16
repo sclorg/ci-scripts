@@ -93,7 +93,7 @@ class NightlyTestsReport(object):
         # Collect data to class dictionary
         # self.data_dict['tmt'] item is used for Testing Farm errors per each OS and test case
         # self.data_dict[test_case] contains failed logs for given test case. E.g. 'fedora-test'
-        self.data_dict["tmt"] = {"logs": [], "msg": []}
+        self.data_dict["tmt"] = {"logs": [], "msg": [], "tmt_running": [], "tmt_failures": []}
         self.data_dict["SUCCESS"] = []
         self.data_dict["SUCCESS_DATA"] = []
         failed_tests = False
@@ -102,9 +102,10 @@ class NightlyTestsReport(object):
             if not path_dir.is_dir():
                 print(f"The test case {path_dir} does not exists that is weird")
                 self.data_dict["tmt"]["msg"].append(
-                    f"Nightly build tests for {test_case} is not finished or did not run."
+                    f"Nightly build tests for {test_case} is not finished or did not run. "
                     f"Check nightly build machine for logs."
                 )
+                failed_tests = True
                 continue
             # It looks like TMT is still running for long time
             if (path_dir / "tmt_running").exists():
@@ -112,7 +113,9 @@ class NightlyTestsReport(object):
                     f"tmt tests for case {test_case} is still running."
                     f"Look at log in attachment called '{test_case}-log.txt'."
                 )
+                self.data_dict["tmt"]["tmt_running"].append(test_case)
                 self.data_dict["tmt"]["logs"].append((test_case, path_dir / "log.txt", "log.txt"))
+                failed_tests = True
                 continue
             # TMT command failed for some reason. Look at logs for given namespace
             # /var/tmp/daily_scl_tests/<test_case>/log.txt file
@@ -121,7 +124,9 @@ class NightlyTestsReport(object):
                     f"tmt command has failed for test case {test_case}."
                     f"Look at log in attachment called '{test_case}-log.txt'."
                 )
+                self.data_dict["tmt"]["tmt_failed"].append(test_case)
                 self.data_dict["tmt"]["logs"].append((test_case, path_dir / "log.txt", "log.txt"))
+                failed_tests = True
                 continue
             data_dir = path_dir / "plans" / plan / "data"
             if not data_dir.is_dir():
@@ -130,6 +135,7 @@ class NightlyTestsReport(object):
                     f"Look at log in attachment called '{test_case}-log.txt'."
                 )
                 self.data_dict["tmt"]["logs"].append((test_case, path_dir / "log.txt", "log.txt"))
+                failed_tests = True
                 continue
             results_dir = data_dir / "results"
             failed_containers = list(results_dir.rglob("*.log"))
@@ -140,37 +146,41 @@ class NightlyTestsReport(object):
                     self.data_dict["SUCCESS_DATA"].extend([(test_case, str(f), str(f.name)) for f in success_logs])
                 continue
             print(f"Failed containers are for {test_case} are: {failed_containers}")
+            failed_tests = True
             for cont in failed_containers:
-                failed_tests = True
                 mime_name = f"{test_case}-{cont.name}"
                 attach = MIMEApplication(open(cont, 'r').read(), Name=mime_name)
                 attach.add_header('Content-Disposition', 'attachment; filename="{}"'.format(mime_name))
                 self.mime_msg.attach(attach)
             self.data_dict[test_case] = [(str(f), str(f.name)) for f in failed_containers]
+        print(failed_tests)
         if not failed_tests:
             self.full_success = True
         print(f"collect data: {self.data_dict}")
 
     def generate_email_body(self):
         if self.args.upstream_tests:
-            body_failure = "NodeJS upstream tests failures:"
-            body_success = "NodeJS upstream tests were completely successful:"
+            body_failure = "<b>NodeJS upstream tests failures:</b><br>"
+            body_success = "<b>NodeJS upstream tests were completely successful:</b><br>"
         else:
-            body_failure = "Nightly builds Testing Farm failures:"
-            body_success = "These nightly builds were completely successful:"
+            body_failure = "<b>Nightly builds Testing Farm failures:</b><br>"
+            body_success = "<b>These nightly builds were completely successful:<b><br>"
         # Function for generation mail body
         if self.data_dict["tmt"]["msg"]:
-            tmt_failures = '\n'.join(self.data_dict["tmt"]["msg"])
-            self.body += f"{body_failure}\n{tmt_failures}\n\n"
+            tmt_failures = '<br>'.join(self.data_dict["tmt"]["msg"])
+            self.body += (f"{body_failure}\n"
+                          f"Tests were not successful because Testing Farm failures. "
+                          f"Please contact phracek@redhat.com to analyse it.<br><br>"
+                          f"{tmt_failures}<br><br>")
             self.generate_tmt_logs_containers()
         if self.data_dict["SUCCESS"]:
-            success_tests = '\n'.join(self.data_dict["SUCCESS"])
-            self.body += f"{body_success}\n{success_tests}\n\n"
+            success_tests = '<br>'.join(self.data_dict["SUCCESS"])
+            self.body += f"{body_success}{success_tests}<br>"
             if self.args.upstream_tests:
                 self.generate_success_containers()
 
         self.generate_failed_containers()
-        self.body += "\nIn case the information is wrong, please reach out " \
+        self.body += "<br>In case the information is wrong, please reach out " \
                      "phracek@redhat.com, pkubat@redhat.com or hhorak@redhat.com.\n"
         self.body += "Or file an issue here: https://github.com/sclorg/ci-scripts/issues"
         print(f"Body to email: {self.body}")
@@ -180,7 +190,7 @@ class NightlyTestsReport(object):
             if test_case not in self.data_dict:
                 continue
             print(f"generate_email_body: {self.data_dict[test_case]}")
-            self.body += f"\n{msg}\nList of failed containers:\n"
+            self.body += f"\n{msg}<br><b>List of failed containers</b>:<br><br>"
             for _, name in self.data_dict[test_case]:
                 self.body += f"{name}\n"
 
@@ -230,7 +240,7 @@ class NightlyTestsReport(object):
         self.mime_msg['From'] = send_from
         self.mime_msg['To'] = ', '.join(send_to)
         self.mime_msg['Subject'] = subject_msg
-        self.mime_msg.attach(MIMEText(self.body))
+        self.mime_msg.attach(MIMEText(self.body, "html"))
         smtp = smtplib.SMTP("127.0.0.1")
         smtp.sendmail(send_from, send_to, self.mime_msg.as_string())
         smtp.close()
