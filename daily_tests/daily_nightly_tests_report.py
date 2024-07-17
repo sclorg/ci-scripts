@@ -95,7 +95,7 @@ class NightlyTestsReport(object):
         # Collect data to class dictionary
         # self.data_dict['tmt'] item is used for Testing Farm errors per each OS and test case
         # self.data_dict[test_case] contains failed logs for given test case. E.g. 'fedora-test'
-        self.data_dict["tmt"] = {"logs": [], "msg": [], "tmt_running": [], "tmt_failures": []}
+        self.data_dict["tmt"] = {"logs": [], "msg": [], "tmt_running": [], "tmt_failed": []}
         self.data_dict["SUCCESS"] = []
         self.data_dict["SUCCESS_DATA"] = []
         failed_tests = False
