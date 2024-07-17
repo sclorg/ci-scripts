@@ -166,7 +166,7 @@ class NightlyTestsReport(object):
             body_success = "<b>NodeJS upstream tests were completely successful:</b><br>"
         else:
             body_failure = "<b>Nightly builds Testing Farm failures:</b><br>"
-            body_success = "<b>These nightly builds were completely successful:<b><br>"
+            body_success = "<b>These nightly builds were completely successful:</b><br>"
         # Function for generation mail body
         if self.data_dict["tmt"]["msg"]:
             tmt_failures = '<br>'.join(self.data_dict["tmt"]["msg"])
@@ -177,7 +177,7 @@ class NightlyTestsReport(object):
             self.generate_tmt_logs_containers()
         if self.data_dict["SUCCESS"]:
             success_tests = '<br>'.join(self.data_dict["SUCCESS"])
-            self.body += f"{body_success}{success_tests}<br>"
+            self.body += f"{body_success}{success_tests}<br><br>"
             if self.args.upstream_tests:
                 self.generate_success_containers()
 
@@ -192,9 +192,9 @@ class NightlyTestsReport(object):
             if test_case not in self.data_dict:
                 continue
             print(f"generate_email_body: {self.data_dict[test_case]}")
-            self.body += f"\n{msg}<br><b>List of failed containers</b>:<br><br>"
+            self.body += f"<br>{msg}<br><b>List of failed containers</b>:<br><br>"
             for _, name in self.data_dict[test_case]:
-                self.body += f"{name}\n"
+                self.body += f"{name}<br>"
 
     def generate_success_containers(self):
         for test_case, cont_path, log_name in self.data_dict["SUCCESS_DATA"]:
