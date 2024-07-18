@@ -20,18 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-images = {"RHEL 7": {
-            "private": "registry.redhat.io/rhscl/APP_NAME-APP_VERSION-rhel7:latest"
-            },
-          "RHEL 8": {
+images = {"RHEL 8": {
             "private": "registry.redhat.io/rhel8/APP_NAME-APP_VERSION:latest"
             },
           "RHEL 9": {
             "private": "registry.redhat.io/rhel9/APP_NAME-APP_VERSION:latest"
-            },
-          "UBI 7": {
-            "private": "registry.redhat.io/ubi7/APP_NAME-APP_VERSION:latest",
-            "public": "registry.access.redhat.com/ubi7/APP_NAME-APP_VERSION:latest"
             },
           "UBI 8": {
             "private": "registry.redhat.io/ubi8/APP_NAME-APP_VERSION:latest",
@@ -49,10 +42,8 @@ images = {"RHEL 7": {
             }
         }
 
-abbreviations ={"RHEL 7": "el7",
-                "RHEL 8": "el8",
+abbreviations ={"RHEL 8": "el8",
                 "RHEL 9": "el9",
-                "UBI 7": "ubi7",
                 "UBI 8": "ubi8",
                 "UBI 9": "ubi9",
                 "CentOS Stream 8": "el8",
