@@ -3,7 +3,7 @@
 set -x
 
 LOGS_DIR="/home/fedora/logs"
-[[ -z "$1" ]] && { echo "You have to specify target to build SCL images. c9s, c8s, rhel8, centos7, rhel7 or fedora" && exit 1 ; }
+[[ -z "$1" ]] && { echo "You have to specify target to build SCL images. c10s, c9s, c8s, rhel8, or fedora" && exit 1 ; }
 TARGET="$1"
 shift
 [[ -z "$1" ]] && { echo "You have to specify type of the test to run. test, test-openshift-pytest, test-openshift-4" && exit 1 ; }
@@ -15,13 +15,11 @@ TMT_DIR="sclorg-tmt-plans"
 API_KEY="API_KEY_PRIVATE"
 TFT_PLAN="nightly-container-$TARGET"
 if [[ "$TARGET" == "rhel8" ]]; then
-  COMPOSE="1MT-RHEL-8.8.0-updates"
-elif [[ "$TARGET" == "rhel7" ]]; then
-  COMPOSE="1MT-RHEL-7.9-updates"
+  COMPOSE="1MT-RHEL-8.10.0-updates"
 elif [[ "$TARGET" == "rhel9" ]]; then
-  COMPOSE="1MT-RHEL-9.2.0-updates"
+  COMPOSE="1MT-RHEL-9.4.0-updates"
 elif [[ "$TARGET" == "fedora" ]]; then
-  COMPOSE="1MT-Fedora-37"
+  COMPOSE="1MT-Fedora-39"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_DIR="sclorg-testing-farm"
   TFT_PLAN="nightly-container-f"
@@ -30,6 +28,11 @@ elif [[ "$TARGET" == "c9s" ]]; then
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_DIR="sclorg-testing-farm"
   TFT_PLAN="nightly-container-centos-stream-9"
+elif [[ "$TARGET" == "c10s" ]]; then
+  COMPOSE="1MT-CentOS-Stream-10"
+  TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
+  TMT_DIR="sclorg-testing-farm"
+  TFT_PLAN="nightly-container-centos-stream-10"
 else
   echo "This target is not supported"
   exit 1

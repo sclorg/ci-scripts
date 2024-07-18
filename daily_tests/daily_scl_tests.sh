@@ -20,10 +20,10 @@ mariadb-container
 postgresql-container
 "
 
-[[ -z "$1" ]] && { echo "You have to specify target to build SCL images. centos7, rhel7 or fedora" && exit 1 ; }
+[[ -z "$1" ]] && { echo "You have to specify target to build SCL images. rhel9, rhel8, or fedora" && exit 1 ; }
 TARGET="$1"
 shift
-[[ -z "$1" ]] && { echo "You have to specify type of the test to run. test, test-openshift, test-openshift-4" && exit 1 ; }
+[[ -z "$1" ]] && { echo "You have to specify type of the test to run. test, test-openshift, test-openshift-pytest, test-openshift-4" && exit 1 ; }
 TESTS="$1"
 
 CUR_WD=$(pwd)

@@ -36,7 +36,6 @@ SCLORG_REPOS = {
 OS_HOSTS = [
     "fedora",
     "c9s",
-    "rhel7",
     "rhel8",
     "rhel9"
 ]
