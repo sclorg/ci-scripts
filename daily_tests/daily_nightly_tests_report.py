@@ -192,7 +192,7 @@ class NightlyTestsReport(object):
             if test_case not in self.data_dict:
                 continue
             print(f"generate_email_body: {self.data_dict[test_case]}")
-            self.body += f"<br>{msg}<br><b>List of failed containers</b>:<br><br>"
+            self.body += f"<br><b>{msg}</b><br>List of failed containers:<br>"
             for _, name in self.data_dict[test_case]:
                 self.body += f"{name}<br>"
 
