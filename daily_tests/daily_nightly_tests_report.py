@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 from pathlib import Path
 from typing import Dict, List
 
-default_mails = ["phracek@redhat.com", "hhorak@redhat.com", "pkubat@redhat.com"]
+default_mails = ["phracek@redhat.com", "hhorak@redhat.com", "pkubat@redhat.com", "anezbeda@redhat.com" ]
 upstream_mails = ["phracek@redhat.com", "lholmqui@redhat.com", "nodeshiftcore@redhat.com"]
 
 SCLORG_MAILS = {
