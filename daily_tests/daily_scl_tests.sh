@@ -101,10 +101,9 @@ git clone https://github.com/sclorg/container-common-scripts.git /root/container
 
 if [[ "${TESTS}" == "test-openshift-4" ]]; then
     echo "Testing OpenShift 4 is enabled"
-    # Download kubeconfig
-    curl -L --insecure https://url.corp.redhat.com/ocp4-kubeconfig >$KUBECONFIG
+    curl -L --insecure https://url.corp.redhat.com/sclorg-data-kubeconfig >$KUBECONFIG
     # Download kubepasswd
-    curl -L --insecure https://url.corp.redhat.com/ocp4-kubepasswd >$KUBEPASSWD
+    curl -L --insecure https://url.corp.redhat.com/sclorg-data-kubepasswd >$KUBEPASSWD
 fi
 
 if [[ "${TESTS}" == "test-openshift" ]]; then
