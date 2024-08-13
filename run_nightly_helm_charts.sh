@@ -3,47 +3,17 @@
 set -x
 
 LOGS_DIR="/home/fedora/logs"
-[[ -z "$1" ]] && { echo "You have to specify target to build SCL images. c10s, c9s, c8s, rhel8, or fedora" && exit 1 ; }
-TARGET="$1"
-shift
-[[ -z "$1" ]] && { echo "You have to specify type of the test to run. test, test-openshift-pytest, test-openshift-4" && exit 1 ; }
-TESTS="$1"
 
+TARGET="rhel8"
 TMT_REPO="https://gitlab.cee.redhat.com/platform-eng-core-services/sclorg-tmt-plans"
 DAILY_TEST_DIR="/var/tmp/daily_scl_tests"
 TMT_DIR="sclorg-tmt-plans"
 API_KEY="API_KEY_PRIVATE"
-TFT_PLAN="nightly-container-$TARGET"
-if [[ "$TARGET" == "rhel8" ]]; then
-  COMPOSE="1MT-RHEL-8.10.0-updates"
-elif [[ "$TARGET" == "rhel9" ]]; then
-  COMPOSE="1MT-RHEL-9.4.0-updates"
-elif [[ "$TARGET" == "fedora" ]]; then
-  COMPOSE="1MT-Fedora-39"
-  TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
-  TMT_DIR="sclorg-testing-farm"
-  TFT_PLAN="nightly-container-f"
-elif [[ "$TARGET" == "c9s" ]]; then
-  COMPOSE="1MT-CentOS-Stream-9"
-  TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
-  TMT_DIR="sclorg-testing-farm"
-  TFT_PLAN="nightly-container-centos-stream-9"
-elif [[ "$TARGET" == "c10s" ]]; then
-  COMPOSE="1MT-CentOS-Stream-10"
-  TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
-  TMT_DIR="sclorg-testing-farm"
-  TFT_PLAN="nightly-container-centos-stream-10"
-else
-  echo "This target is not supported"
-  exit 1
-fi
+TFT_PLAN="nightly-container-rhel8"
+COMPOSE="1MT-RHEL-8.10.0-updates"
+TESTS="helm-charts"
+SCRIPT="daily_helm_charts"
 
-if [[ "$TESTS" != "test" ]] && [[ "$TESTS" != "test-upstream" ]] && [[ "$TESTS" != "test-openshift-pytest" ]] && [[ "$TESTS" != "test-openshift-4" ]]; then
-  echo "This test scenario is not enabled."
-  exit 1
-fi
-
-SCRIPT="daily_scl_tests"
 WORK_DIR=$(mktemp -d -p "/var/tmp")
 git clone "$TMT_REPO" "$WORK_DIR/$TMT_DIR"
 CWD=$(pwd)
