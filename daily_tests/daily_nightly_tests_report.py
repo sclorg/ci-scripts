@@ -35,6 +35,7 @@ TEST_CASES = {
     ("rhel9-test", "nightly-container-rhel9", "RHEL-9 test results:"),
     ("rhel9-test-openshift-4", "nightly-container-rhel9", "RHEL-9 OpenShift 4 test results:"),
     ("rhel9-test-openshift-pytest", "nightly-container-rhel9", "RHEL-9 PyTest in OpenShift 4 test results:"),
+    ("rhel8-helm-charts", "nightly-container-rhel8", "RHEL-8 Helm Charts test results:"),
 }
 
 TEST_UPSTREAM_CASES = {
