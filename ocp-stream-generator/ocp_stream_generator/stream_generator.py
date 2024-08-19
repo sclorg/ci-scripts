@@ -28,24 +28,25 @@ import json
 import sys
 from distribution_data import abbreviations, images, latest_description
 
+
 class YamlLoader:
     _data = None
     yaml_path = None
 
-    def __init__(self, yaml):
-        self.yaml_path = yaml
+    def __init__(self, yaml_path: str):
+        self.yaml_path = yaml_path
 
     @property
     def data(self):
         if not self._data:
-            with open(self.yaml_path,"r") as file:
+            with open(self.yaml_path, "r") as file:
                 self._data = yaml.safe_load(file)[0]
         return self._data
 
 
 class ImagestreamFile:
     filename: str
-    tags =  None
+    tags = None
     latest_tag = None
     custom_tags = None
     app_name: str
@@ -64,7 +65,6 @@ class ImagestreamFile:
         print("The stream name of the latest tag was not found in the rest of tags")
         self.is_correct = False
 
-
     def __init__(self, file, header):
         self.app_name = header["name"]
         self.app_pretty_name = header["pretty_name"]
@@ -77,7 +77,7 @@ class ImagestreamFile:
             for app_version in distro["app_versions"]:
                 _tag = Tag(header, distro["name"], repo_access, app_version)
                 self.tags.append(_tag)
-        _latest_distro = self.obtain_distro_for_latest(file["latest"]);
+        _latest_distro = self.obtain_distro_for_latest(file["latest"])
         if not _latest_distro:
             return
         self.latest_tag = LatestTag(header, _latest_distro, repo_access, file["latest"])
@@ -86,6 +86,7 @@ class ImagestreamFile:
             for custom_tag in file["custom_tags"]:
                 _tag = CustomTag(header, repo_access, custom_tag)
                 self.custom_tags.append(_tag)
+
 
 class Tag:
     stream_name: str
@@ -104,14 +105,18 @@ class Tag:
         return f"{str(self.app_version)}-{abbreviations[self.distro_name]}"
 
     def obtain_image(self):
-        return images[self.distro_name][self.repo_access] \
-            .replace("APP_VERSION", str(self.app_version).replace(".","")) \
+        return (
+            images[self.distro_name][self.repo_access]
+            .replace("APP_VERSION", str(self.app_version).replace(".", ""))
             .replace("APP_NAME", self.app_name)
+        )
 
     def obtain_description(self, header):
-        return header["description"] \
-            .replace("APP_VERSION", str(self.app_version)) \
+        return (
+            header["description"]
+            .replace("APP_VERSION", str(self.app_version))
             .replace("DISTRO_NAME", self.distro_name)
+        )
 
     def obtain_display_name(self):
         return f"{self.app_pretty_name} {str(self.app_version)} ({self.distro_name})"
@@ -148,12 +153,13 @@ class CustomTag(Tag):
         self.image = self.obtain_image()
         self.display_name = self.obtain_display_name()
 
+
 class LatestTag(Tag):
     def obtain_description(self, header):
         return super().obtain_description(header) + latest_description
 
     def __init__(self, header, distro_name, repo_access, stream_name):
-        self.app_version = stream_name.split("-",1)[0]
+        self.app_version = stream_name.split("-", 1)[0]
         # the stream name (e.g., 12-el8) is used in image field in latest tag
         self.image = stream_name
         self.stream_name = "latest"
@@ -170,37 +176,37 @@ class LatestTag(Tag):
 
 class JsonBuilder:
     def create_header(self, data):
-        _header = {}
-        _header["kind"] = "ImageStream"
-        _header["apiVersion"] = "image.openshift.io/v1"
-        _header["metadata"] =  {
-                                 "name": data.app_name,
-                                 "annotations": {
-                                    "openshift.io/display-name": data.app_pretty_name
-                                 }
-                               }
-        _header["spec"] = {"tags": []}
+        _header = {
+            "kind": "ImageStream",
+            "apiVersion": "image.openshift.io/v1",
+            "metadata": {
+                "name": data.app_name,
+                "annotations": {"openshift.io/display-name": data.app_pretty_name},
+            },
+            "spec": {"tags": []},
+        }
         return _header
 
     def create_annotation(self, tag):
-        _ann = {}
-        _ann["openshift.io/display-name"] = tag.display_name
-        _ann["openshift.io/provider-display-name"] =  "Red Hat, Inc."
-        _ann["description"] = tag.description
-        _ann["iconClass"] = f"icon-{tag.app_name}"
-        _ann["tags"] = f"{tag.category},{tag.app_name}"
-        _ann["version"] = str(tag.app_version)
+        _ann = {
+            "openshift.io/display-name": tag.display_name,
+            "openshift.io/provider-display-name": "Red Hat, Inc.",
+            "description": tag.description,
+            "iconClass": f"icon-{tag.app_name}",
+            "tags": f"{tag.category},{tag.app_name}",
+            "version": str(tag.app_version),
+        }
         if tag.sample_repo != "":
             _ann["sampleRepo"] = tag.sample_repo
         return _ann
 
-
     def add_tag(self, _json, tag):
-        _tag = {}
-        _tag["name"] = tag.stream_name
-        _tag["annotations"] = self.create_annotation(tag)
-        _tag["from"] = {"kind": tag.kind, "name": tag.image}
-        _tag["referencePolicy"] = {"type": "Local"}
+        _tag = {
+            "name": tag.stream_name,
+            "annotations": self.create_annotation(tag),
+            "from": {"kind": tag.kind, "name": tag.image},
+            "referencePolicy": {"type": "Local"},
+        }
         _json["spec"]["tags"].append(_tag)
         return _json
 
@@ -214,15 +220,16 @@ class JsonBuilder:
         self.add_tag(_json, isf_data.latest_tag)
         return json.dumps(_json, indent=2)
 
+
 def main():
-    path_to_isfiles="."
+    path_to_isfiles = "."
     if len(sys.argv) >= 2:
-        yaml_loader = YamlLoader(sys.argv[1])
+        yaml_loader = YamlLoader(yaml_path=sys.argv[1])
         if len(sys.argv) == 3:
             path_to_isfiles = sys.argv[2]
     else:
         print("usage: stream_generator [YAML CONFIG] [OUTPUT DIR]")
-        print("OUTPUT DIR is \".\", if not specified otherwise")
+        print('OUTPUT DIR is ".", if not specified otherwise')
         return 5
     builder = JsonBuilder()
 
@@ -235,8 +242,8 @@ def main():
         filename = f"{path_to_isfiles}/{isf_data.filename}"
         print(f"generating {filename}")
         with open(filename, "w") as json_file:
-            json_file.write(builder.generate_json(isf_data)+ "\n")
+            json_file.write(builder.generate_json(isf_data) + "\n")
+
 
 if __name__ == "__main__":
-    main();
-
+    main()
