@@ -52,8 +52,9 @@ abbreviations = {
     "CentOS Stream 10": "el10",
 }
 
-latest_description = """
-
-WARNING: By selecting this tag, your application will automatically update
-to use the latest version available on OpenShift, including major version updates.
-"""
+latest_description = (
+    "\n\nWARNING: By selecting this tag,"
+    " your application will automatically"
+    " update to use the latest version available on OpenShift,"
+    " including major version updates.\n"
+)
