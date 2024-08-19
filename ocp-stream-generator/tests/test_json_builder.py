@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import json
 import re
 from stream_generator import JsonBuilder
 from stream_generator import Tag
@@ -86,5 +86,5 @@ def test_generate_json():
     }
     isf_data = ImagestreamFile(file, header)
     stripped_json = re.sub(r"[\n\t\s\\n]*", "", builder.generate_json(isf_data))
-    stripped_result = re.sub(r"[\n\t\s\\n]*", "", generate_json_result)
+    stripped_result = re.sub(r"[\n\t\s\\n]*", "", json.dumps(generate_json_result))
     assert stripped_json == stripped_result
