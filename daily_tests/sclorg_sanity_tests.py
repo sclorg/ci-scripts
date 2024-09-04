@@ -30,10 +30,11 @@ SCLORG_REPOS = {
     "mysql-container": "mysql",
     "mariadb-container": "mariadb",
     "nginx-container": "nginx",
+    "valkey-container": "valkey",
 }
 
 
-OS_HOSTS = ["fedora", "c9s", "rhel8", "rhel9"]
+OS_HOSTS = ["fedora", "c9s", "c10s", "rhel8", "rhel9"]
 
 # This is reference link to internal repository
 EOL_GA_URL = "https://url.corp.redhat.com/application-streams-yaml"
