@@ -14,6 +14,7 @@ perl
 nodejs
 ruby
 python
+valkey
 "
 TMP_DIR="${TMT_PLAN_DATA}"
 RESULT_DIR="${TMP_DIR}/results/"
