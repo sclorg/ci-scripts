@@ -7,7 +7,7 @@ on:
     branches:
     - master
 
-name: Run Tox tests on ci-scripts
+name: Run Tox tests on ci-scripts/auto-merger
 jobs:
   tox_test:
     runs-on: ubuntu-latest
@@ -15,6 +15,6 @@ jobs:
     - uses: actions/checkout@v2
     - uses: fedora-python/tox-github-action@main
       with:
-        tox_env: py311
-        workdir: "ocp-stream-generator/"
+        tox_env: py312
+        workdir: "auto-merger/"
 ...

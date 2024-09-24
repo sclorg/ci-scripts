@@ -22,6 +22,8 @@
 
 import subprocess
 import logging
+import tempfile
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -44,8 +46,7 @@ def run_command(
     :param debug: bool, print command in shell, default is suppressed
     :return: None or str
     """
-    if debug:
-        logger.debug(f"command: {cmd}")
+    logger.debug(f"command: {cmd}")
     try:
         if return_output:
             return subprocess.check_output(
@@ -66,3 +67,35 @@ def run_command(
         else:
             logger.error(f"failed with code {cpe.returncode} and output:\n{cpe.output}")
             raise cpe
+
+
+def temporary_dir(prefix: str = "automerger") -> str:
+    temp_file = tempfile.TemporaryDirectory(prefix=prefix)
+    logger.debug(f"AutoMerger: Temporary dir name: {temp_file.name}")
+    return temp_file.name
+
+
+def setup_logger(logger_id, level=logging.DEBUG):
+    logger = logging.getLogger(logger_id)
+    logger.setLevel(level)
+    format_str = "%(name)s - %(levelname)s: %(message)s"
+    # Debug handler
+    debug = logging.StreamHandler(sys.stdout)
+    formatter = logging.Formatter(format_str)
+    debug.setLevel(logging.DEBUG)
+    debug.addFilter(lambda r: True if r.levelno == logging.DEBUG else False)
+    debug.setFormatter(formatter)
+    logger.addHandler(debug)
+    # Info handler
+    info = logging.StreamHandler(sys.stdout)
+    info.setLevel(logging.DEBUG)
+    info.addFilter(lambda r: True if r.levelno == logging.INFO else False)
+    logger.addHandler(info)
+    # Warning, error, critical handler
+    stderr = logging.StreamHandler(sys.stderr)
+    formatter = logging.Formatter(format_str)
+    stderr.setLevel(logging.WARN)
+    stderr.addFilter(lambda r: True if r.levelno >= logging.WARN else False)
+    stderr.setFormatter(formatter)
+    logger.addHandler(stderr)
+    return logger

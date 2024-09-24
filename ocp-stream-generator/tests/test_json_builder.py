@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import re
+
 from stream_generator import JsonBuilder
 from stream_generator import Tag
 from stream_generator import LatestTag
