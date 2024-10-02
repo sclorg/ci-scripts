@@ -19,7 +19,7 @@ if [[ "$TARGET" == "rhel8" ]]; then
 elif [[ "$TARGET" == "rhel9" ]]; then
   COMPOSE="1MT-RHEL-9.4.0-updates"
 elif [[ "$TARGET" == "fedora" ]]; then
-  COMPOSE="1MT-Fedora-39"
+  COMPOSE="1MT-Fedora-41"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_DIR="sclorg-testing-farm"
   TFT_PLAN="nightly-container-f"
@@ -57,10 +57,7 @@ if [[ ! -d "${LOGS_DIR}" ]]; then
   mkdir -p "${LOGS_DIR}"
 fi
 COMPOSE=$(tmt -q run provision -h minute --list-images | grep $COMPOSE | head -n 1 | tr -d '[:space:]')
-echo "COMPOSE is $COMPOSE" | tee -a ${LOG}
-if [ -d "${DAILY_TEST_DIR}/${TARGET}-$TESTS" ]; then
-  rm -rf "${DAILY_TEST_DIR}/${TARGET}-$TESTS"
-fi
+
 mkdir -p "${DAILY_TEST_DIR}/${TARGET}-$TESTS"
 LOG="${LOGS_DIR}/$TARGET-$TESTS.log"
 date > "${LOG}"

@@ -5,13 +5,17 @@ set -x
 SCL_CONTAINERS_UPSTREAM="\
 s2i-nodejs-container
 "
-SCL_CONTAINERS="\
+
+SCL_S2I_CONTAINERS="\
 s2i-base-container
 s2i-nodejs-container
 s2i-php-container
 s2i-perl-container
 s2i-ruby-container
 s2i-python-container
+"
+
+SCL_NOS2I_CONTAINTERS="\
 varnish-container
 nginx-container
 httpd-container
@@ -26,7 +30,12 @@ TARGET="$1"
 shift
 [[ -z "$1" ]] && { echo "You have to specify type of the test to run. test, test-openshift, test-openshift-pytest, test-openshift-4" && exit 1 ; }
 TESTS="$1"
-
+shift
+SET_TEST=""
+if [[ "${TESTS}" != "test-upstream" ]]; then
+  [[ -z "$1" ]] && { echo "You have to specify type of images S2I or NOS2I" && exit 1 ; }
+  SET_TEST="$1"
+fi
 CUR_WD=$(pwd)
 echo "Current working directory is: ${CUR_WD}"
 
@@ -36,11 +45,6 @@ KUBECONFIG=/root/.kube/config
 KUBEPASSWD=/root/.kube/ocp-kube
 
 mkdir -p "${RESULT_DIR}"
-
-function start_ocp3() {
-    cd /root/container-common-scripts || exit 1
-    bash test-lib-openshift.sh ct_os_cluster_up
-}
 
 function clone_repo() {
     local repo_name=$1; shift
@@ -69,10 +73,13 @@ function clean_ocp4() {
 }
 
 function iterate_over_all_containers() {
-  CONTAINTERS_TO_TEST=$SCL_CONTAINERS
+  CONTAINTERS_TO_TEST=$SCL_S2I_CONTAINERS
   if [[ "${TESTS}" == "test-upstream" ]]; then
     CONTAINTERS_TO_TEST=$SCL_CONTAINERS_UPSTREAM
+  elif [[ "${SET_TEST}" == "NOS2I" ]]; then
+    CONTAINTERS_TO_TEST=$SCL_NOS2I_CONTAINTERS
   fi
+
 
   for repo in ${CONTAINTERS_TO_TEST}; do
     # Do not shutting down OpenShift 3 cluster
