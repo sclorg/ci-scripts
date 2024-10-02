@@ -31,10 +31,8 @@ shift
 [[ -z "$1" ]] && { echo "You have to specify type of the test to run. test, test-openshift, test-openshift-pytest, test-openshift-4" && exit 1 ; }
 TESTS="$1"
 shift
-SET_TEST=""
-if [[ "${TESTS}" != "test-upstream" ]]; then
-  [[ -z "$1" ]] && { echo "You have to specify type of images S2I or NOS2I" && exit 1 ; }
-  SET_TEST="$1"
+if [[ -z "$SET_TEST" ]]; then
+  SET_TEST="S2I"
 fi
 CUR_WD=$(pwd)
 echo "Current working directory is: ${CUR_WD}"

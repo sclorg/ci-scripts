@@ -78,7 +78,7 @@ TEST_UPSTREAM_CASES = {
 }
 
 # The default directory used for nightly build
-RESULT_DIR = "/var/tmp/daily_scl_tests"
+RESULTS_DIR = "/var/tmp/daily_reports_dir"
 
 
 class NightlyTestsReport(object):
@@ -148,7 +148,7 @@ class NightlyTestsReport(object):
         self.data_dict["SUCCESS_DATA"] = []
         failed_tests = False
         for test_case, plan, _ in self.available_test_case:
-            path_dir = Path(RESULT_DIR) / test_case
+            path_dir = Path(RESULTS_DIR) / test_case
             if not path_dir.is_dir():
                 print(f"The test case {path_dir} does not exists that is weird")
                 self.data_dict["tmt"]["msg"].append(
