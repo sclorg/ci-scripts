@@ -67,7 +67,6 @@ if [[ ! -d "${REPORTS_DIR}" ]]; then
   mkdir -p "${REPORTS_DIR}"
 fi
 COMPOSE=$(tmt -q run provision -h minute --list-images | grep $COMPOSE | head -n 1 | tr -d '[:space:]')
-
 DIR="${DAILY_TEST_DIR}/${TARGET}-${TESTS}-${SET_TEST}"
 if [[ "$TESTS" == "test-upstream" ]]; then
   DIR="${DAILY_TEST_DIR}/${TARGET}-${TESTS}"

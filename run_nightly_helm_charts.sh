@@ -7,10 +7,11 @@ LOGS_DIR="/home/fedora/logs"
 TARGET="rhel8"
 TMT_REPO="https://gitlab.cee.redhat.com/platform-eng-core-services/sclorg-tmt-plans"
 DAILY_TEST_DIR="/var/tmp/daily_scl_tests"
+RESULTS_DIR="/var/tmp/daily_reports_dir"
 TMT_DIR="sclorg-tmt-plans"
 API_KEY="API_KEY_PRIVATE"
-TFT_PLAN="nightly-container-rhel8"
-COMPOSE="1MT-RHEL-8.10.0-updates"
+TFT_PLAN="nightly-container-rhel9"
+COMPOSE="1MT-RHEL-9.4.0-updates"
 TESTS="helm-charts"
 SCRIPT="daily_helm_charts"
 
@@ -21,11 +22,15 @@ cd /home/fedora || { echo "Could not switch to /home/fedora"; exit 1; }
 if [[ ! -d "${LOGS_DIR}" ]]; then
   mkdir -p "${LOGS_DIR}"
 fi
+if [[ ! -d "${REPORTS_DIR}" ]]; then
+  mkdir -p "${REPORTS_DIR}"
+fi
 COMPOSE=$(tmt -q run provision -h minute --list-images | grep $COMPOSE | head -n 1 | tr -d '[:space:]')
-echo "COMPOSE is $COMPOSE" | tee -a ${LOG}
+DIR="${DAILY_TEST_DIR}/${TARGET}-${TESTS}"
 if [ -d "${DAILY_TEST_DIR}/${TARGET}-$TESTS" ]; then
   rm -rf "${DAILY_TEST_DIR}/${TARGET}-$TESTS"
 fi
+mkdir -p "${RESULTS_DIR}/${TARGET}-${TESTS}/plans/${TFT_PLAN}/data/results"
 mkdir -p "${DAILY_TEST_DIR}/${TARGET}-$TESTS"
 LOG="${LOGS_DIR}/$TARGET-$TESTS.log"
 date > "${LOG}"
@@ -34,18 +39,22 @@ source /tmp/fmf_data
 
 cd "$WORK_DIR/$TMT_DIR" || { echo "Could not switch to $WORK_DIR/$TMT_DIR"; exit 1; }
 echo "TARGET is: ${TARGET} and test is: ${TESTS}" | tee -a "${LOG}"
-touch "${DAILY_TEST_DIR}/$TARGET-$TESTS/tmt_running"
+touch "${RESULTS_DIR}/${TARGET}-${TESTS}/tmt_running"
 TMT_COMMAND="tmt run -v -v -d -d --all -e SCRIPT=$SCRIPT -e OS=$TARGET -e TEST=$TESTS --id ${DAILY_TEST_DIR}/$TARGET-$TESTS plan --name $TFT_PLAN provision --how minute --auto-select-network --image ${COMPOSE}"
 echo "TMT command is: $TMT_COMMAND" | tee -a "${LOG}"
 set -o pipefail
 $TMT_COMMAND | tee -a "${LOG}"
 if [[ $? -ne 0 ]]; then
   echo "TMT command $TMT_COMMAND has failed."
-  touch "${DAILY_TEST_DIR}/$TARGET-$TESTS/tmt_failed"
+  touch "${RESULTS_DIR}/${TARGET}-${TESTS}/tmt_failed"
+  if [[ -d "${DIR}/plans/${TFT_PLAN}/data/results" ]]; then
+    cp -rv "${DIR}/plans/${TFT_PLAN}/data/results/*" "${RESULTS_DIR}/${TARGET}-${TESTS}/plans/${TFT_PLAN}/data/results/"
+  fi
+  cp "${DIR}/log.txt" "${RESULTS_DIR}/${TARGET}-${TESTS}/"
 else
-  touch "${DAILY_TEST_DIR}/$TARGET-$TESTS/tmt_success"
+  touch "${RESULTS_DIR}/${TARGET}-${TESTS}/tmt_success"
 fi
 set +o pipefail
-rm -f "${DAILY_TEST_DIR}/$TARGET-$TESTS/tmt_running"
+rm -f "${RESULTS_DIR}/${TARGET}-${TESTS}/tmt_running"
 cd "$CWD" || exit 1
 rm -rf "$WORK_DIR"
