@@ -93,13 +93,13 @@ $TMT_COMMAND | tee -a "${LOG}"
 if [[ $? -ne 0 ]]; then
   echo "TMT command $TMT_COMMAND has failed."
   touch "${RESULTS_DIR}/${TARGET}-${TESTS}/tmt_failed"
-  if [[ -d "${DIR}/plans/${TFT_PLAN}/data/" ]]; then
-    cp -rv "${DIR}/plans/${TFT_PLAN}/data/*" "${RESULTS_DIR}/${TARGET}-${TESTS}/plans/${TFT_PLAN}/data/"
-  fi
-  cp "${DIR}/log.txt" "${RESULTS_DIR}/${TARGET}-${TESTS}/"
 else
   touch "${RESULTS_DIR}/${TARGET}-${TESTS}/tmt_success"
 fi
+if [[ -d "${DIR}/plans/${TFT_PLAN}/data/" ]]; then
+  cp -rv "${DIR}/plans/${TFT_PLAN}/data/*" "${RESULTS_DIR}/${TARGET}-${TESTS}/plans/${TFT_PLAN}/data/"
+fi
+cp "${DIR}/log.txt" "${RESULTS_DIR}/${TARGET}-${TESTS}/"
 set +o pipefail
 rm -f "${RESULTS_DIR}/${TARGET}-${TESTS}/tmt_running"
 cd "$CWD" || exit 1
