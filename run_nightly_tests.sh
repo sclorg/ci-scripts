@@ -96,8 +96,9 @@ if [[ $? -ne 0 ]]; then
 else
   touch "${RESULTS_DIR}/${TARGET}-${TESTS}/tmt_success"
 fi
-if [[ -d "${DIR}/plans/${TFT_PLAN}/data/" ]]; then
-  cp -rv "${DIR}/plans/${TFT_PLAN}/data/*" "${RESULTS_DIR}/${TARGET}-${TESTS}/plans/${TFT_PLAN}/data/"
+if [[ -d "${DIR}/plans/${TFT_PLAN}/data" ]]; then
+  cp -rv "${DIR}/plans/${TFT_PLAN}/data/results" "${RESULTS_DIR}/${TARGET}-${TESTS}/plans/${TFT_PLAN}/data/"
+  cp -v "${DIR}/plans/${TFT_PLAN}/data/*.log" "${RESULTS_DIR}/${TARGET}-${TESTS}/plans/${TFT_PLAN}/data/"
 fi
 cp "${DIR}/log.txt" "${RESULTS_DIR}/${TARGET}-${TESTS}/"
 set +o pipefail
