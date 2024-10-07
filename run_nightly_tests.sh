@@ -63,8 +63,8 @@ cd /home/fedora || { echo "Could not switch to /home/fedora"; exit 1; }
 if [[ ! -d "${LOGS_DIR}" ]]; then
   mkdir -p "${LOGS_DIR}"
 fi
-if [[ ! -d "${REPORTS_DIR}" ]]; then
-  mkdir -p "${REPORTS_DIR}"
+if [[ ! -d "${RESULTS_DIR}" ]]; then
+  mkdir -p "${RESULTS_DIR}"
 fi
 COMPOSE=$(tmt -q run provision -h minute --list-images | grep $COMPOSE | head -n 1 | tr -d '[:space:]')
 DIR="${DAILY_TEST_DIR}/${TARGET}-${TESTS}-${SET_TEST}"
@@ -82,15 +82,19 @@ source /tmp/fmf_data
 cd "$WORK_DIR/$TMT_DIR" || { echo "Could not switch to $WORK_DIR/$TMT_DIR"; exit 1; }
 echo "TARGET is: ${TARGET} and test is: ${TESTS}" | tee -a "${LOG}"
 touch "${RESULTS_DIR}/${TARGET}-${TESTS}/tmt_running"
-TMT_COMMAND="tmt run -v -v -d -d --all -e SCRIPT=$SCRIPT -e OS=$TARGET -e SET_TEST=$SET_TEST -e TEST=$TESTS --id ${DIR} plan --name $TFT_PLAN provision --how minute --auto-select-network --image ${COMPOSE}"
+if [[ "$TESTS" == "test-upstream" ]]; then
+  TMT_COMMAND="tmt run -v -v -d -d --all -e SCRIPT=$SCRIPT -e OS=$TARGET -e TEST=$TESTS --id ${DIR} plan --name $TFT_PLAN provision --how minute --auto-select-network --image ${COMPOSE}"
+else
+  TMT_COMMAND="tmt run -v -v -d -d --all -e SCRIPT=$SCRIPT -e OS=$TARGET -e SET_TEST=$SET_TEST -e TEST=$TESTS --id ${DIR} plan --name $TFT_PLAN provision --how minute --auto-select-network --image ${COMPOSE}"
+fi
 echo "TMT command is: $TMT_COMMAND" | tee -a "${LOG}"
 set -o pipefail
 $TMT_COMMAND | tee -a "${LOG}"
 if [[ $? -ne 0 ]]; then
   echo "TMT command $TMT_COMMAND has failed."
   touch "${RESULTS_DIR}/${TARGET}-${TESTS}/tmt_failed"
-  if [[ -d "${DIR}/plans/${TFT_PLAN}/data/results" ]]; then
-    cp -rv "${DIR}/plans/${TFT_PLAN}/data/results/*" "${RESULTS_DIR}/${TARGET}-${TESTS}/plans/${TFT_PLAN}/data/results/"
+  if [[ -d "${DIR}/plans/${TFT_PLAN}/data/" ]]; then
+    cp -rv "${DIR}/plans/${TFT_PLAN}/data/*" "${RESULTS_DIR}/${TARGET}-${TESTS}/plans/${TFT_PLAN}/data/"
   fi
   cp "${DIR}/log.txt" "${RESULTS_DIR}/${TARGET}-${TESTS}/"
 else
