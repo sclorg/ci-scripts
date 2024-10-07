@@ -31,7 +31,11 @@ SCLORG_MAILS = {
 }
 
 SCLORG_UPSTREAM_TESTS_MAILS = {
-    "s2i-nodejs-container": ["lholmqui@redhat.com", "nodeshiftcore@redhat.com"]
+    "s2i-nodejs-container": [
+        "lholmqui@redhat.com",
+        "cpapasta@redhat.com",
+        "nodeshiftcore@redhat.com",
+    ]
 }
 
 TEST_CASES = {
@@ -66,9 +70,9 @@ TEST_CASES = {
         "RHEL-9 PyTest in OpenShift 4 test results:",
     ),
     (
-        "rhel8-helm-charts",
-        "nightly-container-rhel8",
-        "RHEL-8 Helm Charts test results:",
+        "rhel9-helm-charts",
+        "nightly-container-rhel9",
+        "RHEL-9 Helm Charts test results:",
     ),
 }
 

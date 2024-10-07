@@ -4,7 +4,7 @@ set -x
 
 LOGS_DIR="/home/fedora/logs"
 
-TARGET="rhel8"
+TARGET="rhel9"
 TMT_REPO="https://gitlab.cee.redhat.com/platform-eng-core-services/sclorg-tmt-plans"
 DAILY_TEST_DIR="/var/tmp/daily_scl_tests"
 RESULTS_DIR="/var/tmp/daily_reports_dir"
@@ -22,8 +22,8 @@ cd /home/fedora || { echo "Could not switch to /home/fedora"; exit 1; }
 if [[ ! -d "${LOGS_DIR}" ]]; then
   mkdir -p "${LOGS_DIR}"
 fi
-if [[ ! -d "${REPORTS_DIR}" ]]; then
-  mkdir -p "${REPORTS_DIR}"
+if [[ ! -d "${RESULTS_DIR}" ]]; then
+  mkdir -p "${RESULTS_DIR}"
 fi
 COMPOSE=$(tmt -q run provision -h minute --list-images | grep $COMPOSE | head -n 1 | tr -d '[:space:]')
 DIR="${DAILY_TEST_DIR}/${TARGET}-${TESTS}"
