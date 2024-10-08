@@ -26,7 +26,7 @@ if [[ "$TARGET" == "rhel8" ]]; then
 elif [[ "$TARGET" == "rhel9" ]]; then
   COMPOSE="1MT-RHEL-9.4.0-updates"
 elif [[ "$TARGET" == "fedora" ]]; then
-  COMPOSE="1MT-Fedora-41"
+  COMPOSE="1MT-Fedora-40"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
   TMT_DIR="sclorg-testing-farm"
   TFT_PLAN="nightly-container-f"
