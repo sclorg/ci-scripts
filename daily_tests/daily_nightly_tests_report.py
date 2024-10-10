@@ -28,6 +28,11 @@ SCLORG_MAILS = {
     "s2i-python-container": ["lbalhar@redhat.com"],
     "postgresql-container": ["fjanus@redhat.com"],
     "s2i-perl-container": ["jplesnik@redhat.com", "mspacek@redhat.com"],
+    "s2i-nodejs-container": [
+        "lholmqui@redhat.com",
+        "cpapasta@redhat.com",
+        "nodeshiftcore@redhat.com",
+    ],
 }
 
 SCLORG_UPSTREAM_TESTS_MAILS = {
