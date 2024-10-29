@@ -10,15 +10,19 @@ REPORTS_DIR="/var/tmp/daily_reports_dir"
 if [ -d "${DAILY_TEST_DIR}" ]; then
   rm -rf "${DAILY_TEST_DIR}"
 fi
+mkdir -p "${DAILY_TEST_DIR}"
 
 if [ -d "${WORK_DIR}" ]; then
   rm -rf "${WORK_DIR}"
 fi
+mkdir -p "${WORK_DIR}"
 
 if [ -d "${LOGS_DIR}" ]; then
   rm -rf "${LOGS_DIR}"
 fi
+mkdir -p "${LOGS_DIR}"
 
 if [ -d "${REPORTS_DIR}" ]; then
   rm -rf "${REPORTS_DIR}"
 fi
+mkdir -p "${REPORTS_DIR}"
