@@ -56,12 +56,13 @@ function clone_repo() {
 }
 
 function clean_ocp4() {
-    if [[ "${TESTS}" == "test-openshift-4" ]]; then
+    if [[ "${TESTS}" == "test-openshift-4" ]] || [[ "${TESTS}" == "test-openshift-pytest" ]]; then
       echo "Cleaning OpenShift 4 environment"
       oc project default
       PASS=$(cat "${KUBEPASSWD}")
       oc login --username=kubeadmin --insecure-skip-tls-verify=true --password="${PASS}" --server=https://api.core-serv-ocp.hosted.psi.rdu2.redhat.com:6443
       export PATH="/usr/local/oc-v4/bin:$PATH"
+      oc project default
       oc projects | grep sclorg
       # oc projects | grep sclorg | xargs oc delete project
       # oc delete all --all
@@ -105,16 +106,11 @@ git clone https://gitlab.cee.redhat.com/platform-eng-core-services/sclorg-tmt-pl
 git clone https://github.com/sclorg/container-common-scripts.git /root/container-common-scripts
 
 
-if [[ "${TESTS}" == "test-openshift-4" ]]; then
+if [[ "${TESTS}" == "test-openshift-4" ]] || [[ "${TESTS}" == "test-openshift-pytest" ]]; then
     echo "Testing OpenShift 4 is enabled"
     curl -L --insecure https://url.corp.redhat.com/sclorg-data-kubeconfig >$KUBECONFIG
     # Download kubepasswd
     curl -L --insecure https://url.corp.redhat.com/sclorg-data-kubepasswd >$KUBEPASSWD
-fi
-
-if [[ "${TESTS}" == "test-openshift" ]]; then
-    echo "Starting cluster on Nightly Build request"
-    start_ocp3
 fi
 
 iterate_over_all_containers
