@@ -2,7 +2,7 @@
 
 set -x
 
-LOGS_DIR="/home/fedora/logs"
+LOGS_DIR="$HOME/logs"
 DAILY_TEST_DIR="/var/tmp/daily_scl_tests"
 WORK_DIR=$(mktemp -d -p "/var/tmp")
 REPORTS_DIR="/var/tmp/daily_reports_dir"

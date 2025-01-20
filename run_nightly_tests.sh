@@ -2,7 +2,7 @@
 
 set -x
 
-LOGS_DIR="/home/fedora/logs"
+LOGS_DIR="$HOME/logs"
 [[ -z "$1" ]] && { echo "You have to specify target to build SCL images. rhel9, rhel8, or fedora" && exit 1 ; }
 TARGET="$1"
 shift
@@ -25,6 +25,8 @@ if [[ "$TARGET" == "rhel8" ]]; then
   COMPOSE="1MT-RHEL-8.10.0-updates"
 elif [[ "$TARGET" == "rhel9" ]]; then
   COMPOSE="1MT-RHEL-9.4.0-updates"
+elif [[ "$TARGET" == "rhel10" ]]; then
+  COMPOSE="1MT-RHEL-10.0"
 elif [[ "$TARGET" == "fedora" ]]; then
   COMPOSE="1MT-Fedora-40"
   TMT_REPO="https://github.com/sclorg/sclorg-testing-farm"
@@ -59,7 +61,7 @@ SCRIPT="daily_scl_tests"
 WORK_DIR=$(mktemp -d -p "/var/tmp")
 git clone "$TMT_REPO" "$WORK_DIR/$TMT_DIR"
 CWD=$(pwd)
-cd /home/fedora || { echo "Could not switch to /home/fedora"; exit 1; }
+cd $HOME || { echo "Could not switch to $HOME"; exit 1; }
 if [[ ! -d "${LOGS_DIR}" ]]; then
   mkdir -p "${LOGS_DIR}"
 fi
