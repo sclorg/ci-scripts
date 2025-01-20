@@ -2,7 +2,7 @@
 
 set -x
 
-LOGS_DIR="/home/fedora/logs"
+LOGS_DIR="$HOME/logs"
 
 TARGET="rhel9"
 TMT_REPO="https://gitlab.cee.redhat.com/platform-eng-core-services/sclorg-tmt-plans"

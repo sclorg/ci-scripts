@@ -83,11 +83,17 @@ TEST_CASES = {
         "nightly-container-rhel9",
         "RHEL-9 Helm Charts test results:",
     ),
+    ("rhel10-test", "nightly-container-rhel10", "RHEL-10 test results:"),
 }
 
 TEST_UPSTREAM_CASES = {
     ("rhel8-test-upstream", "nightly-container-rhel8", "RHEL-8 Upstream test results:"),
     ("rhel9-test-upstream", "nightly-container-rhel9", "RHEL-9 Upstream test results:"),
+    (
+        "rhel10-test-upstream",
+        "nightly-container-rhel10",
+        "RHEL-10 Upstream test results:",
+    ),
 }
 
 # The default directory used for nightly build
