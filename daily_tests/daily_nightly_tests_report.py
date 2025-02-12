@@ -288,20 +288,22 @@ class NightlyTestsReport(object):
     def generate_success_containers(self):
         for test_case, cont_path, log_name in self.data_dict["SUCCESS_DATA"]:
             mime_name = f"{test_case}-{log_name}"
-            attach = MIMEApplication(open(cont_path, "r").read(), Name=mime_name)
-            attach.add_header(
-                "Content-Disposition", 'attachment; filename="{}"'.format(mime_name)
-            )
-            self.mime_msg.attach(attach)
+            if os.path.exists(cont_path):
+                attach = MIMEApplication(open(cont_path, "r").read(), Name=mime_name)
+                attach.add_header(
+                    "Content-Disposition", 'attachment; filename="{}"'.format(mime_name)
+                )
+                self.mime_msg.attach(attach)
 
     def generate_tmt_logs_containers(self):
         for test_case, cont_path, log_name in self.data_dict["tmt"]["logs"]:
             mime_name = f"{test_case}-{log_name}"
-            attach = MIMEApplication(open(cont_path, "r").read(), Name=mime_name)
-            attach.add_header(
-                "Content-Disposition", 'attachment; filename="{}"'.format(mime_name)
-            )
-            self.mime_msg.attach(attach)
+            if os.path.exists(cont_path):
+                attach = MIMEApplication(open(cont_path, "r").read(), Name=mime_name)
+                attach.add_header(
+                    "Content-Disposition", 'attachment; filename="{}"'.format(mime_name)
+                )
+                self.mime_msg.attach(attach)
 
     def generate_emails(self):
         for test_case, plan, _ in self.available_test_case:
