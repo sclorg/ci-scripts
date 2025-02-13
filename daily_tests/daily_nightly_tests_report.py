@@ -36,6 +36,7 @@ SCLORG_MAILS = {
         "lholmqui@redhat.com",
         "cpapasta@redhat.com",
         "nodeshiftcore@redhat.com",
+        "jprokop@redhat.com"
     ],
 }
 
