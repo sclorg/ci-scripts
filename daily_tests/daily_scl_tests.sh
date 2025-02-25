@@ -41,6 +41,8 @@ TMP_DIR="${TMT_PLAN_DATA}"
 RESULT_DIR="${TMP_DIR}/results/"
 KUBECONFIG=/root/.kube/config
 KUBEPASSWD=/root/.kube/ocp-kube
+PBINCLI=/usr/local/bin/pbincli
+PBINCLI_OPTS="--server https://privatebin.corp.redhat.com --expire 1week --no-insecure-warning --no-check-certificate --format plaintext"
 
 mkdir -p "${RESULT_DIR}"
 
@@ -94,7 +96,7 @@ function iterate_over_all_containers() {
     make "${TESTS}" TARGET="${TARGET}" > "${log_name}" 2>&1
     if [[ $? -ne 0 ]]; then
       echo "Tests for container $repo has failed."
-      cp "${log_name}" "${RESULT_DIR}/"
+      $PBINCLI send $PBINCLI_OPTS < "${log_name}" > "${RESULT_DIR}/${log_name}.txt" 2>&1
       echo "Show the last 100 lines from file: ${RESULT_DIR}/${repo}.log"
       tail -100 "${RESULT_DIR}/${repo}.log"
     fi
