@@ -36,7 +36,7 @@ SCLORG_MAILS = {
         "lholmqui@redhat.com",
         "cpapasta@redhat.com",
         "nodeshiftcore@redhat.com",
-        "jprokop@redhat.com"
+        "jprokop@redhat.com",
     ],
 }
 
@@ -99,6 +99,8 @@ TEST_UPSTREAM_CASES = {
 
 # The default directory used for nightly build
 RESULTS_DIR = "/var/tmp/daily_reports_dir"
+# The default directory used for running build
+SCLORG_DIR = "/var/tmp/daily_scl_tests"
 
 
 class NightlyTestsReport(object):
@@ -154,6 +156,16 @@ class NightlyTestsReport(object):
             self.log_dir = self.args.log_dir
         return True
 
+    def get_pastebin_url(self, log_name: str) -> str:
+        with open(log_name, "r") as f:
+            lines = f.read()
+
+        for line in lines.split("\n"):
+            if not line.startswith("Link:"):
+                continue
+            return line.replace("Link:", "").strip()
+        return ""
+
     def collect_data(self):
         # Collect data to class dictionary
         # self.data_dict['tmt'] item is used for Testing Farm errors per each OS and test case
@@ -171,10 +183,19 @@ class NightlyTestsReport(object):
             path_dir = Path(RESULTS_DIR) / test_case
             if not path_dir.is_dir():
                 print(f"The test case {path_dir} does not exists that is weird")
-                self.data_dict["tmt"]["msg"].append(
+                self.data_dict["tmt"]["logs"].append(
                     f"Nightly build tests for {test_case} is not finished or did not run. "
                     f"Check nightly build machine for logs."
                 )
+                for sclorg in ["S2I", "NOS2I"]:
+                    name = f"{test_case}-{sclorg}"
+                    self.data_dict["tmt"]["logs"].append(
+                        (
+                            name,
+                            Path(SCLORG_DIR) / f"{test_case}-{sclorg}" / "log.txt",
+                            f"{name}.txt",
+                        )
+                    )
                 failed_tests = True
                 continue
             # It looks like TMT is still running for long time
@@ -227,17 +248,10 @@ class NightlyTestsReport(object):
                 continue
             print(f"Failed containers are for {test_case} are: {failed_containers}")
             failed_tests = True
-            for cont in failed_containers:
-                mime_name = f"{test_case}-{cont.name}"
-                attach = MIMEApplication(open(cont, "r").read(), Name=mime_name)
-                attach.add_header(
-                    "Content-Disposition", 'attachment; filename="{}"'.format(mime_name)
-                )
-                self.mime_msg.attach(attach)
+
             self.data_dict[test_case] = [
                 (str(f), str(f.name)) for f in failed_containers
             ]
-        print(failed_tests)
         if not failed_tests:
             self.full_success = True
         print(f"collect data: {self.data_dict}")
@@ -252,13 +266,11 @@ class NightlyTestsReport(object):
             body_failure = "<b>Nightly builds Testing Farm failures:</b><br>"
             body_success = "<b>These nightly builds were completely successful:</b><br>"
         # Function for generation mail body
-        if self.data_dict["tmt"]["msg"]:
-            tmt_failures = "<br>".join(self.data_dict["tmt"]["msg"])
+        if self.data_dict["tmt"]["logs"]:
             self.body += (
                 f"{body_failure}\n"
                 f"Tests were not successful because Testing Farm failures. "
                 f"Please contact phracek@redhat.com to analyse it.<br><br>"
-                f"{tmt_failures}<br><br>"
             )
             self.generate_tmt_logs_containers()
         if self.data_dict["SUCCESS"]:
@@ -281,10 +293,15 @@ class NightlyTestsReport(object):
         for test_case, plan, msg in self.available_test_case:
             if test_case not in self.data_dict:
                 continue
-            print(f"generate_email_body: {self.data_dict[test_case]}")
+            print(
+                f"generate_email_body_for_failed_containers: {self.data_dict[test_case]}"
+            )
             self.body += f"<br><b>{msg}</b><br>List of failed containers:<br>"
-            for _, name in self.data_dict[test_case]:
-                self.body += f"{name}<br>"
+            for full_log_name, name in self.data_dict[test_case]:
+                self.body += (
+                    f"<a href='{self.get_pastebin_url(log_name=full_log_name)}'>{name}</a>"
+                    f"<br>"
+                )
 
     def generate_success_containers(self):
         for test_case, cont_path, log_name in self.data_dict["SUCCESS_DATA"]:
@@ -298,13 +315,12 @@ class NightlyTestsReport(object):
 
     def generate_tmt_logs_containers(self):
         for test_case, cont_path, log_name in self.data_dict["tmt"]["logs"]:
-            mime_name = f"{test_case}-{log_name}"
+            print(cont_path, log_name)
             if os.path.exists(cont_path):
-                attach = MIMEApplication(open(cont_path, "r").read(), Name=mime_name)
-                attach.add_header(
-                    "Content-Disposition", 'attachment; filename="{}"'.format(mime_name)
+                self.body += (
+                    f"<a href='{self.get_pastebin_url(log_name=cont_path)}'>{test_case}</a>"
+                    f"<br><br>"
                 )
-                self.mime_msg.attach(attach)
 
     def generate_emails(self):
         for test_case, plan, _ in self.available_test_case:
