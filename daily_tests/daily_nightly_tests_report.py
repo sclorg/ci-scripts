@@ -197,10 +197,11 @@ class NightlyTestsReport(object):
         return True
 
     def send_file_to_pastebin(self, log_path, log_name: str):
-        if not os.path.exists(log_name):
+        if not os.path.exists(log_path):
             return
         send_paste_bin = os.getenv("HOME") + "/ci-scripts/send_to_paste_bin.sh"
         cmd = f'{send_paste_bin} "{log_path}" "{log_name}"'
+        print(f"sending logs to pastebin: {cmd}")
         try:
             run_command(cmd)
         except subprocess.CalledProcessError:
@@ -244,14 +245,14 @@ class NightlyTestsReport(object):
                 for sclorg in ["S2I", "NOS2I"]:
                     name = f"{test_case}-{sclorg}"
                     self.send_file_to_pastebin(
-                        log_path=Path(SCLORG_DIR) / f"{test_case}-{sclorg}" / "log.txt",
-                        log_name=f"{RESULTS_DIR}/{name}.txt",
+                        log_path=Path(SCLORG_DIR) / f"{name}" / "log.txt",
+                        log_name=f"{path_dir}/{name}.log.txt",
                     )
                     self.data_dict["tmt"]["logs"].append(
                         (
                             name,
-                            Path(SCLORG_DIR) / f"{test_case}-{sclorg}" / "log.txt",
-                            Path(RESULTS_DIR) / f"{name}.txt",
+                            Path(SCLORG_DIR) / f"{name}" / "log.txt",
+                            Path(path_dir) / f"{name}.log.txt",
                         )
                     )
                 failed_tests = True
@@ -267,14 +268,14 @@ class NightlyTestsReport(object):
                 for sclorg in ["S2I", "NOS2I"]:
                     name = f"{test_case}-{sclorg}"
                     self.send_file_to_pastebin(
-                        log_path=Path(SCLORG_DIR) / f"{test_case}-{sclorg}" / "log.txt",
-                        log_name=f"{RESULTS_DIR}/{name}.txt",
+                        log_path=Path(SCLORG_DIR) / f"{name}" / "log.txt",
+                        log_name=f"{path_dir}/{name}.log.txt",
                     )
                     self.data_dict["tmt"]["logs"].append(
                         (
                             name,
-                            Path(SCLORG_DIR) / f"{test_case}-{sclorg}" / "log.txt",
-                            Path(RESULTS_DIR) / f"{name}.txt",
+                            Path(SCLORG_DIR) / f"{name}" / "log.txt",
+                            Path(path_dir) / f"{name}.log.txt",
                         )
                     )
                 failed_tests = True
@@ -288,20 +289,22 @@ class NightlyTestsReport(object):
                 for sclorg in ["S2I", "NOS2I"]:
                     name = f"{test_case}-{sclorg}"
                     self.send_file_to_pastebin(
-                        log_path=Path(SCLORG_DIR) / f"{test_case}-{sclorg}" / "log.txt",
-                        log_name=f"{RESULTS_DIR}/{name}.txt",
+                        log_path=Path(SCLORG_DIR) / f"{name}" / "log.txt",
+                        log_name=f"{path_dir}/{name}.log.txt",
                     )
                     self.data_dict["tmt"]["logs"].append(
                         (
                             name,
-                            Path(SCLORG_DIR) / f"{test_case}-{sclorg}" / "log.txt",
-                            Path(RESULTS_DIR) / f"{name}.txt",
+                            Path(SCLORG_DIR) / f"{name}" / "log.txt",
+                            Path(path_dir) / f"{name}.log.txt",
                         )
                     )
                 failed_tests = True
                 continue
             results_dir = data_dir / "results"
+            print("Results dir is for failed_container: ", results_dir)
             failed_containers = list(results_dir.rglob("*.log"))
+            print("Failed containers are: ", failed_containers)
             if not failed_containers:
                 self.data_dict["SUCCESS"].append(test_case)
                 if self.args.upstream_tests:
@@ -357,6 +360,9 @@ class NightlyTestsReport(object):
 
     def generate_failed_containers(self):
         for test_case, plan, msg in self.available_test_case:
+            print(
+                f"generate_email_body_for_failed_containers: {test_case}, {plan}, {msg}"
+            )
             if test_case not in self.data_dict:
                 continue
             print(
