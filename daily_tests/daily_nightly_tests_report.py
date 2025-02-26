@@ -3,8 +3,8 @@ import os
 import sys
 import smtplib
 import argparse
+import subprocess
 
-from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
@@ -103,6 +103,46 @@ RESULTS_DIR = "/var/tmp/daily_reports_dir"
 SCLORG_DIR = "/var/tmp/daily_scl_tests"
 
 
+def run_command(
+    cmd,
+    return_output: bool = True,
+    ignore_error: bool = False,
+    shell: bool = True,
+    **kwargs,
+):
+    """
+    Run provided command on host system using the same user as invoked this code.
+    Raises subprocess.CalledProcessError if it fails.
+    :param cmd: list or str
+    :param return_output: bool, return output of the command
+    :param ignore_error: bool, do not fail in case nonzero return code
+    :param shell: bool, run command in shell
+    :param debug: bool, print command in shell, default is suppressed
+    :return: None or str
+    """
+    print(f"command: {cmd}")
+    try:
+        if return_output:
+            return subprocess.check_output(
+                cmd,
+                stderr=subprocess.STDOUT,
+                universal_newlines=True,
+                shell=shell,
+                **kwargs,
+            )
+        else:
+            return subprocess.check_call(cmd, shell=shell, **kwargs)
+    except subprocess.CalledProcessError as cpe:
+        if ignore_error:
+            if return_output:
+                return cpe.output
+            else:
+                return cpe.returncode
+        else:
+            print(f"failed with code {cpe.returncode} and output:\n{cpe.output}")
+            raise cpe
+
+
 class NightlyTestsReport(object):
     def __init__(self):
         self.tmp_path_dir: Path
@@ -156,6 +196,16 @@ class NightlyTestsReport(object):
             self.log_dir = self.args.log_dir
         return True
 
+    def send_file_to_pastebin(self, log_path, log_name: str):
+        if not os.path.exists(log_name):
+            return
+        send_paste_bin = os.getenv("HOME") + "/ci-scripts/send_to_paste_bin.sh"
+        cmd = f'{send_paste_bin} "{log_path}" "{log_name}"'
+        try:
+            run_command(cmd)
+        except subprocess.CalledProcessError:
+            pass
+
     def get_pastebin_url(self, log_name: str) -> str:
         with open(log_name, "r") as f:
             lines = f.read()
@@ -183,20 +233,6 @@ class NightlyTestsReport(object):
             path_dir = Path(RESULTS_DIR) / test_case
             if not path_dir.is_dir():
                 print(f"The test case {path_dir} does not exists that is weird")
-                self.data_dict["tmt"]["logs"].append(
-                    f"Nightly build tests for {test_case} is not finished or did not run. "
-                    f"Check nightly build machine for logs."
-                )
-                for sclorg in ["S2I", "NOS2I"]:
-                    name = f"{test_case}-{sclorg}"
-                    self.data_dict["tmt"]["logs"].append(
-                        (
-                            name,
-                            Path(SCLORG_DIR) / f"{test_case}-{sclorg}" / "log.txt",
-                            f"{name}.txt",
-                        )
-                    )
-                failed_tests = True
                 continue
             # It looks like TMT is still running for long time
             if (path_dir / "tmt_running").exists():
@@ -205,9 +241,19 @@ class NightlyTestsReport(object):
                     f"Look at log in attachment called '{test_case}-log.txt'."
                 )
                 self.data_dict["tmt"]["tmt_running"].append(test_case)
-                self.data_dict["tmt"]["logs"].append(
-                    (test_case, path_dir / "log.txt", "log.txt")
-                )
+                for sclorg in ["S2I", "NOS2I"]:
+                    name = f"{test_case}-{sclorg}"
+                    self.send_file_to_pastebin(
+                        log_path=Path(SCLORG_DIR) / f"{test_case}-{sclorg}" / "log.txt",
+                        log_name=f"{RESULTS_DIR}/{name}.txt",
+                    )
+                    self.data_dict["tmt"]["logs"].append(
+                        (
+                            name,
+                            Path(SCLORG_DIR) / f"{test_case}-{sclorg}" / "log.txt",
+                            Path(RESULTS_DIR) / f"{name}.txt",
+                        )
+                    )
                 failed_tests = True
                 continue
             # TMT command failed for some reason. Look at logs for given namespace
@@ -218,9 +264,19 @@ class NightlyTestsReport(object):
                     f"Look at log in attachment called '{test_case}-log.txt'."
                 )
                 self.data_dict["tmt"]["tmt_failed"].append(test_case)
-                self.data_dict["tmt"]["logs"].append(
-                    (test_case, path_dir / "log.txt", "log.txt")
-                )
+                for sclorg in ["S2I", "NOS2I"]:
+                    name = f"{test_case}-{sclorg}"
+                    self.send_file_to_pastebin(
+                        log_path=Path(SCLORG_DIR) / f"{test_case}-{sclorg}" / "log.txt",
+                        log_name=f"{RESULTS_DIR}/{name}.txt",
+                    )
+                    self.data_dict["tmt"]["logs"].append(
+                        (
+                            name,
+                            Path(SCLORG_DIR) / f"{test_case}-{sclorg}" / "log.txt",
+                            Path(RESULTS_DIR) / f"{name}.txt",
+                        )
+                    )
                 failed_tests = True
                 continue
             data_dir = path_dir / "plans" / plan / "data"
@@ -229,9 +285,19 @@ class NightlyTestsReport(object):
                     f"Data dir for test case {test_case} does not exist."
                     f"Look at log in attachment called '{test_case}-log.txt'."
                 )
-                self.data_dict["tmt"]["logs"].append(
-                    (test_case, path_dir / "log.txt", "log.txt")
-                )
+                for sclorg in ["S2I", "NOS2I"]:
+                    name = f"{test_case}-{sclorg}"
+                    self.send_file_to_pastebin(
+                        log_path=Path(SCLORG_DIR) / f"{test_case}-{sclorg}" / "log.txt",
+                        log_name=f"{RESULTS_DIR}/{name}.txt",
+                    )
+                    self.data_dict["tmt"]["logs"].append(
+                        (
+                            name,
+                            Path(SCLORG_DIR) / f"{test_case}-{sclorg}" / "log.txt",
+                            Path(RESULTS_DIR) / f"{name}.txt",
+                        )
+                    )
                 failed_tests = True
                 continue
             results_dir = data_dir / "results"
@@ -266,7 +332,7 @@ class NightlyTestsReport(object):
             body_failure = "<b>Nightly builds Testing Farm failures:</b><br>"
             body_success = "<b>These nightly builds were completely successful:</b><br>"
         # Function for generation mail body
-        if self.data_dict["tmt"]["logs"]:
+        if self.data_dict["tmt"]["msg"]:
             self.body += (
                 f"{body_failure}\n"
                 f"Tests were not successful because Testing Farm failures. "
@@ -305,22 +371,27 @@ class NightlyTestsReport(object):
 
     def generate_success_containers(self):
         for test_case, cont_path, log_name in self.data_dict["SUCCESS_DATA"]:
-            mime_name = f"{test_case}-{log_name}"
-            if os.path.exists(cont_path):
-                attach = MIMEApplication(open(cont_path, "r").read(), Name=mime_name)
-                attach.add_header(
-                    "Content-Disposition", 'attachment; filename="{}"'.format(mime_name)
+            if os.path.exists(log_name):
+                self.body += (
+                    f" <a href='{self.get_pastebin_url(log_name=log_name)}'>See logs</a>"
+                    f"<br>"
                 )
-                self.mime_msg.attach(attach)
 
     def generate_tmt_logs_containers(self):
         for test_case, cont_path, log_name in self.data_dict["tmt"]["logs"]:
-            print(cont_path, log_name)
-            if os.path.exists(cont_path):
+            print(test_case, cont_path, log_name)
+            if os.path.exists(log_name):
                 self.body += (
-                    f"<a href='{self.get_pastebin_url(log_name=cont_path)}'>{test_case}</a>"
-                    f"<br><br>"
+                    f"<b>{test_case}</b> <a href='{self.get_pastebin_url(log_name=log_name)}'>"
+                    f"See logs</a>"
+                    f"<br>"
                 )
+            else:
+                self.body += (
+                    f"<b>{test_case}</b> No logs available. "
+                    f"Check nightly build machine<br>"
+                )
+        self.body += "<br>"
 
     def generate_emails(self):
         for test_case, plan, _ in self.available_test_case:
