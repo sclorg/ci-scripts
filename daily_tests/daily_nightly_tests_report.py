@@ -360,9 +360,6 @@ class NightlyTestsReport(object):
 
     def generate_failed_containers(self):
         for test_case, plan, msg in self.available_test_case:
-            print(
-                f"generate_email_body_for_failed_containers: {test_case}, {plan}, {msg}"
-            )
             if test_case not in self.data_dict:
                 continue
             print(
@@ -370,13 +367,18 @@ class NightlyTestsReport(object):
             )
             self.body += f"<br><b>{msg}</b><br>List of failed containers:<br>"
             for full_log_name, name in self.data_dict[test_case]:
+                paste_bin_file = f"{full_log_name}.txt"
+                self.send_file_to_pastebin(
+                    log_path=full_log_name, log_name=paste_bin_file
+                )
                 self.body += (
-                    f"<a href='{self.get_pastebin_url(log_name=full_log_name)}'>{name}</a>"
+                    f"<a href='{self.get_pastebin_url(log_name=paste_bin_file)}'>{name}</a>"
                     f"<br>"
                 )
 
     def generate_success_containers(self):
         for test_case, cont_path, log_name in self.data_dict["SUCCESS_DATA"]:
+            print(f"generate_success_containers: {self.data_dict[test_case]}")
             if os.path.exists(log_name):
                 self.body += (
                     f" <a href='{self.get_pastebin_url(log_name=log_name)}'>See logs</a>"
