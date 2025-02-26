@@ -96,7 +96,7 @@ function iterate_over_all_containers() {
     make "${TESTS}" TARGET="${TARGET}" > "${log_name}" 2>&1
     if [[ $? -ne 0 ]]; then
       echo "Tests for container $repo has failed."
-      $PBINCLI send $PBINCLI_OPTS < "${log_name}" > "${RESULT_DIR}/${repo}.txt" 2>&1
+      cp "${log_name}" "${RESULT_DIR}/"
       echo "Show the last 100 lines from file: ${RESULT_DIR}/${repo}.log"
       tail -100 "${RESULT_DIR}/${repo}.log"
     fi
