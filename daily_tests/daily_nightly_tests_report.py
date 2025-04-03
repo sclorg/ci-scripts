@@ -4,6 +4,7 @@ import sys
 import smtplib
 import argparse
 import subprocess
+import time
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -19,6 +20,7 @@ default_mails = [
 upstream_mails = [
     "phracek@redhat.com",
     "lholmqui@redhat.com",
+    "cpapasta@redhat.com",
     "nodeshiftcore@redhat.com",
 ]
 
@@ -202,10 +204,14 @@ class NightlyTestsReport(object):
         send_paste_bin = os.getenv("HOME") + "/ci-scripts/send_to_paste_bin.sh"
         cmd = f'{send_paste_bin} "{log_path}" "{log_name}"'
         print(f"sending logs to pastebin: {cmd}")
-        try:
-            run_command(cmd)
-        except subprocess.CalledProcessError:
-            pass
+        for count in range(5):
+            try:
+                run_command(cmd)
+                break
+            except subprocess.CalledProcessError:
+                print(f"ERROR: Sending to pastebin by command {cmd} failed")
+                pass
+            time.sleep(3)
 
     def get_pastebin_url(self, log_name: str) -> str:
         with open(log_name, "r") as f:
