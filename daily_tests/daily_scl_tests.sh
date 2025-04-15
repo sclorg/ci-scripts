@@ -20,10 +20,9 @@ varnish-container
 nginx-container
 httpd-container
 redis-container
-valkey-container
 mariadb-container
 postgresql-container
-mysql-container
+valkey-container
 "
 
 [[ -z "$1" ]] && { echo "You have to specify target to build SCL images. rhel9, rhel8, or fedora" && exit 1 ; }
