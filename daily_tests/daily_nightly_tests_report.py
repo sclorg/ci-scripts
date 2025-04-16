@@ -26,13 +26,15 @@ upstream_mails = [
 
 SCLORG_MAILS = {
     # Format is 'repo_name', and list of mails to infor
-    "s2i-ruby-container": ["jprokop@redhat.com"],
+    "s2i-ruby-container": ["jprokop@redhat.com", "pvalena@redhat.com" ],
     "s2i-python-container": [
         "lbalhar@redhat.com",
         "ksurma@redhat.com",
         "thrnciar@redhat.com",
     ],
-    "postgresql-container": ["fjanus@redhat.com", "ljavorsk@redhat.com"],
+    "postgresql-container": ["fjanus@redhat.com", "ljavorsk@redhat.com", "mschorm@redhat.com" ],
+    "mariadb-container": ["fjanus@redhat.com", "ljavorsk@redhat.com", "mschorm@redhat.com" ],
+    "mysql-container": ["fjanus@redhat.com", "ljavorsk@redhat.com", "mschorm@redhat.com" ],
     "s2i-perl-container": ["jplesnik@redhat.com", "mspacek@redhat.com"],
     "s2i-nodejs-container": [
         "lholmqui@redhat.com",
