@@ -23,6 +23,7 @@
 images = {
     "RHEL 8": {"private": "registry.redhat.io/rhel8/APP_NAME-APP_VERSION:latest"},
     "RHEL 9": {"private": "registry.redhat.io/rhel9/APP_NAME-APP_VERSION:latest"},
+    "RHEL 10": {"private": "registry.redhat.io/rhel10/APP_NAME-APP_VERSION:latest"},
     "UBI 8": {
         "private": "registry.redhat.io/ubi8/APP_NAME-APP_VERSION:latest",
         "public": "registry.access.redhat.com/ubi8/APP_NAME-APP_VERSION:latest",
