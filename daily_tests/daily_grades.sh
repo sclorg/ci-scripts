@@ -12,10 +12,12 @@ GRADE_NONE=0
 if [[ "$OS" == "RHEL8" ]]; then
   GRADES_LOG="$HOME/logs/rhel8-grades"
   RHCWT_CONFIG="rhel8.yaml"
-
 elif [[ "$OS" == "RHEL9" ]]; then
   GRADES_LOG="$HOME/logs/rhel9-grades"
   RHCWT_CONFIG="rhel9.yaml"
+elif [[ "$OS" == "RHEL10" ]]; then
+  GRADES_LOG="$HOME/logs/rhel10-grades"
+  RHCWT_CONFIG="rhel10.yaml"
 fi
 
 date | tee $SCRIPT_LOG
