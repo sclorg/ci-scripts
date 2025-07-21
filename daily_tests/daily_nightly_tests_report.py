@@ -19,7 +19,6 @@ default_mails = [
 ]
 upstream_mails = [
     "phracek@redhat.com",
-    "lholmqui@redhat.com",
     "cpapasta@redhat.com",
     "nodeshiftcore@redhat.com",
 ]
@@ -37,7 +36,6 @@ SCLORG_MAILS = {
     "mysql-container": ["fjanus@redhat.com", "ljavorsk@redhat.com", "mschorm@redhat.com" ],
     "s2i-perl-container": ["jplesnik@redhat.com", "mspacek@redhat.com"],
     "s2i-nodejs-container": [
-        "lholmqui@redhat.com",
         "cpapasta@redhat.com",
         "nodeshiftcore@redhat.com",
         "jprokop@redhat.com",
@@ -46,7 +44,6 @@ SCLORG_MAILS = {
 
 SCLORG_UPSTREAM_TESTS_MAILS = {
     "s2i-nodejs-container": [
-        "lholmqui@redhat.com",
         "cpapasta@redhat.com",
         "nodeshiftcore@redhat.com",
     ]
