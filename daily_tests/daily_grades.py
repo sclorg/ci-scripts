@@ -16,6 +16,7 @@ default_mails = [
     "hhorak@redhat.com",
     "pkubat@redhat.com",
     "anezbeda@redhat.com",
+    "rhscl-container-qe@redhat.com"
 ]
 
 GRADES_OS_DICT = {"RHEL8": "rhel8.yaml", "RHEL9": "rhel9.yaml", "RHEL10": "rhel10.yaml"}
