@@ -22,16 +22,31 @@ fi
 
 date | tee $SCRIPT_LOG
 
+function check_char() {
+  local line="$1"
+  local arr=("D" "E" "F")
+  for i in "${arr[@]}"; do
+    if [[ "$line" == *"[$i]"* ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 echo "Configuration file is $RHCWT_CONFIG and logs are in $GRADES_LOG" | tee -a "${SCRIPT_LOG}"
 SUMMARY="[CS Image Grading] Grades for"
 function check_grades() {
   echo "GRADE_FLAG: $GRADE_FLAG" | tee -a "${SCRIPT_LOG}"
   while read -r line; do
-    if [[ "$line" == *"[B]"* ]]; then
+    if [[ "$line" =~ "[B]" ]]; then
       GRADE_FLAG=1
       echo "GRADE_FLAG: $GRADE_FLAG for $line" | tee -a "${SCRIPT_LOG}"
     fi
-    if [[ "$line" == *"[C]"* ]]; then
+    if [[ "$line" =~ "[C]" ]]; then
+      GRADE_FLAG=1
+      echo "GRADE_FLAG: $GRADE_FLAG for $line" | tee -a "${SCRIPT_LOG}"
+    fi
+    if check_char "$line"; then
       GRADE_FLAG=1
       echo "GRADE_FLAG: $GRADE_FLAG for $line" | tee -a "${SCRIPT_LOG}"
     fi
