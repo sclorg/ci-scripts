@@ -16,7 +16,7 @@ default_mails = [
     "hhorak@redhat.com",
     "pkubat@redhat.com",
     "anezbeda@redhat.com",
-    "rhscl-container-qe@redhat.com"
+    "rhscl-container-qe@redhat.com",
 ]
 
 GRADES_OS_DICT = {"RHEL8": "rhel8.yaml", "RHEL9": "rhel9.yaml", "RHEL10": "rhel10.yaml"}
@@ -93,6 +93,7 @@ class DailyGradesReport(object):
             grade_none = False
             grade_flags = True
             for image_grade_info in self.grades_dict[OS]:
+                print(f"Only FOR DEBUGGING: {image_grade_info}")
                 image_name, current_grade, days = image_grade_info
                 if current_grade == "B":
                     self.body += (
@@ -102,6 +103,12 @@ class DailyGradesReport(object):
                 if current_grade == "C":
                     self.body += (
                         f"{image_name} [{current_grade}] days since grade C!<br>"
+                    )
+                    grade_flags = False
+                if current_grade in ["D", "E", "F"]:
+                    print(f"Grade for {image_name} is one of DEF.")
+                    self.body += (
+                        f"{image_name} [{current_grade}] days last grade change!<br>"
                     )
                     grade_flags = False
                 if current_grade == "NONE":
