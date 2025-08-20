@@ -25,15 +25,30 @@ upstream_mails = [
 
 SCLORG_MAILS = {
     # Format is 'repo_name', and list of mails to infor
-    "s2i-ruby-container": ["jprokop@redhat.com", "pvalena@redhat.com" ],
+    "s2i-ruby-container": ["jprokop@redhat.com"],
     "s2i-python-container": [
         "lbalhar@redhat.com",
         "ksurma@redhat.com",
         "thrnciar@redhat.com",
     ],
-    "postgresql-container": ["fjanus@redhat.com", "ljavorsk@redhat.com", "mschorm@redhat.com" ],
-    "mariadb-container": ["fjanus@redhat.com", "ljavorsk@redhat.com", "mschorm@redhat.com" ],
-    "mysql-container": ["fjanus@redhat.com", "ljavorsk@redhat.com", "mschorm@redhat.com" ],
+    "postgresql-container": [
+        "fjanus@redhat.com",
+        "ljavorsk@redhat.com",
+        "mschorm@redhat.com",
+        "psloboda@redhat.com",
+    ],
+    "mariadb-container": [
+        "fjanus@redhat.com",
+        "ljavorsk@redhat.com",
+        "mschorm@redhat.com",
+        "psloboda@redhat.com",
+    ],
+    "mysql-container": [
+        "fjanus@redhat.com",
+        "ljavorsk@redhat.com",
+        "mschorm@redhat.com",
+        "psloboda@redhat.com",
+    ],
     "s2i-perl-container": ["jplesnik@redhat.com", "mspacek@redhat.com"],
     "s2i-nodejs-container": [
         "cpapasta@redhat.com",
@@ -43,10 +58,7 @@ SCLORG_MAILS = {
 }
 
 SCLORG_UPSTREAM_TESTS_MAILS = {
-    "s2i-nodejs-container": [
-        "cpapasta@redhat.com",
-        "nodeshiftcore@redhat.com",
-    ]
+    "s2i-nodejs-container": ["cpapasta@redhat.com", "nodeshiftcore@redhat.com"]
 }
 
 TEST_CASES = {
