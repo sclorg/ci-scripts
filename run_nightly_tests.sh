@@ -24,7 +24,7 @@ TFT_PLAN="nightly-container-$TARGET"
 if [[ "$TARGET" == "rhel8" ]]; then
   COMPOSE="1MT-RHEL-8.10.0-updates"
 elif [[ "$TARGET" == "rhel9" ]]; then
-  COMPOSE="1MT-RHEL-9.4.0-updates"
+  COMPOSE="1MT-RHEL-9.6.0-updates"
 elif [[ "$TARGET" == "rhel10" ]]; then
   COMPOSE="1MT-RHEL-10.0"
 elif [[ "$TARGET" == "fedora" ]]; then

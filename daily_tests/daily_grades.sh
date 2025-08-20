@@ -86,4 +86,4 @@ fi
   echo "Or file an issue here: https://github.com/sclorg/ci-scripts/issues"
 } >> "${GRADES_LOG}"
 
-mail -s "$SUMMARY" -r phracek@redhat.com phracek@redhat.com pkubat@redhat.com hhorak@redhat.com lfriedma@redhat.com rhscl-container-qe@redhat.com < "${GRADES_LOG}"
+mail -s "$SUMMARY" -r phracek@redhat.com phracek@redhat.com pkubat@redhat.com hhorak@redhat.com oksenzov@redhat.com mzidek@redhat.com lfriedma@redhat.com rhscl-container-qe@redhat.com < "${GRADES_LOG}"
