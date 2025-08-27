@@ -99,18 +99,19 @@ class DailyGradesReport(object):
                 image_name, current_grade, days = image_grade_info
                 if current_grade == "B":
                     self.body += (
-                        f"{image_name} [{current_grade}] days until grade C!<br>"
+                        f"{image_name} [{current_grade}] {days} days until grade C!<br>"
                     )
                     grade_flags = False
                 if current_grade == "C":
                     self.body += (
-                        f"{image_name} [{current_grade}] days since grade C!<br>"
+                        f"{image_name} [{current_grade}] {days} days since grade C!<br>"
                     )
                     grade_flags = False
                 if current_grade in ["D", "E", "F"]:
                     print(f"Grade for {image_name} is one of DEF.")
                     self.body += (
-                        f"{image_name} [{current_grade}] days last grade change!<br>"
+                        f"{image_name} [{current_grade}] "
+                        f"{days} days last grade change!<br>"
                     )
                     grade_flags = False
                 if current_grade == "NONE":
