@@ -111,7 +111,7 @@ class DailyGradesReport(object):
                     print(f"Grade for {image_name} is one of DEF.")
                     self.body += (
                         f"{image_name} [{current_grade}] "
-                        f"{days} days last grade change!<br>"
+                        f"{abs(int(days))} days last grade change!<br>"
                     )
                     grade_flags = False
                 if current_grade == "NONE":
