@@ -16,6 +16,7 @@ default_mails = [
     "hhorak@redhat.com",
     "pkubat@redhat.com",
     "anezbeda@redhat.com",
+    "pkhartsk@redhat.com",
 ]
 upstream_mails = [
     "phracek@redhat.com",
@@ -64,13 +65,25 @@ SCLORG_UPSTREAM_TESTS_MAILS = {
 TEST_CASES = {
     # Format is test for OS and king of test, what TMT Plan is used and MSG to mail
     ("fedora-test", "nightly-container-f", "Fedora test results:"),
+    ("fedora-test-pytest", "nightly-container-f", "Fedora PyTest test results:"),
     ("c9s-test", "nightly-container-centos-stream-9", "CentOS Stream 9 test results:"),
+    (
+        "c9s-test-pytest",
+        "nightly-container-centos-stream-9",
+        "CentOS Stream 9 PyTest test results:",
+    ),
     (
         "c10s-test",
         "nightly-container-centos-stream-10",
         "CentOS Stream 10 test results:",
     ),
+    (
+        "c10s-test-pytest",
+        "nightly-container-centos-stream-10",
+        "CentOS Stream 10 PyTest test results:",
+    ),
     ("rhel8-test", "nightly-container-rhel8", "RHEL-8 test results:"),
+    ("rhel8-test-pytest", "nightly-container-rhel8", "RHEL-8 PyTest test results:"),
     (
         "rhel8-test-openshift-4",
         "nightly-container-rhel8",
@@ -82,6 +95,7 @@ TEST_CASES = {
         "RHEL-8 PyTest in OpenShift 4 test results:",
     ),
     ("rhel9-test", "nightly-container-rhel9", "RHEL-9 test results:"),
+    ("rhel9-test-pytest", "nightly-container-rhel8", "RHEL-9 PyTest test results:"),
     (
         "rhel9-test-openshift-4",
         "nightly-container-rhel9",
@@ -98,6 +112,17 @@ TEST_CASES = {
         "RHEL-9 Helm Charts test results:",
     ),
     ("rhel10-test", "nightly-container-rhel10", "RHEL-10 test results:"),
+    ("rhel10-test-pytest", "nightly-container-rhel10", "RHEL-10 PyTest test results:"),
+    (
+        "rhel10-test-openshift-4",
+        "nightly-container-rhel10",
+        "RHEL-10 OpenShift 4 test results:",
+    ),
+    (
+        "rhel10-test-openshift-pytest",
+        "nightly-container-rhel10",
+        "RHEL-10 PyTest in OpenShift 4 test results:",
+    ),
 }
 
 TEST_UPSTREAM_CASES = {
