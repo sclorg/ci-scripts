@@ -83,7 +83,8 @@ source /tmp/fmf_data
 
 cd "$WORK_DIR/$TMT_DIR" || { echo "Could not switch to $WORK_DIR/$TMT_DIR"; exit 1; }
 echo "TARGET is: ${TARGET} and test is: ${TESTS}" | tee -a "${LOG}"
-touch "${RESULTS_DIR}/${TARGET}-${TESTS}/tmt_running"
+RESULTS_TARGET_DIR="${RESULTS_DIR}/${TARGET}-${TESTS}"
+touch "${RESULTS_TARGET_DIR}/tmt_running"
 if [[ "$TESTS" == "test-upstream" ]]; then
   TMT_COMMAND="tmt run -v -v -d -d --all -e SCRIPT=$SCRIPT -e OS=$TARGET -e TEST=$TESTS --id ${DIR} plan --name $TFT_PLAN provision --how minute --auto-select-network --image ${COMPOSE}"
 else
@@ -94,16 +95,23 @@ set -o pipefail
 $TMT_COMMAND | tee -a "${LOG}"
 if [[ $? -ne 0 ]]; then
   echo "TMT command $TMT_COMMAND has failed."
-  touch "${RESULTS_DIR}/${TARGET}-${TESTS}/tmt_failed"
+  if [[ -f "${RESULTS_TARGET_DIR}/tmt_success" ]]; then
+    rm -f "${RESULTS_TARGET_DIR}/tmt_success"
+  fi
+  touch "${RESULTS_TARGET_DIR}/tmt_failed"
 else
-  touch "${RESULTS_DIR}/${TARGET}-${TESTS}/tmt_success"
+  if [[ -f "${RESULTS_TARGET_DIR}/tmt_failed" ]]; then
+    echo "Previous test run has failed but this one has passed."
+  else
+    touch "${RESULTS_TARGET_DIR}/tmt_success"
+  fi
 fi
 if [[ -d "${DIR}/plans/${TFT_PLAN}/data" ]]; then
-  cp -rv "${DIR}/plans/${TFT_PLAN}/data/results" "${RESULTS_DIR}/${TARGET}-${TESTS}/plans/${TFT_PLAN}/data/"
-  cp -v "${DIR}/plans/${TFT_PLAN}/data/*.log" "${RESULTS_DIR}/${TARGET}-${TESTS}/plans/${TFT_PLAN}/data/"
+  cp -rv "${DIR}/plans/${TFT_PLAN}/data/results" "${RESULTS_TARGET_DIR}/plans/${TFT_PLAN}/data/"
+  cp -v "${DIR}/plans/${TFT_PLAN}/data/*.log" "${RESULTS_TARGET_DIR}/plans/${TFT_PLAN}/data/"
 fi
-cp "${DIR}/log.txt" "${RESULTS_DIR}/${TARGET}-${TESTS}/"
+cp "${DIR}/log.txt" "${RESULTS_TARGET_DIR}/"
 set +o pipefail
-rm -f "${RESULTS_DIR}/${TARGET}-${TESTS}/tmt_running"
+rm -f "${RESULTS_TARGET_DIR}/tmt_running"
 cd "$CWD" || exit 1
 rm -rf "$WORK_DIR"
