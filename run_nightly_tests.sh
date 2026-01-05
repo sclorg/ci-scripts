@@ -86,9 +86,9 @@ echo "TARGET is: ${TARGET} and test is: ${TESTS}" | tee -a "${LOG}"
 RESULTS_TARGET_DIR="${RESULTS_DIR}/${TARGET}-${TESTS}"
 touch "${RESULTS_TARGET_DIR}/tmt_running"
 if [[ "$TESTS" == "test-upstream" ]]; then
-  TMT_COMMAND="tmt run -v -v -d -d --all -e SCRIPT=$SCRIPT -e OS=$TARGET -e TEST=$TESTS --id ${DIR} plan --name $TFT_PLAN provision --how minute --auto-select-network --image ${COMPOSE}"
+  TMT_COMMAND="tmt run -v -v -d -d --all -e DEBUG=yes -e SCRIPT=$SCRIPT -e OS=$TARGET -e TEST=$TESTS --id ${DIR} plan --name $TFT_PLAN provision --how minute --auto-select-network --image ${COMPOSE}"
 else
-  TMT_COMMAND="tmt run -v -v -d -d --all -e SCRIPT=$SCRIPT -e OS=$TARGET -e SET_TEST=$SET_TEST -e TEST=$TESTS --id ${DIR} plan --name $TFT_PLAN provision --how minute --auto-select-network --image ${COMPOSE}"
+  TMT_COMMAND="tmt run -v -v -d -d --all -e DEBUG=yes -e SCRIPT=$SCRIPT -e OS=$TARGET -e SET_TEST=$SET_TEST -e TEST=$TESTS --id ${DIR} plan --name $TFT_PLAN provision --how minute --auto-select-network --image ${COMPOSE}"
 fi
 echo "TMT command is: $TMT_COMMAND" | tee -a "${LOG}"
 set -o pipefail
