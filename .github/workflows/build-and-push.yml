@@ -39,7 +39,7 @@ jobs:
           registry_token: ${{ secrets[matrix.quayio_token] }}
           dockerfile: "Dockerfile.daily-tests"
           tag: "daily-tests"
-          image_name: "daily-tests:latest"
+          image_name: "daily-tests"
           quay_application_token: ${{ secrets.QUAY_IMAGE_SCLORG_UPDATE_DESC }}
 
       - name: Build and push daily-reports image to quay.io registry
@@ -51,5 +51,5 @@ jobs:
           registry_token: ${{ secrets[matrix.quayio_token] }}
           dockerfile: Dockerfile.daily-reports
           tag: "daily-reports"
-          image_name: "daily-reports:latest"
+          image_name: "daily-reports"
           quay_application_token: ${{ secrets.QUAY_IMAGE_SCLORG_UPDATE_DESC }}
