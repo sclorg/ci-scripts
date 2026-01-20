@@ -1,0 +1,67 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    description: Deploy CI scripts to OpenShift
+    template.alpha.openshift.io/wait-for-ready: "true"
+  labels:
+    io.openshift.tags: ci-scripts
+  name: ci-scripts
+spec:
+  template:
+    metadata:
+      labels:
+        io.openshift.tags: ci-scripts
+        name: ci-scripts
+      name: ci-scripts
+    spec:
+      containers:
+        - name: ci-scripts
+          # get latest from image stream
+          image: "quay.io/sclorg/ci-scripts:latest"
+          env:
+            - name: TESTING_FARM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: testing-farm-api-keys
+                  key: testing_farm_api_key
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ci-scripts-slack-webhook
+                  key: slack_webhook_url
+            - name: NAMESPACE
+              valueFrom:
+                configMapKeyRef:
+                  name: ci-scripts-config
+                  key: namespace
+          volumeMounts:
+            - name: nightly-builds-daily-logs
+              mountPath: /var/tmp/daily_scl_tests
+            - name: nightly-builds-results-logs
+              mountPath: /var/tmp/daily_reports_dir
+          resources:
+            requests:
+              memory: "400Mi"
+              cpu: "200m"
+            limits:
+              memory: "800Mi"
+              cpu: "400m"
+      serviceAccountName: ci-scripts
+      volumes:
+        - name: nightly-builds-daily-logs
+          persistentVolumeClaim:
+            claimName: claim.nighly-builds-daily-logs
+        - name: nightly-builds-results-logs
+          persistentVolumeClaim:
+            claimName: claim.nighly-builds-results-logs
+      restartPolicy: Always
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingParams:
+      intervalSeconds: 1
+  selector:
+    matchLabels:
+      name: ci-scripts
