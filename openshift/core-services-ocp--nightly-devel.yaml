@@ -1,9 +1,0 @@
-apiVersion: tenant.paas.redhat.com/v1alpha1
-kind: TenantNamespace
-metadata:
-  name: nightly-devel
-  namespace: core-services-ocp--config
-spec:
-  type: runtime
-  network:
-    security-zone: internal
