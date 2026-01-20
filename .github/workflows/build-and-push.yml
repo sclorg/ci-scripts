@@ -37,7 +37,7 @@ jobs:
           registry_namespace: "sclorg"
           registry_username: ${{ secrets[matrix.quayio_username] }}
           registry_token: ${{ secrets[matrix.quayio_token] }}
-          dockerfile: Dockerfile.daily-tests
+          dockerfile: "Dockerfile.daily-tests"
           tag: "daily-tests"
           image_name: "daily-tests:latest"
           quay_application_token: ${{ secrets.QUAY_IMAGE_SCLORG_UPDATE_DESC }}
