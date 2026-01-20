@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claim.nighly-builds-daily-logs
+  annotations:
+    trident.netapp.io/reclaimPolicy: Delete
+  labels:
+    paas.redhat.com/appcode: CORE-005
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 4Gi
+  storageClassName: netapp-nfs
+  volumeMode: Filesystem

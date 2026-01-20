@@ -1,0 +1,55 @@
+name: Build and push container images to Quay.io registry
+on:
+  push:
+    branches:
+      - master
+  schedule:
+      - cron: '0 1 * * 3'
+
+jobs:
+  build-and-push:
+    if: github.repository_owner == 'sclorg'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - dockerfile: "Dockerfile.daily-tests"
+            registry_namespace: "sclorg"
+            quayio_username: "QUAY_IMAGE_SCLORG_BUILDER_USERNAME"
+            quayio_token: "QUAY_IMAGE_SCLORG_BUILDER_TOKEN"
+            tag: "daily-tests"
+            image_name: "daily-tests:latest"
+
+          - dockerfile: "Dockerfile.daily-reports"
+            registry_namespace: "sclorg"
+            quayio_username: "QUAY_IMAGE_SCLORG_BUILDER_USERNAME"
+            quayio_token: "QUAY_IMAGE_SCLORG_BUILDER_TOKEN"
+            tag: "daily-reports"
+            image_name: "daily-reports:latest"
+
+
+    steps:
+      - name: Build and push daily-tests image to quay.io registry
+        uses: sclorg/build-and-push-action@v4
+        with:
+          registry: "quay.io"
+          registry_namespace: "sclorg"
+          registry_username: ${{ secrets[matrix.quayio_username] }}
+          registry_token: ${{ secrets[matrix.quayio_token] }}
+          dockerfile: Dockerfile.daily-tests
+          tag: "daily-tests"
+          image_name: "daily-tests:latest"
+          quay_application_token: ${{ secrets.QUAY_IMAGE_SCLORG_UPDATE_DESC }}
+
+      - name: Build and push daily-reports image to quay.io registry
+        uses: sclorg/build-and-push-action@v4
+        with:
+          registry: "quay.io"
+          registry_namespace: "sclorg"
+          registry_username: ${{ secrets[matrix.quayio_username] }}
+          registry_token: ${{ secrets[matrix.quayio_token] }}
+          dockerfile: Dockerfile.daily-reports
+          tag: "daily-reports"
+          image_name: "daily-reports:latest"
+          quay_application_token: ${{ secrets.QUAY_IMAGE_SCLORG_UPDATE_DESC }}

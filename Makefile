@@ -1,7 +1,11 @@
-.PHONY: run_daily_tests shellcheck
+.PHONY: run_daily_tests shellcheck build_images
 
 run_daily_tests:
 	bash daily_tests/daily_scl_tests.sh
 
 shellcheck:
 	./run-shellcheck.sh `git ls-files *.sh`
+
+build_images:
+	podman build -t quay.io/sclorg/daily-tests:latest -f Containerfile.daily-tests .
+	podman build -t quay.io/sclorg/daily-reports:latest -f Containerfile.daily-reports .
