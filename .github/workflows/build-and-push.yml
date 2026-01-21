@@ -16,8 +16,8 @@ jobs:
         with:
           registry: "quay.io"
           registry_namespace: "sclorg"
-          registry_username: ${{ secrets[QUAY_IMAGE_SCLORG_BUILDER_USERNAME] }}
-          registry_token: ${{ secrets[QUAY_IMAGE_SCLORG_BUILDER_TOKEN] }}
+          registry_username: ${{ secrets.QUAY_IMAGE_SCLORG_BUILDER_USERNAME }}
+          registry_token: ${{ secrets.QUAY_IMAGE_SCLORG_BUILDER_TOKEN }}
           dockerfile: Dockerfile.daily-tests
           tag: "daily-tests:0.1.0"
           image_name: "upstream-daily-tests"
