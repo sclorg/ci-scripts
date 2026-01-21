@@ -1,0 +1,24 @@
+name: Build and push container images to Quay.io registry
+on:
+  push:
+    branches:
+      - master
+  schedule:
+      - cron: '0 1 * * 3'
+
+jobs:
+  build-and-push:
+    if: github.repository_owner == 'sclorg'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build and push daily-tests image to quay.io registry
+        uses: sclorg/build-and-push-action@v4
+        with:
+          registry: "quay.io"
+          registry_namespace: "sclorg"
+          registry_username: ${{ secrets[QUAY_IMAGE_SCLORG_BUILDER_USERNAME] }}
+          registry_token: ${{ secrets[QUAY_IMAGE_SCLORG_BUILDER_TOKEN] }}
+          dockerfile: Dockerfile.daily-tests
+          tag: "daily-tests:0.1.0"
+          image_name: "upstream-daily-tests"
+          quay_application_token: ${{ secrets.QUAY_IMAGE_SCLORG_UPDATE_DESC }}
