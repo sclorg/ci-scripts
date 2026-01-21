@@ -2,10 +2,8 @@ FROM quay.io/fedora/fedora:42
 
 ENV WORK_DIR="/var/tmp" \
     VERSION="42" \
-    RELEASE="0.1.0" \
+    RELEASE="0.2.0" \
     DOWNSTREAM_TMT_DIR="sclorg-tmt-plans" \
-    CI_REPO="https://github.com/sclorg/ci-scripts" \
-    CI_REPO_NAME="ci-scripts" \
     UPSTREAM_TMT_REPO="https://github.com/sclorg/sclorg-testing-farm" \
     UPSTREAM_TMT_DIR="sclorg-testing-farm" \
     HOME="/home/nightly" \
@@ -28,8 +26,7 @@ RUN bash "${WORK_DIR}/requirements.sh"
 RUN dnf install -y python3.13-pip git && \
     dnf clean all
 
-RUN git clone "${CI_REPO}" "${CI_REPO_NAME}" && \
-    git clone "${UPSTREAM_TMT_REPO}" "${WORK_DIR}/${UPSTREAM_TMT_DIR}"
+RUN git clone "${UPSTREAM_TMT_REPO}" "${WORK_DIR}/${UPSTREAM_TMT_DIR}"
 
 COPY . /ci-scripts
 WORKDIR "${HOME}"
