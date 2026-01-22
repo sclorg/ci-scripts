@@ -63,7 +63,7 @@ function get_compose() {
     COMPOSE="1MT-RHEL-10.0"
     TMT_PLAN_DIR="$DOWNSTREAM_TMT_DIR"
   elif [[ "$TARGET" == "fedora" ]]; then
-    COMPOSE="1MT-Fedora-42"
+    COMPOSE="1MT-Fedora-${VERSION}"
     TMT_PLAN_DIR="$UPSTREAM_TMT_DIR"
     TFT_PLAN="nightly-container-f"
   elif [[ "$TARGET" == "c9s" ]]; then
@@ -81,10 +81,8 @@ function get_compose() {
 }
 
 function run_tests() {
-  ENV_VARIABLES="-e DEBUG=yes -e SCRIPT=$SCRIPT -e OS=$TARGET"
-  if [[ "$TESTS" == "test-upstream" ]]; then
-    ENV_VARIABLES="$ENV_VARIABLES -e TEST=$TESTS"
-  else
+  ENV_VARIABLES="-e DEBUG=yes -e SCRIPT=$SCRIPT -e OS=$TARGET -e TEST=$TESTS"
+  if [[ "$TESTS" != "test-upstream" ]]; then
     ENV_VARIABLES="$ENV_VARIABLES -e SET_TEST=$SET_TEST"
   fi
   TMT_COMMAND="tmt run -v -v -d -d --all ${ENV_VARIABLES} --id ${DIR} plan --name $TFT_PLAN provision --how minute --auto-select-network --image ${COMPOSE}"
