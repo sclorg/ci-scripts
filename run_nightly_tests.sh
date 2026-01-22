@@ -25,10 +25,16 @@ LOG_FILE="${LOGS_DIR}/${TARGET}-${TESTS}.log"
 WORK_DIR=$(mktemp -d -p "/var/tmp")
 
 function move_logs_to_old() {
-  rm -rf "${LOGS_DIR_OLD}/*"
-  rm -rf "${RESULTS_DIR_OLD}/*"
-  mv "${LOG_FILE}" "${LOGS_DIR_OLD}/"
-  mv "${RESULTS_TARGET_DIR}" "${RESULTS_DIR_OLD}/"
+  echo "Moving logs to old directory"
+  if [[ -d "${LOGS_DIR_OLD}" ]]; then
+    rm -rf "${LOGS_DIR_OLD}/*"
+  fi
+  if [[ -d "${RESULTS_DIR_OLD}" ]]; then
+    rm -rf "${RESULTS_DIR_OLD}/*"
+  fi
+  mv "${LOG_FILE}/*" "${LOGS_DIR_OLD}/"
+  mv "${RESULTS_TARGET_DIR}/*" "${RESULTS_DIR_OLD}/"
+  echo "Logs moved to old directory"
 }
 
 function prepare_environment() {
@@ -51,22 +57,22 @@ function prepare_environment() {
 function get_compose() {
   if [[ "$TARGET" == "rhel8" ]]; then
     COMPOSE="1MT-RHEL-8.10.0-updates"
-    TMT_DIR="$DOWNSTREAM_TMT_DIR"
+    TMT_PLAN_DIR="$DOWNSTREAM_TMT_DIR"
   elif [[ "$TARGET" == "rhel9" ]]; then
     COMPOSE="1MT-RHEL-9.6.0-updates"
-    TMT_DIR="$DOWNSTREAM_TMT_DIR"
+    TMT_PLAN_DIR="$DOWNSTREAM_TMT_DIR"
   elif [[ "$TARGET" == "rhel10" ]]; then
     COMPOSE="1MT-RHEL-10.0"
-    TMT_DIR="$DOWNSTREAM_TMT_DIR"
+    TMT_PLAN_DIR="$DOWNSTREAM_TMT_DIR"
   elif [[ "$TARGET" == "fedora" ]]; then
     COMPOSE="1MT-Fedora-40"
-    TMT_DIR="$UPSTREAM_TMT_DIR"
+    TMT_PLAN_DIR="$UPSTREAM_TMT_DIR"
   elif [[ "$TARGET" == "c9s" ]]; then
     COMPOSE="1MT-CentOS-Stream-9"
-    TMT_DIR="$UPSTREAM_TMT_DIR"
+    TMT_PLAN_DIR="$UPSTREAM_TMT_DIR"
   elif [[ "$TARGET" == "c10s" ]]; then
     COMPOSE="1MT-CentOS-Stream-10"
-    TMT_DIR="$UPSTREAM_TMT_DIR"
+    TMT_PLAN_DIR="$UPSTREAM_TMT_DIR"
   else
     echo "This target is not supported"
     exit 1
@@ -83,10 +89,10 @@ function run_tests() {
     ENV_VARIABLES="$ENV_VARIABLES -e SET_TEST=$SET_TEST"
   fi
   TMT_COMMAND="tmt run -v -v -d -d --all ${ENV_VARIABLES} --id ${DIR} plan --name $TFT_PLAN provision --how minute --auto-select-network --image ${COMPOSE}"
-  echo "TMT command is: $TMT_COMMAND" | tee -a "${LOG}"
+  echo "TMT command is: $TMT_COMMAND" | tee -a "${LOG_FILE}"
   touch "${RESULTS_TARGET_DIR}/tmt_running"
   set -o pipefail
-  $TMT_COMMAND | tee -a "${LOG}"
+  $TMT_COMMAND | tee -a "${LOG_FILE}"
   if [[ $? -ne 0 ]]; then
     echo "TMT command $TMT_COMMAND has failed."
     if [[ -f "${RESULTS_TARGET_DIR}/tmt_success" ]]; then
@@ -125,12 +131,14 @@ get_compose
 
 move_logs_to_old
 
-date > "${LOG}"
+date > "${LOG_FILE}"
 curl --insecure -L https://url.corp.redhat.com/fmf-data > "/tmp/fmf_data"
 source "/tmp/fmf_data"
 
-cd "$WORK_DIR/$TMT_DIR" || { echo "Could not switch to $WORK_DIR/$TMT_DIR"; exit 1; }
-echo "TARGET is: ${TARGET} and test is: ${TESTS}" | tee -a "${LOG}"
+env
+echo "Switching to $WORK_DIR/$TMT_PLAN_DIR"
+cd "$WORK_DIR/$TMT_PLAN_DIR" || { echo "Could not switch to $WORK_DIR/$TMT_PLAN_DIR"; exit 1; }
+echo "TARGET is: ${TARGET} and test is: ${TESTS}" | tee -a "${LOG_FILE}"
 
 run_tests
 
