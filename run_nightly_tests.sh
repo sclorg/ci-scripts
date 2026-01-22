@@ -8,13 +8,12 @@ if [[ "${TESTS}" != "test-upstream" ]]; then
   SET_TEST="$TEST_TYPE"
 fi
 
-LOGS_DIR="/var/tmp/daily_tests_logs/"
+LOGS_DIR="${WORK_DIR}/daily_tests_logs/"
 LOGS_DIR_OLD="${LOGS_DIR}/old"
-DAILY_TEST_DIR="/var/tmp/daily_scl_tests"
-RESULTS_DIR="/var/tmp/daily_reports_dir"
+DAILY_TEST_DIR="${WORK_DIR}/daily_scl_tests"
+RESULTS_DIR="${WORK_DIR}/daily_reports_dir"
 RESULTS_DIR_OLD="${RESULTS_DIR}/old"
 SCRIPT="daily_scl_tests"
-TMT_DIR="sclorg-tmt-plans"
 TFT_PLAN="nightly-container-$TARGET"
 DIR="${DAILY_TEST_DIR}/${TARGET}-${TESTS}-${SET_TEST}"
 RESULTS_TARGET_DIR="${RESULTS_DIR}/${TARGET}-${TESTS}"
@@ -22,7 +21,6 @@ if [[ "$TESTS" == "test-upstream" ]]; then
   DIR="${DAILY_TEST_DIR}/${TARGET}-${TESTS}"
 fi
 LOG_FILE="${LOGS_DIR}/${TARGET}-${TESTS}.log"
-WORK_DIR=$(mktemp -d -p "/var/tmp")
 
 function move_logs_to_old() {
   echo "Moving logs to old directory"
