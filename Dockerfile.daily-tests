@@ -2,7 +2,7 @@ FROM quay.io/fedora/fedora:42
 
 ENV WORK_DIR="/var/tmp" \
     VERSION="42" \
-    RELEASE="0.2.0" \
+    RELEASE="0.3.0" \
     DOWNSTREAM_TMT_DIR="sclorg-tmt-plans" \
     UPSTREAM_TMT_REPO="https://github.com/sclorg/sclorg-testing-farm" \
     UPSTREAM_TMT_DIR="sclorg-testing-farm" \
