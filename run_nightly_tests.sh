@@ -63,8 +63,9 @@ function get_compose() {
     COMPOSE="1MT-RHEL-10.0"
     TMT_PLAN_DIR="$DOWNSTREAM_TMT_DIR"
   elif [[ "$TARGET" == "fedora" ]]; then
-    COMPOSE="1MT-Fedora-40"
+    COMPOSE="1MT-Fedora-42"
     TMT_PLAN_DIR="$UPSTREAM_TMT_DIR"
+    TFT_PLAN="nightly-container-f"
   elif [[ "$TARGET" == "c9s" ]]; then
     COMPOSE="1MT-CentOS-Stream-9"
     TMT_PLAN_DIR="$UPSTREAM_TMT_DIR"

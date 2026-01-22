@@ -2,7 +2,7 @@ FROM quay.io/fedora/fedora:42
 
 ENV WORK_DIR="/var/tmp" \
     VERSION="42" \
-    RELEASE="0.3.0" \
+    RELEASE="0.4.0" \
     DOWNSTREAM_TMT_DIR="sclorg-tmt-plans" \
     UPSTREAM_TMT_REPO="https://github.com/sclorg/sclorg-testing-farm" \
     UPSTREAM_TMT_DIR="sclorg-testing-farm" \
@@ -10,8 +10,6 @@ ENV WORK_DIR="/var/tmp" \
     SUMMARY="Daily tests for SCL org projects" \
     DESCRIPTION="This image is used to run daily tests for SCL org projects in CI." \
     NAME="nightly"
-
-ENV LANG=en_US.UTF-8
 
 LABEL summary="${SUMMARY}" \
       description="${DESCRIPTION}" \
