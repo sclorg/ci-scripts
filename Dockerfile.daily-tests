@@ -1,8 +1,8 @@
 FROM quay.io/fedora/fedora:42
 
-ENV WORK_DIR="/var/tmp" \
+ENV WORK_DIR="/var/tmp/ci-scripts" \
     VERSION="42" \
-    RELEASE_UPSTREAM="0.5.0" \
+    RELEASE_UPSTREAM="0.6.0" \
     DOWNSTREAM_TMT_DIR="sclorg-tmt-plans" \
     UPSTREAM_TMT_REPO="https://github.com/sclorg/sclorg-testing-farm" \
     UPSTREAM_TMT_DIR="sclorg-testing-farm" \
@@ -18,13 +18,12 @@ LABEL summary="${SUMMARY}" \
       io.k8s.vendor="SCL org" \
       architecture="x86_64"
 
-COPY requirements.sh "${WORK_DIR}/requirements.sh"
-RUN bash "${WORK_DIR}/requirements.sh"
-
 RUN dnf install -y python3.13-pip git && \
     dnf clean all
 
 RUN git clone "${UPSTREAM_TMT_REPO}" "${WORK_DIR}/${UPSTREAM_TMT_DIR}"
+COPY requirements.sh "${WORK_DIR}/requirements.sh"
+RUN bash "${WORK_DIR}/requirements.sh"
 
 COPY . /root/ci-scripts
 WORKDIR "${HOME}"
