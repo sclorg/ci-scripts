@@ -84,6 +84,8 @@ function run_tests() {
   ENV_VARIABLES="-e DEBUG=yes -e SCRIPT=$SCRIPT -e OS=$TARGET -e TEST=$TESTS"
   if [[ "$TESTS" != "test-upstream" ]]; then
     ENV_VARIABLES="$ENV_VARIABLES -e SET_TEST=$SET_TEST"
+  else
+    ENV_VARIABLES="$ENV_VARIABLES -e CI=true"
   fi
   TMT_COMMAND="tmt run -v -v -d -d --all ${ENV_VARIABLES} --id ${DIR} plan --name $TFT_PLAN provision --how minute --auto-select-network --image ${COMPOSE}"
   echo "TMT command is: $TMT_COMMAND" | tee -a "${LOG_FILE}"
