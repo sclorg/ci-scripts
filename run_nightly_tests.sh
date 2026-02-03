@@ -69,11 +69,11 @@ function get_compose() {
   elif [[ "$TARGET" == "c9s" ]]; then
     COMPOSE="1MT-CentOS-Stream-9"
     TMT_PLAN_DIR="$UPSTREAM_TMT_DIR"
-    TFT_PLAN="nightly-container-centos-stream-9"
+    TFT_PLAN="nightly-container-c9s"
   elif [[ "$TARGET" == "c10s" ]]; then
     COMPOSE="1MT-CentOS-Stream-10"
     TMT_PLAN_DIR="$UPSTREAM_TMT_DIR"
-    TFT_PLAN="nightly-container-centos-stream-10"
+    TFT_PLAN="nightly-container-c10s"
   else
     echo "This target is not supported"
     exit 1
