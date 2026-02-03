@@ -1,4 +1,0 @@
-language: shell
-os: linux
-script:
-  - make shellcheck
