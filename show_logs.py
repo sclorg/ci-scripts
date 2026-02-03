@@ -13,7 +13,6 @@ class PVCWatcherReport:
         self.cwd = os.getcwd()
 
     def iter_results_in_directory(self):
-        """Yield all files in the given directory."""
         success_tests = []
         failed_tests = []
         for item in DAILY_REPORTS_DIR.iterdir():
@@ -23,8 +22,10 @@ class PVCWatcherReport:
                     success_tests.append(item.name)
                 else:
                     failed_tests.append(item.name)
-        print(f"Success tests in {DAILY_REPORTS_DIR} are: {success_tests}")
-        print(f"Failed tests in {DAILY_REPORTS_DIR} are: {failed_tests}")
+        print(f"Success tests in {DAILY_REPORTS_DIR} are:")
+        print("\n".join(success_tests))
+        print(f"Failed tests in {DAILY_REPORTS_DIR} are:")
+        print("\n".join(failed_tests))
 
     def iter_over_executed_tests(self):
         """Yield all executed tests in the given directory."""
@@ -34,7 +35,7 @@ class PVCWatcherReport:
             if item.is_file():
                 executed_tests.append(item.name)
         print("Executed tests are:")
-        print(executed_tests.split("\n"))
+        print("\n".join(executed_tests))
 
     def print_report(self):
         print("Daily SCL Tests Reports:")
