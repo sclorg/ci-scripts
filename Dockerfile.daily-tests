@@ -1,15 +1,15 @@
 FROM quay.io/fedora/fedora:42
 
-ENV WORK_DIR="/var/tmp/ci-scripts" \
+ENV SHARED_DIR="/var/ci-scripts" \
     VERSION="42" \
     RELEASE_UPSTREAM="0.6.0" \
-    DOWNSTREAM_TMT_DIR="sclorg-tmt-plans" \
     UPSTREAM_TMT_REPO="https://github.com/sclorg/sclorg-testing-farm" \
     UPSTREAM_TMT_DIR="sclorg-testing-farm" \
     HOME="/home/nightly" \
     SUMMARY="Daily tests for SCL org projects" \
     DESCRIPTION="This image is used to run daily tests for SCL org projects in CI." \
-    NAME="nightly"
+    NAME="nightly" \
+    WORK_DIR="/home/nightly/ci-scripts"
 
 LABEL summary="${SUMMARY}" \
       description="${DESCRIPTION}" \
@@ -18,14 +18,16 @@ LABEL summary="${SUMMARY}" \
       io.k8s.vendor="SCL org" \
       architecture="x86_64"
 
-RUN dnf install -y python3.13-pip git && \
+RUN dnf install -y python3.13-pip git nss_wrapper && \
     dnf clean all
 
-RUN git clone "${UPSTREAM_TMT_REPO}" "${WORK_DIR}/${UPSTREAM_TMT_DIR}"
 COPY requirements.sh "${WORK_DIR}/requirements.sh"
 RUN bash "${WORK_DIR}/requirements.sh"
+RUN cd "${WORK_DIR}" && git clone "${UPSTREAM_TMT_REPO}" "${UPSTREAM_TMT_DIR}"
 
 COPY . /root/ci-scripts
 WORKDIR "${HOME}"
+
+# USER 900
 
 CMD ["/root/ci-scripts/run_nightly_tests.sh"]
