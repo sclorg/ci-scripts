@@ -83,7 +83,7 @@ function get_compose() {
 }
 
 function run_tests() {
-  ENV_VARIABLES="-e DEBUG=yes -e SCRIPT=$SCRIPT -e OS=$TARGET -e TEST=$TESTS"
+  ENV_VARIABLES="-e DEBUG=yes -e OS=$TARGET -e TEST=$TESTS"
   if [[ "$TESTS" != "test-upstream" ]]; then
     ENV_VARIABLES="$ENV_VARIABLES -e SET_TEST=$SET_TEST"
   else
