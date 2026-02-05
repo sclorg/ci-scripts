@@ -64,22 +64,18 @@ SCLORG_UPSTREAM_TESTS_MAILS = {
 
 TEST_CASES = {
     # Format is test for OS and king of test, what TMT Plan is used and MSG to mail
-    ("fedora-test", "nightly-container-f", "Fedora test results:"),
-    ("fedora-test-pytest", "nightly-container-f", "Fedora PyTest test results:"),
-    ("c9s-test", "nightly-container-centos-stream-9", "CentOS Stream 9 test results:"),
+    ("fedora-test", "nightly-container-fedora", "Fedora test results:"),
+    ("fedora-test-pytest", "nightly-container-fedora", "Fedora PyTest test results:"),
+    ("c9s-test", "nightly-container-c9s", "CentOS Stream 9 test results:"),
     (
         "c9s-test-pytest",
-        "nightly-container-centos-stream-9",
+        "nightly-container-c9s",
         "CentOS Stream 9 PyTest test results:",
     ),
-    (
-        "c10s-test",
-        "nightly-container-centos-stream-10",
-        "CentOS Stream 10 test results:",
-    ),
+    ("c10s-test", "nightly-container-c10s", "CentOS Stream 10 test results:"),
     (
         "c10s-test-pytest",
-        "nightly-container-centos-stream-10",
+        "nightly-container-c10s",
         "CentOS Stream 10 PyTest test results:",
     ),
     ("rhel8-test", "nightly-container-rhel8", "RHEL-8 test results:"),

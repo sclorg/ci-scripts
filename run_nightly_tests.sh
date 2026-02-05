@@ -2,11 +2,27 @@
 
 set -x
 
-[[ -z "$TARGET" ]] && { echo "You have to specify target to build SCL images. rhel9, rhel8, or fedora" && exit 1 ; }
-[[ -z "$TESTS" ]] && { echo "You have to specify type of the test to run. test, test-pytest, test-openshift, test-openshift-pytest" && exit 1 ; }
+if [[ -n "$TARGET" ]]; then
+  echo "Target is set to $TARGET"
+else
+  echo "TARGET variable is not set. Please set it to rhel9, rhel8, rhel10, fedora, c9s or c10s."
+  exit 1
+fi
+if [[ -n "$TESTS" ]]; then
+  echo "Test is set to $TESTS"
+else
+  echo "TESTS variable is not set. Please set it to test, test-pytest, test-openshift, or test-openshift-pytest."
+  exit 1
+fi
+
 SET_TEST=""
 if [[ "${TESTS}" != "test-upstream" ]]; then
-  [[ -z "$TEST_TYPE" ]] && { echo "You have to specify type of images S2I or NOS2I" && exit 1 ; }
+  if [[ -n "$TEST_TYPE" ]]; then
+    echo "Test type is set to $TEST_TYPE"
+  else
+    echo "TEST_TYPE variable is not set. Please set it to S2I or NOS2I."
+    exit 1
+  fi
   SET_TEST="$TEST_TYPE"
 fi
 
@@ -16,7 +32,7 @@ LOCAL_LOGS_DIR="${HOME}/logs/"
 
 # Shared directories between runs
 DAILY_REPORTS_DIR="${SHARED_DIR}/daily_reports_dir"
-TFT_PLAN="nightly-container-$TARGET"
+TFT_PLAN="nightly/nightly-$TARGET"
 DAILY_REPORTS_TESTS_DIR="${DAILY_REPORTS_DIR}/${TARGET}-${TESTS}"
 DAILY_SCLORG_TESTS_DIR="${SHARED_DIR}/daily_scl_tests"
 
@@ -65,15 +81,15 @@ function get_compose() {
   elif [[ "$TARGET" == "fedora" ]]; then
     COMPOSE="1MT-Fedora-${VERSION}"
     TMT_PLAN_DIR="$UPSTREAM_TMT_DIR"
-    TFT_PLAN="nightly-container-fedora"
+    TFT_PLAN="nightly/nightly-fedora"
   elif [[ "$TARGET" == "c9s" ]]; then
     COMPOSE="1MT-CentOS-Stream-9"
     TMT_PLAN_DIR="$UPSTREAM_TMT_DIR"
-    TFT_PLAN="nightly-container-c9s"
+    TFT_PLAN="nightly/nightly-c9s"
   elif [[ "$TARGET" == "c10s" ]]; then
     COMPOSE="1MT-CentOS-Stream-10"
     TMT_PLAN_DIR="$UPSTREAM_TMT_DIR"
-    TFT_PLAN="nightly-container-c10s"
+    TFT_PLAN="nightly/nightly-c10s"
   else
     echo "This target is not supported"
     exit 1
@@ -91,10 +107,13 @@ function run_tests() {
   fi
   TMT_COMMAND="tmt run -v -v -d -d --all ${ENV_VARIABLES} --id ${DIR} plan --name $TFT_PLAN provision -v -v --how minute --auto-select-network --image ${COMPOSE}"
   echo "TMT command is: $TMT_COMMAND" | tee -a "${LOG_FILE}"
-  touch "${RESULTS_TARGET_DIR}/tmt_running"
+  touch "${DIR}/tmt_running"
   set -o pipefail
   $TMT_COMMAND | tee -a "${LOG_FILE}"
-  if [[ $? -ne 0 ]]; then
+  ret_code=$?
+  set +o pipefail
+  rm -f "${DIR}/tmt_running"
+  if [[ $ret_code -ne 0 ]]; then
     echo "TMT command $TMT_COMMAND has failed."
     if [[ -f "${DAILY_REPORTS_TESTS_DIR}/tmt_success" ]]; then
       rm -f "${DAILY_REPORTS_TESTS_DIR}/tmt_success"
@@ -114,8 +133,6 @@ function run_tests() {
     cp -v "${DIR}/plans/${TFT_PLAN}/data/*.log" "${DAILY_REPORTS_TESTS_DIR}/plans/${TFT_PLAN}/data/"
   fi
   cp "${DIR}/log.txt" "${DAILY_REPORTS_TESTS_DIR}/"
-  set +o pipefail
-  rm -f "${DAILY_REPORTS_TESTS_DIR}/tmt_running"
 }
 
 if [[ "$TESTS" != "test" ]] && [[ "$TESTS" != "test-pytest" ]] && [[ "$TESTS" != "test-upstream" ]] && [[ "$TESTS" != "test-openshift-pytest" ]] && [[ "$TESTS" != "test-openshift-4" ]]; then
