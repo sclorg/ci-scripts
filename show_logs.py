@@ -84,20 +84,20 @@ class PVCWatcherReport:
                 print(item.name)
 
     def print_report(self):
+        print(f"Summary ({self.date}) of Daily SCL Tests Reports:")
         if not self.scl_tests_dir.is_dir():
             print(
                 f"The directory {self.scl_tests_dir} does not exist. Tests were not executed yet."
             )
-            return
-        print(f"Summary ({self.date}) of Daily SCL Tests Reports:")
+        else:
+            self.iter_over_executed_tests()
         if not self.reports_dir.is_dir():
             print(
                 f"The directory {self.reports_dir} does not exist. Tests were not finished yet."
             )
-            return
-        self.iter_over_executed_tests()
-        print(f"Summary of results reports directory {self.reports_dir}:")
-        self.iter_results_in_directory()
+        else:
+            print(f"Summary of results reports directory {self.reports_dir}:")
+            self.iter_results_in_directory()
 
 
 if __name__ == "__main__":
