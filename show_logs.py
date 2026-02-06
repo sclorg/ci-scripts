@@ -32,21 +32,23 @@ class PVCWatcherReport:
         running_tmt_plans = []
         failed_container_tests = []
         print("Show status of all TMT/FMF plans:")
-        for item in self.scl_tests_dir.iterdir():
-            if item.is_dir():
-                if (item / "tmt_running").exists():
-                    running_tmt_plans.append(item.name)
-        for item in self.reports_dir.iterdir():
-            if item.is_dir():
-                if (item / "tmt_success").exists():
-                    success_tmt_plans.append(item.name)
-                else:
-                    failed_tmt_plans.append(item.name)
-        for item in self.reports_dir.iterdir():
-            if item.is_dir():
-                failed_container_tests.extend(
-                    self.return_failed_tests(self.reports_dir, item)
-                )
+        if self.scl_tests_dir.is_dir():
+            for item in self.scl_tests_dir.iterdir():
+                if item.is_dir():
+                    if (item / "tmt_running").exists():
+                        running_tmt_plans.append(item.name)
+        if self.reports_dir.is_dir():
+            for item in self.reports_dir.iterdir():
+                if item.is_dir():
+                    if (item / "tmt_success").exists():
+                        success_tmt_plans.append(item.name)
+                    else:
+                        failed_tmt_plans.append(item.name)
+            for item in self.reports_dir.iterdir():
+                if item.is_dir():
+                    failed_container_tests.extend(
+                        self.return_failed_tests(self.reports_dir, item)
+                    )
         if running_tmt_plans:
             print("Running TMT plans that are not finished yet:")
             print("\n".join(running_tmt_plans))
