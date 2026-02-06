@@ -64,71 +64,43 @@ SCLORG_UPSTREAM_TESTS_MAILS = {
 
 TEST_CASES = {
     # Format is test for OS and king of test, what TMT Plan is used and MSG to mail
-    ("fedora-test", "nightly-container-fedora", "Fedora test results:"),
-    ("fedora-test-pytest", "nightly-container-fedora", "Fedora PyTest test results:"),
-    ("c9s-test", "nightly-container-c9s", "CentOS Stream 9 test results:"),
-    (
-        "c9s-test-pytest",
-        "nightly-container-c9s",
-        "CentOS Stream 9 PyTest test results:",
-    ),
-    ("c10s-test", "nightly-container-c10s", "CentOS Stream 10 test results:"),
-    (
-        "c10s-test-pytest",
-        "nightly-container-c10s",
-        "CentOS Stream 10 PyTest test results:",
-    ),
-    ("rhel8-test", "nightly-container-rhel8", "RHEL-8 test results:"),
-    ("rhel8-test-pytest", "nightly-container-rhel8", "RHEL-8 PyTest test results:"),
-    (
-        "rhel8-test-openshift-4",
-        "nightly-container-rhel8",
-        "RHEL-8 OpenShift 4 test results:",
-    ),
+    ("fedora-test", "nightly-fedora", "Fedora test results:"),
+    ("fedora-test-pytest", "nightly-fedora", "Fedora PyTest test results:"),
+    ("c9s-test", "nightly-c9s", "CentOS Stream 9 test results:"),
+    ("c9s-test-pytest", "nightly-c9s", "CentOS Stream 9 PyTest test results:"),
+    ("c10s-test", "nightly-c10s", "CentOS Stream 10 test results:"),
+    ("c10s-test-pytest", "nightly-c10s", "CentOS Stream 10 PyTest test results:"),
+    ("rhel8-test", "nightly-rhel8", "RHEL-8 test results:"),
+    ("rhel8-test-pytest", "nightly-rhel8", "RHEL-8 PyTest test results:"),
+    ("rhel8-test-openshift-4", "nightly-rhel8", "RHEL-8 OpenShift 4 test results:"),
     (
         "rhel8-test-openshift-pytest",
-        "nightly-container-rhel8",
+        "nightly-rhel8",
         "RHEL-8 PyTest in OpenShift 4 test results:",
     ),
-    ("rhel9-test", "nightly-container-rhel9", "RHEL-9 test results:"),
-    ("rhel9-test-pytest", "nightly-container-rhel8", "RHEL-9 PyTest test results:"),
-    (
-        "rhel9-test-openshift-4",
-        "nightly-container-rhel9",
-        "RHEL-9 OpenShift 4 test results:",
-    ),
+    ("rhel9-test", "nightly-rhel9", "RHEL-9 test results:"),
+    ("rhel9-test-pytest", "nightly-rhel9", "RHEL-9 PyTest test results:"),
+    ("rhel9-test-openshift-4", "nightly-rhel9", "RHEL-9 OpenShift 4 test results:"),
     (
         "rhel9-test-openshift-pytest",
-        "nightly-container-rhel9",
+        "nightly-rhel9",
         "RHEL-9 PyTest in OpenShift 4 test results:",
     ),
-    (
-        "rhel9-helm-charts",
-        "nightly-container-rhel9",
-        "RHEL-9 Helm Charts test results:",
-    ),
-    ("rhel10-test", "nightly-container-rhel10", "RHEL-10 test results:"),
-    ("rhel10-test-pytest", "nightly-container-rhel10", "RHEL-10 PyTest test results:"),
-    (
-        "rhel10-test-openshift-4",
-        "nightly-container-rhel10",
-        "RHEL-10 OpenShift 4 test results:",
-    ),
+    ("rhel9-helm-charts", "nightly-rhel9", "RHEL-9 Helm Charts test results:"),
+    ("rhel10-test", "nightly-rhel10", "RHEL-10 test results:"),
+    ("rhel10-test-pytest", "nightly-rhel10", "RHEL-10 PyTest test results:"),
+    ("rhel10-test-openshift-4", "nightly-rhel10", "RHEL-10 OpenShift 4 test results:"),
     (
         "rhel10-test-openshift-pytest",
-        "nightly-container-rhel10",
+        "nightly-rhel10",
         "RHEL-10 PyTest in OpenShift 4 test results:",
     ),
 }
 
 TEST_UPSTREAM_CASES = {
-    ("rhel8-test-upstream", "nightly-container-rhel8", "RHEL-8 Upstream test results:"),
-    ("rhel9-test-upstream", "nightly-container-rhel9", "RHEL-9 Upstream test results:"),
-    (
-        "rhel10-test-upstream",
-        "nightly-container-rhel10",
-        "RHEL-10 Upstream test results:",
-    ),
+    ("rhel8-test-upstream", "nightly-rhel8", "RHEL-8 Upstream test results:"),
+    ("rhel9-test-upstream", "nightly-rhel9", "RHEL-9 Upstream test results:"),
+    ("rhel10-test-upstream", "nightly-rhel10", "RHEL-10 Upstream test results:"),
 }
 
 # The default directory used for nightly build
@@ -269,7 +241,7 @@ class NightlyTestsReport(object):
         self.data_dict["SUCCESS_DATA"] = []
         failed_tests = False
         for test_case, plan, _ in self.available_test_case:
-            path_dir = Path(RESULTS_DIR) / test_case
+            path_dir = Path(RESULTS_DIR) / test_case / "nightly"
             if not path_dir.is_dir():
                 print(f"The test case {path_dir} does not exists that is weird")
                 continue

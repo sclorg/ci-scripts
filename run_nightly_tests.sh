@@ -27,18 +27,20 @@ if [[ "${TESTS}" != "test-upstream" ]]; then
 fi
 
 # Local working directories
+CUR_DATE=$(date +%Y-%m-%d)
 WORK_DIR="${HOME}/ci-scripts/"
 LOCAL_LOGS_DIR="${HOME}/logs/"
 
 # Shared directories between runs
-DAILY_REPORTS_DIR="${SHARED_DIR}/daily_reports_dir"
+DAILY_REPORTS_DIR="${SHARED_DIR}/daily_reports_dir/${CUR_DATE}"
 TFT_PLAN="nightly/nightly-$TARGET"
-DAILY_REPORTS_TESTS_DIR="${DAILY_REPORTS_DIR}/${TARGET}-${TESTS}"
-DAILY_SCLORG_TESTS_DIR="${SHARED_DIR}/daily_scl_tests"
+DAILY_REPORTS_TESTS_DIR="${DAILY_REPORTS_DIR}/${CUR_DATE}/${TARGET}-${TESTS}"
+DAILY_SCLORG_TESTS_DIR="${SHARED_DIR}/daily_scl_tests/${CUR_DATE}/${TARGET}-${TESTS}-${SET_TEST}"
 
-DIR="${WORK_DIR}/${TARGET}-${TESTS}-${SET_TEST}"
+DIR="${WORK_DIR}/${CUR_DATE}/${TARGET}-${TESTS}-${SET_TEST}"
 if [[ "$TESTS" == "test-upstream" ]]; then
-  DIR="${WORK_DIR}/${TARGET}-${TESTS}"
+  DIR="${WORK_DIR}/${CUR_DATE}/${TARGET}-${TESTS}"
+  DAILY_SCLORG_TESTS_DIR="${SHARED_DIR}/daily_scl_tests/${CUR_DATE}/${TARGET}-${TESTS}"
 fi
 LOG_FILE="${LOCAL_LOGS_DIR}/${TARGET}-${TESTS}.log"
 
@@ -52,12 +54,6 @@ function generate_passwd_file() {
     export LD_PRELOAD=libnss_wrapper.so
     export NSS_WRAPPER_PASSWD=${HOME}/passwd
     export NSS_WRAPPER_GROUP=/etc/group
-}
-
-function move_logs_to_old() {
-  echo "Moving logs to old directory"
-  mv "${DAILY_REPORTS_DIR}/*" "${DAILY_REPORTS_DIR}_old/"
-  echo "Logs moved to old directory"
 }
 
 function prepare_environment() {
@@ -107,28 +103,22 @@ function run_tests() {
   fi
   TMT_COMMAND="tmt run -v -v -d -d --all ${ENV_VARIABLES} --id ${DIR} plan --name $TFT_PLAN provision -v -v --how minute --auto-select-network --image ${COMPOSE}"
   echo "TMT command is: $TMT_COMMAND" | tee -a "${LOG_FILE}"
-  touch "${DIR}/tmt_running"
+  touch "${DAILY_SCLORG_TESTS_DIR}/tmt_running"
   set -o pipefail
   $TMT_COMMAND | tee -a "${LOG_FILE}"
   ret_code=$?
   set +o pipefail
-  rm -f "${DIR}/tmt_running"
+  rm -f "${DAILY_SCLORG_TESTS_DIR}/tmt_running"
   if [[ $ret_code -ne 0 ]]; then
     echo "TMT command $TMT_COMMAND has failed."
-    if [[ -f "${DAILY_REPORTS_TESTS_DIR}/tmt_success" ]]; then
-      rm -f "${DAILY_REPORTS_TESTS_DIR}/tmt_success"
-    fi
     touch "${DAILY_REPORTS_TESTS_DIR}/tmt_failed"
   else
-    if [[ -f "${DAILY_REPORTS_TESTS_DIR}/tmt_failed" ]]; then
-      echo "Previous test run has failed but this one has passed."
-    else
-      touch "${DAILY_REPORTS_TESTS_DIR}/tmt_success"
-    fi
+    touch "${DAILY_REPORTS_TESTS_DIR}/tmt_success"
   fi
-  ls -laR "${DIR}/plans/${TFT_PLAN}/data/" > "$DAILY_SCLORG_TESTS_DIR/all_files_${TARGET}_${TESTS}.txt"
   cp "${LOG_FILE}" "${DAILY_SCLORG_TESTS_DIR}/log_${TARGET}_${TESTS}.txt"
   if [[ -d "${DIR}/plans/${TFT_PLAN}/data" ]]; then
+    ls -laR "${DIR}/plans/${TFT_PLAN}/data/" > "$DAILY_SCLORG_TESTS_DIR/all_files_${TARGET}_${TESTS}.txt"
+    ls -la "${DIR}/plans/${TFT_PLAN}/data/results/"
     cp -rv "${DIR}/plans/${TFT_PLAN}/data/results" "${DAILY_REPORTS_TESTS_DIR}/plans/${TFT_PLAN}/data/"
     cp -v "${DIR}/plans/${TFT_PLAN}/data/*.log" "${DAILY_REPORTS_TESTS_DIR}/plans/${TFT_PLAN}/data/"
   fi
@@ -147,10 +137,11 @@ generate_passwd_file
 # chown -R "${USER_ID}":0 $HOME/
 # chown -R "${USER_ID}":0 $WORK_DIR/
 
+move_logs_to_old
+
 prepare_environment
 get_compose
 
-# move_logs_to_old
 
 date > "${LOG_FILE}"
 curl --insecure -L https://url.corp.redhat.com/fmf-data > "/tmp/fmf_data"
