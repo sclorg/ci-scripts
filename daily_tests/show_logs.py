@@ -48,9 +48,7 @@ class PVCWatcherReport:
                     success_tmt_plans.append(item.name)
                 else:
                     failed_tmt_plans.append(item.name)
-                failed_container_tests.extend(
-                    self.return_failed_tests(self.item_dir, item)
-                )
+                failed_container_tests.extend(self.return_failed_tests(item_dir, item))
         if running_tmt_plans:
             print("Running TMT plans that are not finished yet:")
             print("\n".join(running_tmt_plans))
