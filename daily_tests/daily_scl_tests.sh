@@ -6,16 +6,13 @@ SCL_CONTAINERS_UPSTREAM="\
 s2i-nodejs-container
 "
 
-SCL_S2I_CONTAINERS="\
+SCL_CONTAINERS="\
 s2i-base-container
 s2i-nodejs-container
 s2i-php-container
 s2i-perl-container
 s2i-ruby-container
 s2i-python-container
-"
-
-SCL_NOS2I_CONTAINTERS="\
 varnish-container
 nginx-container
 httpd-container
@@ -32,9 +29,6 @@ shift
 [[ -z "$1" ]] && { echo "You have to specify type of the test to run. test, test-openshift, test-openshift-pytest, test-openshift-4" && exit 1 ; }
 TESTS="$1"
 shift
-if [[ -z "$SET_TEST" ]]; then
-  SET_TEST="S2I"
-fi
 CUR_WD=$(pwd)
 echo "Current working directory is: ${CUR_WD}"
 
@@ -75,11 +69,9 @@ function clean_ocp4() {
 }
 
 function iterate_over_all_containers() {
-  CONTAINTERS_TO_TEST=$SCL_S2I_CONTAINERS
+  CONTAINTERS_TO_TEST=$SCL_CONTAINERS
   if [[ "${TESTS}" == "test-upstream" ]]; then
     CONTAINTERS_TO_TEST=$SCL_CONTAINERS_UPSTREAM
-  elif [[ "${SET_TEST}" == "NOS2I" ]]; then
-    CONTAINTERS_TO_TEST=$SCL_NOS2I_CONTAINTERS
   fi
 
 
