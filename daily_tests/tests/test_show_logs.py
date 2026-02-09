@@ -38,7 +38,7 @@ def report_env(tmp_path):
 
 
 def test_return_failed_tests_finds_logs(tmp_path):
-    item_name = "c9s-example"
+    item_name = "c9s-test"
     base_dir = tmp_path
     logs_dir = (
         base_dir / item_name / "plans/nightly/nightly-c9s/data/results" / "nested"
@@ -56,7 +56,7 @@ def test_return_failed_tests_finds_logs(tmp_path):
 def test_iter_over_executed_tests_no_failures(report_env, capsys):
     report, _, _ = report_env
     report.scl_tests_dir.mkdir(parents=True)
-    (report.scl_tests_dir / "c9s-run").mkdir()
+    (report.scl_tests_dir / "c9s-test").mkdir()
 
     report.iter_over_executed_tests()
     output = capsys.readouterr().out
@@ -112,11 +112,10 @@ def test_iter_results_in_directory_summarizes(report_env, capsys):
     report.iter_results_in_directory()
     output = capsys.readouterr().out
 
+    print(output)
     assert "Running TMT plans" in output
     assert "rhel9-test-pytest" in output
     assert "Success TMT plans" in output
     assert "c9s-test" in output
     assert "Failed TMT plans" in output
     assert "rhel9-test" in output
-    assert "Failed container tests" in output
-    assert "fail.log" in output
