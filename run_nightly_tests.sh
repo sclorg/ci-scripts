@@ -15,17 +15,6 @@ else
   exit 1
 fi
 
-SET_TEST=""
-if [[ "${TESTS}" != "test-upstream" ]]; then
-  if [[ -n "$TEST_TYPE" ]]; then
-    echo "Test type is set to $TEST_TYPE"
-  else
-    echo "TEST_TYPE variable is not set. Please set it to S2I or NOS2I."
-    exit 1
-  fi
-  SET_TEST="$TEST_TYPE"
-fi
-
 # Local working directories
 CUR_DATE=$(date +%Y-%m-%d)
 WORK_DIR="${HOME}/ci-scripts/"
@@ -35,13 +24,9 @@ LOCAL_LOGS_DIR="${HOME}/logs/"
 DAILY_REPORTS_DIR="${SHARED_DIR}/daily_reports_dir/${CUR_DATE}"
 TFT_PLAN="nightly/nightly-$TARGET"
 DAILY_REPORTS_TESTS_DIR="${DAILY_REPORTS_DIR}/${TARGET}-${TESTS}"
-DAILY_SCLORG_TESTS_DIR="${SHARED_DIR}/daily_scl_tests/${CUR_DATE}/${TARGET}-${TESTS}-${SET_TEST}"
+DAILY_SCLORG_TESTS_DIR="${SHARED_DIR}/daily_scl_tests/${CUR_DATE}/${TARGET}-${TESTS}"
 
-DIR="${WORK_DIR}/${CUR_DATE}/${TARGET}-${TESTS}-${SET_TEST}"
-if [[ "$TESTS" == "test-upstream" ]]; then
-  DIR="${WORK_DIR}/${CUR_DATE}/${TARGET}-${TESTS}"
-  DAILY_SCLORG_TESTS_DIR="${SHARED_DIR}/daily_scl_tests/${CUR_DATE}/${TARGET}-${TESTS}"
-fi
+DIR="${WORK_DIR}/${CUR_DATE}/${TARGET}-${TESTS}"
 LOG_FILE="${LOCAL_LOGS_DIR}/${TARGET}-${TESTS}.log"
 
 
@@ -95,12 +80,8 @@ function get_compose() {
 }
 
 function run_tests() {
-  ENV_VARIABLES="-e DEBUG=yes -e OS=$TARGET -e TEST=$TESTS"
-  if [[ "$TESTS" != "test-upstream" ]]; then
-    ENV_VARIABLES="$ENV_VARIABLES -e SET_TEST=$SET_TEST"
-  else
-    ENV_VARIABLES="$ENV_VARIABLES -e CI=true"
-  fi
+  # -e CI=true is set for NodeJS Upstream tests
+  ENV_VARIABLES="-e DEBUG=yes -e OS=$TARGET -e TEST=$TESTS -e CI=true"
   TMT_COMMAND="tmt run -v -v -d -d --all ${ENV_VARIABLES} --id ${DIR} plan --name $TFT_PLAN provision -v -v --how minute --auto-select-network --image ${COMPOSE}"
   echo "TMT command is: $TMT_COMMAND" | tee -a "${LOG_FILE}"
   touch "${DAILY_SCLORG_TESTS_DIR}/tmt_running"

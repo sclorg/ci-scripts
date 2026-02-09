@@ -34,21 +34,23 @@ class PVCWatcherReport:
         print("Show status of all TMT/FMF plans:")
         if self.scl_tests_dir.is_dir():
             for item in self.scl_tests_dir.iterdir():
-                if item.is_dir():
-                    if (item / "tmt_running").exists():
-                        running_tmt_plans.append(item.name)
+                if not item.is_dir():
+                    continue
+                if (self.scl_tests_dir / item.name / "tmt_running").exists():
+                    running_tmt_plans.append(item.name)
         if self.reports_dir.is_dir():
             for item in self.reports_dir.iterdir():
-                if item.is_dir():
-                    if (item / "tmt_success").exists():
-                        success_tmt_plans.append(item.name)
-                    else:
-                        failed_tmt_plans.append(item.name)
-            for item in self.reports_dir.iterdir():
-                if item.is_dir():
-                    failed_container_tests.extend(
-                        self.return_failed_tests(self.reports_dir, item)
-                    )
+                item_dir = self.reports_dir / item.name
+                print(f"Going throw {item_dir}")
+                if not item_dir.is_dir():
+                    continue
+                if (item_dir / "tmt_success").exists():
+                    success_tmt_plans.append(item.name)
+                else:
+                    failed_tmt_plans.append(item.name)
+                failed_container_tests.extend(
+                    self.return_failed_tests(self.item_dir, item)
+                )
         if running_tmt_plans:
             print("Running TMT plans that are not finished yet:")
             print("\n".join(running_tmt_plans))
@@ -71,13 +73,15 @@ class PVCWatcherReport:
         """View all executed tests in the given directory."""
         for item in self.scl_tests_dir.iterdir():
             print(f"Inspecting item in '{self.scl_tests_dir}' directory: {item}")
-            if not item.is_dir():
+            item_dir = self.scl_tests_dir / item.name
+            if not item_dir.is_dir():
                 continue
-            failed_container_tests = self.return_failed_tests(self.scl_tests_dir, item)
+            failed_container_tests = self.return_failed_tests(item_dir, item)
             if not failed_container_tests:
                 print(f"No container test failures found in {item}.")
                 continue
-            print(f"!!!!Failed container tests are: {failed_container_tests}!!!!")
+            print(f"!!!!Failed container tests for {item.name}!!!!\n")
+            print({"\n".join(failed_container_tests)})
 
     def show_all_available_tests(self):
         print("All previous available tests are:")
