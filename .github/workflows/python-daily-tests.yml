@@ -1,0 +1,23 @@
+---
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+name: Run Tox tests on daily-tests
+jobs:
+  tox_test:
+    strategy:
+      matrix:
+        tox_env: [py311, py312, py313, py314]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: fedora-python/tox-github-action@main
+      with:
+        tox_env: ${{ matrix.tox_env }}
+        workdir: "daily_tests/"
+...

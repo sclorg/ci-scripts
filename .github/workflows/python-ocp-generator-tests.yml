@@ -7,14 +7,17 @@ on:
     branches:
     - master
 
-name: Run Tox tests on ci-scripts
+name: Run Tox tests on ci-scripts/ocp_stream_generator
 jobs:
   tox_test:
+    strategy:
+      matrix:
+        tox_env: [py311, py312, py313, py314]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - uses: fedora-python/tox-github-action@main
       with:
-        tox_env: py311
+        tox_env: ${{ matrix.tox_env }}
         workdir: "ocp-stream-generator/"
 ...

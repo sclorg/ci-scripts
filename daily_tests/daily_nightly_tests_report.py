@@ -15,7 +15,6 @@ default_mails = [
     "phracek@redhat.com",
     "hhorak@redhat.com",
     "pkubat@redhat.com",
-    "anezbeda@redhat.com",
     "pkhartsk@redhat.com",
 ]
 upstream_mails = [
