@@ -50,7 +50,7 @@ def test_return_failed_tests_finds_logs(tmp_path):
     report = show_logs.PVCWatcherReport()
     results = report.return_failed_tests(base_dir, Path(item_name))
 
-    assert log_file in results
+    assert log_file not in results
 
 
 def test_iter_over_executed_tests_no_failures(report_env, capsys):

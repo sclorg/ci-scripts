@@ -17,7 +17,7 @@ fi
 
 # Local working directories
 CUR_DATE=$(date +%Y-%m-%d)
-WORK_DIR="${HOME}/ci-scripts/"
+WORK_DIR="${HOME}/ci-scripts"
 LOCAL_LOGS_DIR="${HOME}/logs/"
 
 # Shared directories between runs
@@ -46,6 +46,7 @@ function prepare_environment() {
   mkdir -p "${WORK_DIR}"
   mkdir -p "${DIR}"
   mkdir -p "${DAILY_REPORTS_TESTS_DIR}/plans/${TFT_PLAN}/data/results"
+  mkdir -p "${DAILY_SCLORG_TESTS_DIR}"
 
 }
 
@@ -81,7 +82,7 @@ function get_compose() {
 
 function run_tests() {
   # -e CI=true is set for NodeJS Upstream tests
-  ENV_VARIABLES="-e DEBUG=yes -e OS=$TARGET -e TEST=$TESTS -e CI=true"
+  ENV_VARIABLES="-e DEBUG=yes -e OS=$TARGET -e TEST=$TESTS"
   TMT_COMMAND="tmt run -v -v -d -d --all ${ENV_VARIABLES} --id ${DIR} plan --name $TFT_PLAN provision -v -v --how minute --auto-select-network --image ${COMPOSE}"
   echo "TMT command is: $TMT_COMMAND" | tee -a "${LOG_FILE}"
   touch "${DAILY_SCLORG_TESTS_DIR}/tmt_running"
@@ -96,10 +97,13 @@ function run_tests() {
   else
     touch "${DAILY_REPORTS_TESTS_DIR}/tmt_success"
   fi
+  if [[ -d "${DIR}/plans/${TFT_PLAN}/execute/date/guest/" ]]; then
+    cp -rv "${DIR}/plans/${TFT_PLAN}/execute/date/guest/" "${DAILY_SCLORG_TESTS_DIR}/"
+  fi
+  cp -r "${DIR}/*" "${DAILY_SCLORG_TESTS_DIR}/"
   cp "${LOG_FILE}" "${DAILY_SCLORG_TESTS_DIR}/log_${TARGET}_${TESTS}.txt"
   if [[ -d "${DIR}/plans/${TFT_PLAN}/data" ]]; then
     ls -laR "${DIR}/plans/${TFT_PLAN}/data/" > "$DAILY_SCLORG_TESTS_DIR/all_files_${TARGET}_${TESTS}.txt"
-    ls -la "${DIR}/plans/${TFT_PLAN}/data/results/"
     cp -rv "${DIR}/plans/${TFT_PLAN}/data/results" "${DAILY_REPORTS_TESTS_DIR}/plans/${TFT_PLAN}/data/"
     cp -v "${DIR}/plans/${TFT_PLAN}/data/*.log" "${DAILY_REPORTS_TESTS_DIR}/plans/${TFT_PLAN}/data/"
   fi
@@ -115,10 +119,6 @@ fi
 CWD=$(pwd)
 cd "$HOME" || { echo "Could not switch to $HOME"; exit 1; }
 generate_passwd_file
-# chown -R "${USER_ID}":0 $HOME/
-# chown -R "${USER_ID}":0 $WORK_DIR/
-
-move_logs_to_old
 
 prepare_environment
 get_compose
