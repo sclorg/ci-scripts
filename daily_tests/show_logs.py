@@ -32,6 +32,7 @@ class PVCWatcherReport:
         running_tmt_plans = []
         failed_container_tests = []
         print("Show status of all TMT/FMF plans:")
+
         if self.scl_tests_dir.is_dir():
             for item in self.scl_tests_dir.iterdir():
                 if not item.is_dir():
@@ -43,10 +44,13 @@ class PVCWatcherReport:
                 item_dir = self.reports_dir / item.name
                 print(f"Going throw {item_dir}")
                 if not item_dir.is_dir():
+                    print(f"This directory {item_dir} does not exist, skipping it.")
                     continue
                 if (item_dir / "tmt_success").exists():
+                    print(f"TMT plan {item.name} is successful.")
                     success_tmt_plans.append(item.name)
                 else:
+                    print(f"TMT plan {item.name} is failed.")
                     failed_tmt_plans.append(item.name)
                 failed_container_tests.extend(self.return_failed_tests(item_dir, item))
         if running_tmt_plans:
@@ -59,11 +63,14 @@ class PVCWatcherReport:
             print(f"Failed TMT plans in {self.reports_dir} are:")
             print("\n".join(failed_tmt_plans))
         if failed_container_tests:
-            print(f"!!!!Failed container tests are: {failed_container_tests}!!!!")
+            print("Failed container tests are:")
+            for x in failed_container_tests:
+                if x:
+                    print(f"{x}\n")
 
     def return_failed_tests(self, directory, item) -> list:
         plan_name = "".join([x[1] for x in TEST_CASES if item.name.startswith(x[0])])
-        dir_path = directory / f"{item.name}/plans/{plan_name}/data/results"
+        dir_path = directory / f"plans/{plan_name}/data/results"
         print(f"Looking for failed tests in directory: {dir_path}")
         return list(dir_path.rglob("*.log"))
 
@@ -88,7 +95,7 @@ class PVCWatcherReport:
                 print(item.name)
 
     def print_report(self):
-        print(f"Summary ({self.date}) of Daily SCL Tests Reports:")
+        print(f"Summary ({self.date}) of daily SCL tests reports:")
         if not self.scl_tests_dir.is_dir():
             print(
                 f"The directory {self.scl_tests_dir} does not exist. Tests were not executed yet."

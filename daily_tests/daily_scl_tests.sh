@@ -7,6 +7,7 @@ s2i-nodejs-container
 "
 
 SCL_CONTAINERS="\
+httpd-container
 s2i-base-container
 s2i-nodejs-container
 s2i-php-container
@@ -15,7 +16,6 @@ s2i-ruby-container
 s2i-python-container
 varnish-container
 nginx-container
-httpd-container
 redis-container
 mariadb-container
 postgresql-container
@@ -86,7 +86,7 @@ function iterate_over_all_containers() {
       # Switch back to tmp container-repo name
       popd
     fi
-    make "${TESTS}" TARGET="${TARGET}" > "${log_name}" 2>&1
+    DEBUG=true make "${TESTS}" TARGET="${TARGET}" > "${log_name}" 2>&1
     if [[ $? -ne 0 ]]; then
       echo "Tests for container $repo has failed."
       cp "${log_name}" "${RESULT_DIR}/"

@@ -1,65 +1,20 @@
 #!/usr/bin/env python3
 import os
 import sys
-import smtplib
 import argparse
 import subprocess
 import time
 
+from smtplib import SMTP
+from datetime import date
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
 from typing import Dict, List
 
-default_mails = [
-    "phracek@redhat.com",
-    "hhorak@redhat.com",
-    "pkubat@redhat.com",
-    "pkhartsk@redhat.com",
-]
-upstream_mails = [
-    "phracek@redhat.com",
-    "cpapasta@redhat.com",
-    "nodeshiftcore@redhat.com",
-]
-
-SCLORG_MAILS = {
-    # Format is 'repo_name', and list of mails to infor
-    "s2i-ruby-container": ["jprokop@redhat.com"],
-    "s2i-python-container": [
-        "lbalhar@redhat.com",
-        "ksurma@redhat.com",
-        "thrnciar@redhat.com",
-    ],
-    "postgresql-container": [
-        "fjanus@redhat.com",
-        "ljavorsk@redhat.com",
-        "mschorm@redhat.com",
-        "psloboda@redhat.com",
-    ],
-    "mariadb-container": [
-        "fjanus@redhat.com",
-        "ljavorsk@redhat.com",
-        "mschorm@redhat.com",
-        "psloboda@redhat.com",
-    ],
-    "mysql-container": [
-        "fjanus@redhat.com",
-        "ljavorsk@redhat.com",
-        "mschorm@redhat.com",
-        "psloboda@redhat.com",
-    ],
-    "s2i-perl-container": ["jplesnik@redhat.com", "mspacek@redhat.com"],
-    "s2i-nodejs-container": [
-        "cpapasta@redhat.com",
-        "nodeshiftcore@redhat.com",
-        "jprokop@redhat.com",
-    ],
-}
-
-SCLORG_UPSTREAM_TESTS_MAILS = {
-    "s2i-nodejs-container": ["cpapasta@redhat.com", "nodeshiftcore@redhat.com"]
-}
+default_mails: List[str] = []
+SCLORG_MAILS = {}
+SEND_PASTE_BIN = "/root/ci-scripts/send_to_paste_bin.sh"
 
 TEST_CASES = {
     # Format is test for OS and king of test, what TMT Plan is used and MSG to mail
@@ -103,9 +58,9 @@ TEST_UPSTREAM_CASES = {
 }
 
 # The default directory used for nightly build
-RESULTS_DIR = "/var/tmp/daily_reports_dir"
+RESULTS_DIR = Path("/var/ci-scripts/daily_reports_dir")
 # The default directory used for running build
-SCLORG_DIR = "/var/tmp/daily_scl_tests"
+SCLORG_DIR = Path("/var/ci-scripts/daily_scl_tests")
 
 
 def run_command(
@@ -163,6 +118,9 @@ class NightlyTestsReport(object):
         self.log_dir = os.getcwd()
         self.mime_msg = MIMEMultipart()
         self.body = ""
+        self.date = date.today().strftime("%Y-%m-%d")
+        self.reports_dir = RESULTS_DIR / self.date
+        self.sclorg_dir = SCLORG_DIR / self.date
         self.add_email = []
         self.full_success = False
         if self.args.upstream_tests:
@@ -173,7 +131,7 @@ class NightlyTestsReport(object):
     def parse_args(self):
         parser = argparse.ArgumentParser(
             description="NightlyTestsReport program report all failures"
-            "over all OS and Tests (tests, test-openshift, test-openshift-4)."
+            "over all OS and Tests (tests, test-pytest, test-openshift-pytest)."
         )
         parser.add_argument(
             "--send-email",
@@ -193,19 +151,41 @@ class NightlyTestsReport(object):
 
         return parser.parse_args()
 
-    def prepare(self) -> bool:
-        if self.args.log_dir:
-            if not os.path.exists(self.args.log_dir):
-                print("Log dir you specified by --log-dir parameter does not exist.")
-                return False
-            self.log_dir = self.args.log_dir
-        return True
+    def return_plan_name(self, item) -> str:
+        return "".join(
+            [x[1] for x in self.available_test_case if item.startswith(x[0])]
+        )
 
-    def send_file_to_pastebin(self, log_path, log_name: str):
+    def load_mails_from_environment(self):
+        if "DB_MAILS" in os.environ:
+            SCLORG_MAILS["mariadb-container"] = os.environ["DB_MAILS"].split(",")
+            SCLORG_MAILS["mysql-container"] = os.environ["DB_MAILS"].split(",")
+            SCLORG_MAILS["postgresql-container"] = os.environ["DB_MAILS"].split(",")
+        if "RUBY_MAILS" in os.environ:
+            SCLORG_MAILS["s2i-ruby-container"] = os.environ["RUBY_MAILS"].split(",")
+        if "PYTHON_MAILS" in os.environ:
+            SCLORG_MAILS["s2i-python-container"] = os.environ["PYTHON_MAILS"].split(",")
+        if "NODEJS_MAILS" in os.environ:
+            SCLORG_MAILS["s2i-nodejs-container"] = os.environ["NODEJS_MAILS"].split(",")
+        if "PERL_MAILS" in os.environ:
+            SCLORG_MAILS["s2i-perl-container"] = os.environ["PERL_MAILS"].split(",")
+        if "UPSTREAM_TESTS_MAILS" in os.environ:
+            SCLORG_MAILS["upstream-tests"] = os.environ["UPSTREAM_TESTS_MAILS"].split(
+                ","
+            )
+        if "DEFAULT_MAILS" in os.environ:
+            default_mails.extend(os.environ["DEFAULT_MAILS"].split(","))
+        self.send_email = os.environ.get("SEND_EMAIL", False)
+        self.send_email = True
+
+        print(f"Loaded mails from environment: '{SCLORG_MAILS}'")
+        print(f"Default mails: '{default_mails}'")
+        print(f"Send email: '{self.send_email}'")
+
+    def send_file_to_pastebin(self, log_path, log_name: Path):
         if not os.path.exists(log_path):
             return
-        send_paste_bin = os.getenv("HOME") + "/ci-scripts/send_to_paste_bin.sh"
-        cmd = f'{send_paste_bin} "{log_path}" "{log_name}"'
+        cmd = f'{SEND_PASTE_BIN} "{log_path}" "{str(log_name)}"'
         print(f"sending logs to pastebin: {cmd}")
         for count in range(5):
             try:
@@ -226,6 +206,39 @@ class NightlyTestsReport(object):
             return line.replace("Link:", "").strip()
         return ""
 
+    def store_tmt_logs_to_dict(
+        self, path_dir: Path, test_case, is_running=False, not_exists=False
+    ):
+        if not_exists:
+            msg = (
+                f"Data dir for test case {test_case} does not exist."
+                f"Look at log in attachment called '{test_case}-log.txt'."
+            )
+        else:
+            if is_running:
+                msg = (
+                    f"tmt tests for case {test_case} is still running."
+                    f"Look at log in attachment called '{test_case}-log.txt'."
+                )
+            else:
+                msg = (
+                    f"tmt command has failed for test case {test_case}."
+                    f"Look at log in attachment called '{test_case}-log.txt'."
+                )
+        self.data_dict["tmt"]["msg"].append(msg)
+        if is_running:
+            dictionary_key = "tmt_running"
+        else:
+            dictionary_key = "tmt_failed"
+        self.data_dict["tmt"][dictionary_key].append(test_case)
+        log_path = self.sclorg_dir / f"{test_case}" / "log.txt"
+        log_name = path_dir / f"{test_case}.log.txt"
+        self.send_file_to_pastebin(log_path=log_path, log_name=log_name)
+        if log_name.exists():
+            with open(log_name) as f:
+                print(f.readlines())
+        self.data_dict["tmt"]["logs"].append((test_case, log_path, log_name))
+
     def collect_data(self):
         # Collect data to class dictionary
         # self.data_dict['tmt'] item is used for Testing Farm errors per each OS and test case
@@ -240,74 +253,39 @@ class NightlyTestsReport(object):
         self.data_dict["SUCCESS_DATA"] = []
         failed_tests = False
         for test_case, plan, _ in self.available_test_case:
-            path_dir = Path(RESULTS_DIR) / test_case / "nightly"
-            if not path_dir.is_dir():
-                print(f"The test case {path_dir} does not exists that is weird")
+            path_dir = self.reports_dir / test_case
+            if not self.reports_dir.is_dir():
+                print(
+                    f"The reports directory {self.reports_dir} does not exist, skipping it."
+                )
                 continue
+            if not path_dir.is_dir():
+                print(f"The test case {path_dir} does not exist that is weird")
+                continue
+            plan_name = self.return_plan_name(plan)
+            print(f"Collecting data for test case {test_case} with plan {plan_name}")
+            print(f"Path for test case {test_case} is: {path_dir}")
             # It looks like TMT is still running for long time
             if (path_dir / "tmt_running").exists():
-                self.data_dict["tmt"]["msg"].append(
-                    f"tmt tests for case {test_case} is still running."
-                    f"Look at log in attachment called '{test_case}-log.txt'."
-                )
-                self.data_dict["tmt"]["tmt_running"].append(test_case)
-                for sclorg in ["S2I", "NOS2I"]:
-                    name = f"{test_case}-{sclorg}"
-                    self.send_file_to_pastebin(
-                        log_path=Path(SCLORG_DIR) / f"{name}" / "log.txt",
-                        log_name=f"{path_dir}/{name}.log.txt",
-                    )
-                    self.data_dict["tmt"]["logs"].append(
-                        (
-                            name,
-                            Path(SCLORG_DIR) / f"{name}" / "log.txt",
-                            Path(path_dir) / f"{name}.log.txt",
-                        )
-                    )
+                print(f"tmt tests for case {test_case} is still running.")
+                self.store_tmt_logs_to_dict(path_dir, test_case, is_running=True)
                 failed_tests = True
                 continue
             # TMT command failed for some reason. Look at logs for given namespace
             # /var/tmp/daily_scl_tests/<test_case>/log.txt file
             if (path_dir / "tmt_failed").exists():
-                self.data_dict["tmt"]["msg"].append(
-                    f"tmt command has failed for test case {test_case}."
-                    f"Look at log in attachment called '{test_case}-log.txt'."
-                )
-                self.data_dict["tmt"]["tmt_failed"].append(test_case)
-                for sclorg in ["S2I", "NOS2I"]:
-                    name = f"{test_case}-{sclorg}"
-                    self.send_file_to_pastebin(
-                        log_path=Path(SCLORG_DIR) / f"{name}" / "log.txt",
-                        log_name=f"{path_dir}/{name}.log.txt",
-                    )
-                    self.data_dict["tmt"]["logs"].append(
-                        (
-                            name,
-                            Path(SCLORG_DIR) / f"{name}" / "log.txt",
-                            Path(path_dir) / f"{name}.log.txt",
-                        )
-                    )
+                print(f"tmt command has failed for test case {test_case}.")
+                self.store_tmt_logs_to_dict(path_dir, test_case)
                 failed_tests = True
                 continue
-            data_dir = path_dir / "plans" / plan / "data"
+            data_dir = path_dir / "plans/nightly" / plan_name / "data"
+            print(f"Data dir for test case {test_case} is: {data_dir}")
             if not data_dir.is_dir():
-                self.data_dict["tmt"]["msg"].append(
-                    f"Data dir for test case {test_case} does not exist."
-                    f"Look at log in attachment called '{test_case}-log.txt'."
+                self.store_tmt_logs_to_dict(path_dir, test_case, not_exists=True)
+                self.send_file_to_pastebin(
+                    log_path=self.sclorg_dir / f"{test_case}" / "log.txt",
+                    log_name=f"{path_dir}/{test_case}.log.txt",
                 )
-                for sclorg in ["S2I", "NOS2I"]:
-                    name = f"{test_case}-{sclorg}"
-                    self.send_file_to_pastebin(
-                        log_path=Path(SCLORG_DIR) / f"{name}" / "log.txt",
-                        log_name=f"{path_dir}/{name}.log.txt",
-                    )
-                    self.data_dict["tmt"]["logs"].append(
-                        (
-                            name,
-                            Path(SCLORG_DIR) / f"{name}" / "log.txt",
-                            Path(path_dir) / f"{name}.log.txt",
-                        )
-                    )
                 failed_tests = True
                 continue
             results_dir = data_dir / "results"
@@ -411,6 +389,7 @@ class NightlyTestsReport(object):
         self.body += "<br>"
 
     def generate_emails(self):
+        print("generate_emails: ", self.data_dict)
         for test_case, plan, _ in self.available_test_case:
             if test_case not in self.data_dict:
                 continue
@@ -422,8 +401,8 @@ class NightlyTestsReport(object):
                         [ml for ml in mails if ml not in self.add_email]
                     )
 
-    def send_email(self):
-        if not self.args.send_email:
+    def send_emails(self):
+        if not self.send_email:
             print("Sending email is not allowed")
             return
         if self.full_success:
@@ -439,7 +418,7 @@ class NightlyTestsReport(object):
 
         send_from = "phracek@redhat.com"
         if self.args.upstream_tests:
-            send_to = upstream_mails
+            send_to = SCLORG_MAILS.get("upstream-tests", [])
         else:
             send_to = default_mails + self.add_email
 
@@ -447,7 +426,7 @@ class NightlyTestsReport(object):
         self.mime_msg["To"] = ", ".join(send_to)
         self.mime_msg["Subject"] = subject_msg
         self.mime_msg.attach(MIMEText(self.body, "html"))
-        smtp = smtplib.SMTP("127.0.0.1")
+        smtp = SMTP("smtp.redhat.com")
         smtp.sendmail(send_from, send_to, self.mime_msg.as_string())
         smtp.close()
         print("Sending email finished")
@@ -455,13 +434,9 @@ class NightlyTestsReport(object):
 
 if __name__ == "__main__":
     ntr = NightlyTestsReport()
-    if not ntr.prepare():
-        print(
-            "Preparation for NightlyBuild report has failed. Please look what's wrong."
-        )
-        sys.exit(1)
+    ntr.load_mails_from_environment()
     ntr.collect_data()
     ntr.generate_email_body()
     ntr.generate_emails()
-    ntr.send_email()
+    ntr.send_emails()
     sys.exit(0)
