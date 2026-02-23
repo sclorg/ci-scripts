@@ -87,9 +87,8 @@ class TestingFarmLogDownloader:
         Download a log from the Testing Farm.
         """
         for _ in range(5):
-            file_name_url = log_name_url + "/" + log_name
-            print(f"Downloading log: {file_name_url}")
-            response = requests.get(file_name_url, verify=False)
+            print(f"Downloading log: {log_name_url}")
+            response = requests.get(log_name_url, verify=False)
             if response.status_code == 200:
                 with (self.log_dir / log_name).open("wb") as f:
                     f.write(response.content)

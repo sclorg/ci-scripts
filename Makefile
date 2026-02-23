@@ -7,4 +7,4 @@ shellcheck:
 	./run-shellcheck.sh `git ls-files *.sh`
 
 build_images:
-	podman build -t quay.io/sclorg/upstream-daily-tests:0.8.2 -f Dockerfile.daily-tests .
+	podman build -t quay.io/sclorg/upstream-daily-tests:0.8.3 -f Dockerfile.daily-tests .
