@@ -36,8 +36,6 @@ TMP_DIR="${TMT_PLAN_DATA}"
 RESULT_DIR="${TMP_DIR}/results/"
 KUBECONFIG=/root/.kube/config
 KUBEPASSWD=/root/.kube/ocp-kube
-PBINCLI=/usr/local/bin/pbincli
-PBINCLI_OPTS="--server https://privatebin.corp.redhat.com --expire 1week --no-insecure-warning --no-check-certificate --format plaintext"
 
 mkdir -p "${RESULT_DIR}"
 

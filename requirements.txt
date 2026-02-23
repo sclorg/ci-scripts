@@ -2,3 +2,5 @@ requests
 PyYAML
 urllib3
 GitPython
+slack_sdk
+xmltodict
