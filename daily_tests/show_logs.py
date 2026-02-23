@@ -69,24 +69,9 @@ class PVCWatcherReport:
                     print(f"{x}\n")
 
     def return_failed_tests(self, directory, item) -> list:
-        plan_name = "".join([x[1] for x in TEST_CASES if item.name.startswith(x[0])])
-        dir_path = directory / f"plans/{plan_name}/data/results"
+        dir_path = directory / "results"
         print(f"Looking for failed tests in directory: {dir_path}")
         return list(dir_path.rglob("*.log"))
-
-    def iter_over_executed_tests(self):
-        """View all executed tests in the given directory."""
-        for item in self.scl_tests_dir.iterdir():
-            print(f"Inspecting item in '{self.scl_tests_dir}' directory: {item}")
-            item_dir = self.scl_tests_dir / item.name
-            if not item_dir.is_dir():
-                continue
-            failed_container_tests = self.return_failed_tests(item_dir, item)
-            if not failed_container_tests:
-                print(f"No container test failures found in {item}.")
-                continue
-            print(f"!!!!Failed container tests for {item.name}!!!!\n")
-            print({"\n".join(failed_container_tests)})
 
     def show_all_available_tests(self):
         print("All previous available tests are:")
@@ -96,12 +81,6 @@ class PVCWatcherReport:
 
     def print_report(self):
         print(f"Summary ({self.date}) of daily SCL tests reports:")
-        if not self.scl_tests_dir.is_dir():
-            print(
-                f"The directory {self.scl_tests_dir} does not exist. Tests were not executed yet."
-            )
-        else:
-            self.iter_over_executed_tests()
         if not self.reports_dir.is_dir():
             print(
                 f"The directory {self.reports_dir} does not exist. Tests were not finished yet."

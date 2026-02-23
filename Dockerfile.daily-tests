@@ -2,7 +2,7 @@ FROM quay.io/fedora/fedora:42
 
 ENV SHARED_DIR="/var/ci-scripts" \
     VERSION="42" \
-    RELEASE_UPSTREAM="0.8.0" \
+    RELEASE_UPSTREAM="0.8.1" \
     UPSTREAM_TMT_REPO="https://github.com/sclorg/sclorg-testing-farm" \
     UPSTREAM_TMT_DIR="sclorg-testing-farm" \
     HOME="/home/nightly" \
@@ -21,9 +21,9 @@ LABEL summary="${SUMMARY}" \
 RUN dnf install -y python3.13-pip git nss_wrapper && \
     dnf clean all
 
-COPY requirements.sh "${WORK_DIR}/requirements.sh"
-RUN bash "${WORK_DIR}/requirements.sh"
-RUN cd "${WORK_DIR}" && git clone "${UPSTREAM_TMT_REPO}" "${UPSTREAM_TMT_DIR}"
+COPY requirements.sh requirements.txt "${WORK_DIR}"
+RUN bash "${WORK_DIR}/requirements.sh" && pip3 install -r "${WORK_DIR}/requirements.txt"
+# RUN cd "${WORK_DIR}" && git clone "${UPSTREAM_TMT_REPO}" "${UPSTREAM_TMT_DIR}"
 
 COPY . /root/ci-scripts
 WORKDIR "${HOME}"

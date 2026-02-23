@@ -15,10 +15,12 @@ else
   exit 1
 fi
 
+cd "/root/ci-scripts/"
+
 # Local working directories
 CUR_DATE=$(date +%Y-%m-%d)
 WORK_DIR="${HOME}/ci-scripts"
-LOCAL_LOGS_DIR="${HOME}/logs/"
+LOCAL_LOGS_DIR="${HOME}/logs"
 
 # Shared directories between runs
 DAILY_REPORTS_DIR="${SHARED_DIR}/daily_reports_dir/${CUR_DATE}"
@@ -32,82 +34,90 @@ LOG_FILE="${LOCAL_LOGS_DIR}/${TARGET}-${TESTS}.log"
 
 export USER_ID=$(id -u)
 export GROUP_ID=$(id -g)
-
-function generate_passwd_file() {
-    grep -v ^ci-scripts /etc/passwd > "$HOME/passwd"
-    echo "ci-scripts:x:${USER_ID}:${GROUP_ID}:User for running ci-scripts:${HOME}:/bin/bash" >> "$HOME/passwd"
-    export LD_PRELOAD=libnss_wrapper.so
-    export NSS_WRAPPER_PASSWD=${HOME}/passwd
-    export NSS_WRAPPER_GROUP=/etc/group
-}
-
+API_KEY="API_KEY_PRIVATE"
+# function generate_passwd_file() {
+#     grep -v ^ci-scripts /etc/passwd > "$HOME/passwd"
+#     echo "ci-scripts:x:${USER_ID}:${GROUP_ID}:User for running ci-scripts:${HOME}:/bin/bash" >> "$HOME/passwd"
+#     export LD_PRELOAD=libnss_wrapper.so
+#     export NSS_WRAPPER_PASSWD=${HOME}/passwd
+#     export NSS_WRAPPER_GROUP=/etc/group
+# }
+BRANCH="master"
 function prepare_environment() {
   mkdir -p "${LOCAL_LOGS_DIR}"
   mkdir -p "${WORK_DIR}"
   mkdir -p "${DIR}"
-  mkdir -p "${DAILY_REPORTS_TESTS_DIR}/plans/${TFT_PLAN}/data/results"
+  mkdir -p "${DAILY_REPORTS_TESTS_DIR}/results"
   mkdir -p "${DAILY_SCLORG_TESTS_DIR}"
 
 }
 
 function get_compose() {
   if [[ "$TARGET" == "rhel8" ]]; then
-    COMPOSE="1MT-RHEL-8.10.0-updates"
-    TMT_PLAN_DIR="$DOWNSTREAM_TMT_DIR"
+    # COMPOSE="1MT-RHEL-8.10.0-updates"
+    COMPOSE="RHEL-8.10.0-Nightly"
+    TMT_PLAN_URL="$DOWNSTREAM_TMT_REPO"
   elif [[ "$TARGET" == "rhel9" ]]; then
-    COMPOSE="1MT-RHEL-9.6.0-updates"
-    TMT_PLAN_DIR="$DOWNSTREAM_TMT_DIR"
+    # COMPOSE="1MT-RHEL-9.6.0-updates"
+    COMPOSE="RHEL-9.6.0-Nightly"
+    TMT_PLAN_URL="$DOWNSTREAM_TMT_REPO"
   elif [[ "$TARGET" == "rhel10" ]]; then
-    COMPOSE="1MT-RHEL-10.0"
-    TMT_PLAN_DIR="$DOWNSTREAM_TMT_DIR"
+    # COMPOSE="1MT-RHEL-10.0"
+    COMPOSE="RHEL-10-Nightly"
+    TMT_PLAN_URL="$DOWNSTREAM_TMT_REPO"
   elif [[ "$TARGET" == "fedora" ]]; then
-    COMPOSE="1MT-Fedora-${VERSION}"
-    TMT_PLAN_DIR="$UPSTREAM_TMT_DIR"
+    # COMPOSE="1MT-Fedora-${VERSION}"
+    COMPOSE="Fedora-latest"
+    TMT_PLAN_URL="$UPSTREAM_TMT_REPO"
     TFT_PLAN="nightly/nightly-fedora"
+    API_KEY="API_KEY_PUBLIC"
+    BRANCH="main"
   elif [[ "$TARGET" == "c9s" ]]; then
-    COMPOSE="1MT-CentOS-Stream-9"
-    TMT_PLAN_DIR="$UPSTREAM_TMT_DIR"
+    # COMPOSE="1MT-CentOS-Stream-9"
+    COMPOSE="CentOS-Stream-9"
+    TMT_PLAN_URL="$UPSTREAM_TMT_REPO"
     TFT_PLAN="nightly/nightly-c9s"
+    API_KEY="API_KEY_PUBLIC"
+    BRANCH="main"
   elif [[ "$TARGET" == "c10s" ]]; then
-    COMPOSE="1MT-CentOS-Stream-10"
-    TMT_PLAN_DIR="$UPSTREAM_TMT_DIR"
+    # COMPOSE="1MT-CentOS-Stream-10"
+    COMPOSE="CentOS-Stream-10"
+    TMT_PLAN_URL="$UPSTREAM_TMT_REPO"
     TFT_PLAN="nightly/nightly-c10s"
+    API_KEY="API_KEY_PUBLIC"
+    BRANCH="main"
   else
     echo "This target is not supported"
     exit 1
   fi
-  COMPOSE=$(tmt -q run provision -h minute --list-images | grep $COMPOSE | head -n 1 | tr -d '[:space:]')
-  export COMPOSE
+  # COMPOSE=$(tmt -q run provision -h minute --list-images | grep $COMPOSE | head -n 1 | tr -d '[:space:]')
+  # export COMPOSE
+  # export TMT_PLAN
 }
 
 function run_tests() {
-  # -e CI=true is set for NodeJS Upstream tests
-  ENV_VARIABLES="-e DEBUG=yes -e OS=$TARGET -e TEST=$TESTS"
-  TMT_COMMAND="tmt run -v -v -d -d --all ${ENV_VARIABLES} --id ${DIR} plan --name $TFT_PLAN provision -v -v --how minute --auto-select-network --image ${COMPOSE}"
-  echo "TMT command is: $TMT_COMMAND" | tee -a "${LOG_FILE}"
+  env
   touch "${DAILY_SCLORG_TESTS_DIR}/tmt_running"
-  set -o pipefail
-  $TMT_COMMAND | tee -a "${LOG_FILE}"
+  cat "$HOME/fmf_data" | grep "$API_KEY" | cut -d '=' -f2
+  export TESTING_FARM_API_TOKEN=$(cat "$HOME/fmf_data" | grep "$API_KEY" | cut -d '=' -f2)
+  TESTING_FARM_CMD="testing-farm request --compose ${COMPOSE} -e OS=${TARGET} -e TEST=${TESTS} --git-url ${TMT_PLAN_URL} --git-ref ${BRANCH} --plan ${TFT_PLAN} --duration 240"
+  $TESTING_FARM_CMD | tee -a "${LOG_FILE}"
   ret_code=$?
-  set +o pipefail
   rm -f "${DAILY_SCLORG_TESTS_DIR}/tmt_running"
+  # Let's sleep 5 minutes to let the testing farm to start the tests and generate some logs
+  sleep 300
   if [[ $ret_code -ne 0 ]]; then
-    echo "TMT command $TMT_COMMAND has failed."
+    echo "Testing Farm command $TESTING_FARM_CMD has failed."
     touch "${DAILY_REPORTS_TESTS_DIR}/tmt_failed"
-  else
+  fi
+  grep "tests passed" "${LOG_FILE}"
+  if grep "tests passed" "${LOG_FILE}"; then
     touch "${DAILY_REPORTS_TESTS_DIR}/tmt_success"
+  else
+    touch "${DAILY_REPORTS_TESTS_DIR}/tmt_failed"
   fi
-  if [[ -d "${DIR}/plans/${TFT_PLAN}/execute/date/guest/" ]]; then
-    cp -rv "${DIR}/plans/${TFT_PLAN}/execute/date/guest/" "${DAILY_SCLORG_TESTS_DIR}/"
-  fi
-  cp -r "${DIR}/*" "${DAILY_SCLORG_TESTS_DIR}/"
-  cp "${LOG_FILE}" "${DAILY_SCLORG_TESTS_DIR}/log_${TARGET}_${TESTS}.txt"
-  if [[ -d "${DIR}/plans/${TFT_PLAN}/data" ]]; then
-    ls -laR "${DIR}/plans/${TFT_PLAN}/data/" > "$DAILY_SCLORG_TESTS_DIR/all_files_${TARGET}_${TESTS}.txt"
-    cp -rv "${DIR}/plans/${TFT_PLAN}/data/results" "${DAILY_REPORTS_TESTS_DIR}/plans/${TFT_PLAN}/data/"
-    cp -v "${DIR}/plans/${TFT_PLAN}/data/*.log" "${DAILY_REPORTS_TESTS_DIR}/plans/${TFT_PLAN}/data/"
-  fi
-  cp "${DIR}/log.txt" "${DAILY_REPORTS_TESTS_DIR}/"
+  cp "${LOG_FILE}" "${DAILY_REPORTS_TESTS_DIR}/testing_farm_${TARGET}_${TESTS}.txt"
+  python3 /root/ci-scripts/daily_tests/download_logs.py "${LOG_FILE}" "${TARGET}" "${TESTS}"
 }
 
 if [[ "$TESTS" != "test" ]] && [[ "$TESTS" != "test-pytest" ]] && [[ "$TESTS" != "test-upstream" ]] && [[ "$TESTS" != "test-openshift-pytest" ]] && [[ "$TESTS" != "test-openshift-4" ]]; then
@@ -118,19 +128,15 @@ fi
 
 CWD=$(pwd)
 cd "$HOME" || { echo "Could not switch to $HOME"; exit 1; }
-generate_passwd_file
+#generate_passwd_file
 
 prepare_environment
 get_compose
 
 
 date > "${LOG_FILE}"
-curl --insecure -L https://url.corp.redhat.com/fmf-data > "/tmp/fmf_data"
-source "/tmp/fmf_data"
 
 env
-echo "Switching to $WORK_DIR/$TMT_PLAN_DIR"
-cd "$WORK_DIR/$TMT_PLAN_DIR" || { echo "Could not switch to $WORK_DIR/$TMT_PLAN_DIR"; exit 1; }
 echo "TARGET is: ${TARGET} and test is: ${TESTS}" | tee -a "${LOG_FILE}"
 
 run_tests

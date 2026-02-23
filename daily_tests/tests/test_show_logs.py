@@ -53,17 +53,6 @@ def test_return_failed_tests_finds_logs(tmp_path):
     assert log_file not in results
 
 
-def test_iter_over_executed_tests_no_failures(report_env, capsys):
-    report, _, _ = report_env
-    report.scl_tests_dir.mkdir(parents=True)
-    (report.scl_tests_dir / "c9s-test").mkdir()
-
-    report.iter_over_executed_tests()
-    output = capsys.readouterr().out
-
-    assert "No container test failures found in" in output
-
-
 def test_show_all_available_tests_lists_dirs(report_env, capsys):
     report, reports_dir, _ = report_env
     reports_dir.mkdir()
@@ -85,7 +74,6 @@ def test_print_report_missing_directories(report_env, capsys):
     report.print_report()
     output = capsys.readouterr().out
 
-    assert "Tests were not executed yet." in output
     assert "Tests were not finished yet." in output
 
 

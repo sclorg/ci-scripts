@@ -1,0 +1,9 @@
+Wed Feb 18 09:52:08 UTC 2026
+TARGET is: c10s and test is: tests
+📦 repository https://github.com/sclorg/sclorg-testing-farm ref main test-type fmf
+💻 CentOS-Stream-10 on x86_64
+🔎 api https://api.dev.testing-farm.io/v0.1/requests/062cb820-8519-4e7b-adf1-30e9f42d3c8f
+💡 waiting for request to finish, use ctrl+c to skip
+👶 request is waiting to be queued
+🚀 request is running
+🚢 artifacts https://artifacts.dev.testing-farm.io/062cb820-8519-4e7b-adf1-30e9f42d3c8f

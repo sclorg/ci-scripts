@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
+from email.utils import formatdate
 import os
+import smtplib
 import sys
 import argparse
 import subprocess
@@ -123,6 +125,8 @@ class NightlyTestsReport(object):
         self.sclorg_dir = SCLORG_DIR / self.date
         self.add_email = []
         self.full_success = False
+        self.smtp_port = 25
+        self.smtp_server = "smtp.redhat.com"
         if self.args.upstream_tests:
             self.available_test_case = TEST_UPSTREAM_CASES
         else:
@@ -157,6 +161,7 @@ class NightlyTestsReport(object):
         )
 
     def load_mails_from_environment(self):
+        print(os.environ)
         if "DB_MAILS" in os.environ:
             SCLORG_MAILS["mariadb-container"] = os.environ["DB_MAILS"].split(",")
             SCLORG_MAILS["mysql-container"] = os.environ["DB_MAILS"].split(",")
@@ -169,10 +174,12 @@ class NightlyTestsReport(object):
             SCLORG_MAILS["s2i-nodejs-container"] = os.environ["NODEJS_MAILS"].split(",")
         if "PERL_MAILS" in os.environ:
             SCLORG_MAILS["s2i-perl-container"] = os.environ["PERL_MAILS"].split(",")
-        if "UPSTREAM_TESTS_MAILS" in os.environ:
-            SCLORG_MAILS["upstream-tests"] = os.environ["UPSTREAM_TESTS_MAILS"].split(
-                ","
-            )
+        if "UPSTREAM_MAILS" in os.environ:
+            SCLORG_MAILS["upstream-tests"] = os.environ["UPSTREAM_MAILS"].split(",")
+        if "SMTP_SERVER" in os.environ:
+            self.smtp_server = os.getenv("SMTP_SERVER", "smtp.redhat.com")
+        if "SMTP_PORT" in os.environ:
+            self.smtp_port = int(os.getenv("SMTP_PORT", 25))
         if "DEFAULT_MAILS" in os.environ:
             default_mails.extend(os.environ["DEFAULT_MAILS"].split(","))
         self.send_email = os.environ.get("SEND_EMAIL", False)
@@ -243,6 +250,7 @@ class NightlyTestsReport(object):
         # Collect data to class dictionary
         # self.data_dict['tmt'] item is used for Testing Farm errors per each OS and test case
         # self.data_dict[test_case] contains failed logs for given test case. E.g. 'fedora-test'
+        print("=======Collecting data for all test cases=====")
         self.data_dict["tmt"] = {
             "logs": [],
             "msg": [],
@@ -263,8 +271,9 @@ class NightlyTestsReport(object):
                 print(f"The test case {path_dir} does not exist that is weird")
                 continue
             plan_name = self.return_plan_name(plan)
-            print(f"Collecting data for test case {test_case} with plan {plan_name}")
-            print(f"Path for test case {test_case} is: {path_dir}")
+            print(
+                f"Path for test case {test_case} is: {path_dir} and plan name is: {plan_name}"
+            )
             # It looks like TMT is still running for long time
             if (path_dir / "tmt_running").exists():
                 print(f"tmt tests for case {test_case} is still running.")
@@ -278,26 +287,16 @@ class NightlyTestsReport(object):
                 self.store_tmt_logs_to_dict(path_dir, test_case)
                 failed_tests = True
                 continue
-            data_dir = path_dir / "plans/nightly" / plan_name / "data"
-            print(f"Data dir for test case {test_case} is: {data_dir}")
-            if not data_dir.is_dir():
-                self.store_tmt_logs_to_dict(path_dir, test_case, not_exists=True)
-                self.send_file_to_pastebin(
-                    log_path=self.sclorg_dir / f"{test_case}" / "log.txt",
-                    log_name=f"{path_dir}/{test_case}.log.txt",
-                )
-                failed_tests = True
-                continue
-            results_dir = data_dir / "results"
-            print("Results dir is for failed_container: ", results_dir)
-            failed_containers = list(results_dir.rglob("*.log"))
+            data_dir = path_dir / "results"
+            print("Results dir is for failed_container: ", data_dir)
+            success_containers = list(path_dir.rglob("*.log"))
+            print("Success containers are: ", success_containers)
+            failed_containers = list(data_dir.rglob("*.log"))
             print("Failed containers are: ", failed_containers)
             if not failed_containers:
                 self.data_dict["SUCCESS"].append(test_case)
                 if self.args.upstream_tests:
-                    success_logs = list(
-                        (path_dir / "plans" / plan / "data").rglob("*.log")
-                    )
+                    success_logs = list((path_dir).rglob("*.log"))
                     self.data_dict["SUCCESS_DATA"].extend(
                         [(test_case, str(f), str(f.name)) for f in success_logs]
                     )
@@ -310,7 +309,10 @@ class NightlyTestsReport(object):
             ]
         if not failed_tests:
             self.full_success = True
-        print(f"collect data: {self.data_dict}")
+        print("collected data are:")
+        import pprint
+
+        pprint.pprint(self.data_dict)
 
     def generate_email_body(self):
         if self.args.upstream_tests:
@@ -425,10 +427,21 @@ class NightlyTestsReport(object):
         self.mime_msg["From"] = send_from
         self.mime_msg["To"] = ", ".join(send_to)
         self.mime_msg["Subject"] = subject_msg
+        self.mime_msg["Date"] = formatdate(localtime=True)
+        print(f"Sending email with subject: '{subject_msg}' to: '{send_to}'")
+        print(f"Email body: {self.body}")
+        print(f"Message: {self.mime_msg}")
         self.mime_msg.attach(MIMEText(self.body, "html"))
-        smtp = SMTP("smtp.redhat.com")
-        smtp.sendmail(send_from, send_to, self.mime_msg.as_string())
-        smtp.close()
+        try:
+            smtp = SMTP(self.smtp_server, int(self.smtp_port))
+            smtp.set_debuglevel(5)
+            smtp.sendmail(send_from, send_to, self.mime_msg.as_string())
+        except smtplib.SMTPRecipientsRefused as e:
+            print(f"Error sending email(SMTPRecipientsRefused): {e.strerror}")
+        except smtplib.SMTPException as e:
+            print(f"Error sending email(SMTPException): {e}")
+        finally:
+            smtp.close()
         print("Sending email finished")
 
 

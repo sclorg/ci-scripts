@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites overall-result="passed">
+ <properties>
+  <property name="baseosci.overall-result" value="passed"/>
+ </properties>
+ <testsuite name="/plans/nightly/nightly-c10s" result="passed" tests="1" stage="complete">
+  <logs>
+   <log href="https://artifacts.dev.testing-farm.io/2647213f-ac56-4fbf-8482-adc7cfd93a5f/work-nightly-c10srmobb_4c/eae9b412-14ee-457b-8d61-80800d4d1c82-artemis-guest-log.yaml" name="Guest event log"/>
+   <log href="https://artifacts.dev.testing-farm.io/2647213f-ac56-4fbf-8482-adc7cfd93a5f/work-nightly-c10srmobb_4c/console-eae9b412-14ee-457b-8d61-80800d4d1c82.log" name="console log"/>
+   <log href="https://artifacts.dev.testing-farm.io/2647213f-ac56-4fbf-8482-adc7cfd93a5f/work-nightly-c10srmobb_4c/plans/nightly/nightly-c10s/data" name="data"/>
+   <log guest-setup-stage="pre_artifact_installation" href="https://artifacts.dev.testing-farm.io/2647213f-ac56-4fbf-8482-adc7cfd93a5f/guest-setup-eae9b412-14ee-457b-8d61-80800d4d1c82/guest-setup-output-pre-artifact-installation.txt" name="guest setup" schedule-stage="guest-setup"/>
+   <log guest-setup-stage="post_artifact_installation" href="https://artifacts.dev.testing-farm.io/2647213f-ac56-4fbf-8482-adc7cfd93a5f/guest-setup-eae9b412-14ee-457b-8d61-80800d4d1c82/guest-setup-output-post-artifact-installation.txt" name="guest setup" schedule-stage="guest-setup"/>
+   <log href="https://artifacts.dev.testing-farm.io/2647213f-ac56-4fbf-8482-adc7cfd93a5f/work-nightly-c10srmobb_4c/tmt-run.log" name="tmt-log"/>
+   <log href="https://artifacts.dev.testing-farm.io/2647213f-ac56-4fbf-8482-adc7cfd93a5f/work-nightly-c10srmobb_4c/tmt-reproducer.sh" name="tmt-reproducer"/>
+   <log href="https://artifacts.dev.testing-farm.io/2647213f-ac56-4fbf-8482-adc7cfd93a5f/work-nightly-c10srmobb_4c/log.txt" name="tmt-verbose-log"/>
+   <log href="https://artifacts.dev.testing-farm.io/2647213f-ac56-4fbf-8482-adc7cfd93a5f/work-nightly-c10srmobb_4c" name="workdir"/>
+  </logs>
+  <properties>
+   <property name="baseosci.result" value="passed"/>
+   <property name="id" value="work-nightly-c10srmobb_4c_plans-nightly-nightly-c10s"/>
+  </properties>
+  <testcase name="/Run nightly tests" result="passed" time="5706" start-time="2026-02-17T16:01:19.274576+00:00" end-time="2026-02-17T17:36:25.441545+00:00" serial-number="1">
+   <properties>
+    <property name="baseosci.arch" value="x86_64"/>
+    <property name="baseosci.connectable_host" value="3.20.204.139"/>
+    <property name="baseosci.distro" value="CentOS-Stream-10"/>
+    <property name="baseosci.status" value="Complete"/>
+    <property name="baseosci.testcase.source.url" value=""/>
+    <property name="baseosci.variant" value=""/>
+    <property name="id" value="work-nightly-c10srmobb_4c_plans-nightly-nightly-c10s_1_default-0"/>
+   </properties>
+   <logs>
+    <log href="https://artifacts.dev.testing-farm.io/2647213f-ac56-4fbf-8482-adc7cfd93a5f/work-nightly-c10srmobb_4c/plans/nightly/nightly-c10s/execute/data/guest/default-0/Run-nightly-tests-1/data" name="data" schedule-entry="CentOS-Stream-10:x86_64:/plans/nightly/nightly-c10s" schedule-stage="running"/>
+    <log href="https://artifacts.dev.testing-farm.io/2647213f-ac56-4fbf-8482-adc7cfd93a5f/work-nightly-c10srmobb_4c/plans/nightly/nightly-c10s/execute/data/guest/default-0/Run-nightly-tests-1/failures.yaml" name="failures.yaml" schedule-entry="CentOS-Stream-10:x86_64:/plans/nightly/nightly-c10s" schedule-stage="running"/>
+    <log href="https://artifacts.dev.testing-farm.io/2647213f-ac56-4fbf-8482-adc7cfd93a5f/work-nightly-c10srmobb_4c/plans/nightly/nightly-c10s/execute/data/guest/default-0/Run-nightly-tests-1" name="log_dir" schedule-entry="CentOS-Stream-10:x86_64:/plans/nightly/nightly-c10s" schedule-stage="running"/>
+    <log href="https://artifacts.dev.testing-farm.io/2647213f-ac56-4fbf-8482-adc7cfd93a5f/work-nightly-c10srmobb_4c/plans/nightly/nightly-c10s/execute/data/guest/default-0/Run-nightly-tests-1/output.txt" name="testout.log" schedule-entry="CentOS-Stream-10:x86_64:/plans/nightly/nightly-c10s" schedule-stage="running"/>
+   </logs>
+   <testing-environment name="requested">
+    <property name="arch" value="x86_64"/>
+    <property name="compose" value="CentOS-Stream-10"/>
+    <property name="snapshots" value="False"/>
+   </testing-environment>
+   <testing-environment name="provisioned">
+    <property name="arch" value="x86_64"/>
+    <property name="compose" value="CentOS-Stream-10"/>
+    <property name="snapshots" value="False"/>
+   </testing-environment>
+   <guest name="default-0"/>
+  </testcase>
+  <testing-environment name="requested">
+   <property name="arch" value="x86_64"/>
+   <property name="compose" value="CentOS-Stream-10"/>
+   <property name="snapshots" value="False"/>
+  </testing-environment>
+  <testing-environment name="provisioned">
+   <property name="arch" value="x86_64"/>
+   <property name="compose" value="CentOS-Stream-10"/>
+   <property name="snapshots" value="False"/>
+  </testing-environment>
+ </testsuite>
+</testsuites>
