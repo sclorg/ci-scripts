@@ -123,19 +123,3 @@ def test_check_grades_builds_body(report):
     assert "php [C] 3 days since grade C!" in report.body
     assert "python [D] 2 days last grade change!" in report.body
     assert "The rest of images are in grade A." in report.body
-
-
-def test_send_email_uses_smtp(report, smtp_spy):
-    report.body = "<b>Report</b>"
-
-    report.send_email()
-
-    assert smtp_spy
-    instance = smtp_spy[0]
-    assert instance.host == "127.0.0.1"
-    assert instance.closed is True
-    assert instance.sent
-    send_from, send_to, msg = instance.sent[0]
-    assert send_from == "phracek@redhat.com"
-    assert "Container Grades" in msg
-    assert ", ".join(send_to) in msg

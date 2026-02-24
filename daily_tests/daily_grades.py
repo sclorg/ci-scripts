@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import os
 import sys
-import smtplib
 import subprocess
+import smtplib
 
+from smtplib import SMTP
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
@@ -11,15 +12,6 @@ from typing import Dict
 
 from rh_cwt.main import RhelImageRebuilder
 
-default_mails = [
-    "phracek@redhat.com",
-    "hhorak@redhat.com",
-    "pkubat@redhat.com",
-    "anezbeda@redhat.com",
-    "rhscl-container-qe@redhat.com",
-    "oksenzov@redhat.com",
-    "mzidek@redhat.com",
-]
 
 GRADES_OS_DICT = {"RHEL8": "rhel8.yaml", "RHEL9": "rhel9.yaml", "RHEL10": "rhel10.yaml"}
 
@@ -134,16 +126,30 @@ class DailyGradesReport(object):
         )
 
     def send_email(self):
+        grade_mails = os.getenv("GRADE_MAILS", "")
         send_from = "phracek@redhat.com"
         self.mime_msg["From"] = send_from
-        self.mime_msg["To"] = ", ".join(default_mails)
+        self.mime_msg["To"] = ", ".join(grade_mails)
         self.mime_msg[
             "Subject"
         ] = "[CS Image Grading] Container Grades of Apps&Stack images for RHEL8, RHEL9 and RHEL10"
+        print(f"Sending grades from {send_from} to {grade_mails}")
+        smtp_server = os.getenv("SMTP_SERVER", "smtp.redhat.com")
+        smtp_port = int(os.getenv("SMTP_PORT", "25"))
+        print(f"SMTP server is: {smtp_server} and port: {smtp_port}")
         self.mime_msg.attach(MIMEText(self.body, "html"))
-        smtp = smtplib.SMTP("127.0.0.1")
-        smtp.sendmail(send_from, default_mails, self.mime_msg.as_string())
-        smtp.close()
+        try:
+            smtp = SMTP(smtp_server, int(smtp_port))
+            smtp.set_debuglevel(5)
+            smtp.sendmail(send_from, grade_mails, self.mime_msg.as_string())
+        except smtplib.SMTPRecipientsRefused as e:
+            print(f"Error sending email(SMTPRecipientsRefused): {e.strerror}")
+        except smtplib.SMTPException as e:
+            print(f"Error sending email(SMTPException): {e}")
+        except ConnectionRefusedError as e:
+            print(f"Error sending email(ConnectionRefusedError): {e}")
+        finally:
+            smtp.close()
         print("Sending email finished")
 
 
