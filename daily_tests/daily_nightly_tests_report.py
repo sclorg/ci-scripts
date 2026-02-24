@@ -28,7 +28,6 @@ TEST_CASES = {
     ("c10s-test-pytest", "nightly-c10s", "CentOS Stream 10 PyTest test results:"),
     ("rhel8-test", "nightly-rhel8", "RHEL-8 test results:"),
     ("rhel8-test-pytest", "nightly-rhel8", "RHEL-8 PyTest test results:"),
-    ("rhel8-test-openshift-4", "nightly-rhel8", "RHEL-8 OpenShift 4 test results:"),
     (
         "rhel8-test-openshift-pytest",
         "nightly-rhel8",
@@ -36,7 +35,6 @@ TEST_CASES = {
     ),
     ("rhel9-test", "nightly-rhel9", "RHEL-9 test results:"),
     ("rhel9-test-pytest", "nightly-rhel9", "RHEL-9 PyTest test results:"),
-    ("rhel9-test-openshift-4", "nightly-rhel9", "RHEL-9 OpenShift 4 test results:"),
     (
         "rhel9-test-openshift-pytest",
         "nightly-rhel9",
@@ -45,7 +43,6 @@ TEST_CASES = {
     ("rhel9-helm-charts", "nightly-rhel9", "RHEL-9 Helm Charts test results:"),
     ("rhel10-test", "nightly-rhel10", "RHEL-10 test results:"),
     ("rhel10-test-pytest", "nightly-rhel10", "RHEL-10 PyTest test results:"),
-    ("rhel10-test-openshift-4", "nightly-rhel10", "RHEL-10 OpenShift 4 test results:"),
     (
         "rhel10-test-openshift-pytest",
         "nightly-rhel10",
@@ -297,6 +294,11 @@ class NightlyTestsReport(object):
                 self.data_dict["SUCCESS"].append(test_case)
                 if self.args.upstream_tests:
                     success_logs = list((path_dir).rglob("*.log"))
+                    print(success_logs)
+                    for suc in success_logs:
+                        self.store_tmt_logs_to_dict(
+                            path_dir=path_dir, test_case=test_case
+                        )
                     self.data_dict["SUCCESS_DATA"].extend(
                         [(test_case, str(f), str(f.name)) for f in success_logs]
                     )
@@ -367,7 +369,6 @@ class NightlyTestsReport(object):
 
     def generate_success_containers(self):
         for test_case, cont_path, log_name in self.data_dict["SUCCESS_DATA"]:
-            print(f"generate_success_containers: {self.data_dict[test_case]}")
             if os.path.exists(log_name):
                 self.body += (
                     f" <a href='{self.get_pastebin_url(log_name=log_name)}'>See logs</a>"
