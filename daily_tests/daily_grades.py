@@ -126,17 +126,17 @@ class DailyGradesReport(object):
         )
 
     def send_email(self):
-        grade_mails = os.getenv("GRADE_MAILS", "")
+        grade_mails = os.getenv("GRADE_MAILS", "").split(",")
         send_from = "phracek@redhat.com"
         self.mime_msg["From"] = send_from
         self.mime_msg["To"] = ", ".join(grade_mails)
         self.mime_msg[
             "Subject"
         ] = "[CS Image Grading] Container Grades of Apps&Stack images for RHEL8, RHEL9 and RHEL10"
-        print(f"Sending grades from {send_from} to {grade_mails}")
         smtp_server = os.getenv("SMTP_SERVER", "smtp.redhat.com")
         smtp_port = int(os.getenv("SMTP_PORT", "25"))
         print(f"SMTP server is: {smtp_server} and port: {smtp_port}")
+        print(f"MIME msg: {self.mime_msg}")
         self.mime_msg.attach(MIMEText(self.body, "html"))
         try:
             smtp = SMTP(smtp_server, int(smtp_port))
