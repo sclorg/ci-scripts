@@ -191,14 +191,14 @@ class NightlyTestsReport(object):
             return
         cmd = f'{SEND_PASTE_BIN} "{log_path}" "{str(log_name)}"'
         print(f"sending logs to pastebin: {cmd}")
-        for count in range(5):
+        for _ in range(2):
             try:
                 run_command(cmd)
                 break
             except subprocess.CalledProcessError:
                 print(f"ERROR: Sending to pastebin by command {cmd} failed")
                 pass
-            time.sleep(3)
+            time.sleep(1)
 
     def get_pastebin_url(self, log_name: str) -> str:
         with open(log_name, "r") as f:
@@ -267,10 +267,7 @@ class NightlyTestsReport(object):
             if not path_dir.is_dir():
                 print(f"The test case {path_dir} does not exist that is weird")
                 continue
-            plan_name = self.return_plan_name(plan)
-            print(
-                f"Path for test case {test_case} is: {path_dir} and plan name is: {plan_name}"
-            )
+            print(f"Path for test case '{test_case}' is: '{path_dir}'")
             # It looks like TMT is still running for long time
             if (path_dir / "tmt_running").exists():
                 print(f"tmt tests for case {test_case} is still running.")
@@ -350,6 +347,7 @@ class NightlyTestsReport(object):
         print(f"Body to email: {self.body}")
 
     def generate_failed_containers(self):
+        print("GENERATE FAILED CONTAINERS")
         for test_case, plan, msg in self.available_test_case:
             if test_case not in self.data_dict:
                 continue
@@ -368,6 +366,7 @@ class NightlyTestsReport(object):
                 )
 
     def generate_success_containers(self):
+        print("GENERATE SUCCESS CONTAINERS")
         for test_case, cont_path, log_name in self.data_dict["SUCCESS_DATA"]:
             if os.path.exists(log_name):
                 self.body += (

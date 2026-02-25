@@ -82,22 +82,24 @@ class TestingFarmLogDownloader:
         print(f"Request ID: {self.request_id}")
         return True
 
-    def download_log(self, log_name_url: str, log_name: str = None) -> bool:
+    def download_log(
+        self, log_name_url: str, log_name: str = None, is_failed: bool = False
+    ) -> bool:
         """
         Download a log from the Testing Farm.
         """
-        for _ in range(5):
-            print(f"Downloading log: {log_name_url}")
+        for _ in range(2):
+            logfile_dir = self.log_dir / "results" if is_failed else self.log_dir
+            print(f"Downloading log '{log_name_url}' to '{logfile_dir}'")
             response = requests.get(log_name_url, verify=False)
             if response.status_code == 200:
-                with (self.log_dir / log_name).open("wb") as f:
+                with (logfile_dir / log_name).open("wb") as f:
                     f.write(response.content)
                 return True
             else:
-                print(f"Failed to download log: {response.status_code}")
-                time.sleep(3)  # Wait before retrying
+                time.sleep(2)  # Wait before retrying
         else:
-            print("Failed to download log after multiple attempts.")
+            print(f"Failed to download log {log_name_url} after multiple attempts.")
             return False
 
     def download_tmt_logs(self):
@@ -131,7 +133,7 @@ class TestingFarmLogDownloader:
             print(f"Failed to get list of failed containers: {e}")
             return False
 
-    def download_container_logs(self, failed: bool = False) -> bool:
+    def download_container_logs(self, is_failed: bool = False) -> bool:
         """
         Download the failed container logs from the Testing Farm.
         """
@@ -139,7 +141,7 @@ class TestingFarmLogDownloader:
             print("Data directory URL link not found.")
             return False
         url_link = self.data_dir_url_link
-        if failed:
+        if is_failed:
             url_link += "/results"
 
         print(f"Data directory URL link: {url_link}")
@@ -150,7 +152,9 @@ class TestingFarmLogDownloader:
             print(f"Failed to download data/results directory: {response.status_code}")
             return False
         for cont in CONTAINERS:
-            self.download_log(f"{url_link}/{cont}.log", f"{cont}.log")
+            self.download_log(
+                f"{url_link}/{cont}.log", f"{cont}.log", is_failed=is_failed
+            )
         return True
 
     def get_xml_report(self) -> bool:
@@ -162,14 +166,13 @@ class TestingFarmLogDownloader:
         else:
             xml_report_url = f"{REPORTS_PRIVATE_URL}/{self.request_id}/results.xml"
         print(f"XML Report URL: {xml_report_url}")
-        for _ in range(5):
+        for _ in range(2):
             response = requests.get(xml_report_url, verify=False)
             if response.status_code == 200:
                 self.xml_dict = xmltodict.parse(response.content)
                 break
             else:
-                print(f"Failed to download XML report: {response.status_code}")
-                time.sleep(3)  # Wait before retrying
+                time.sleep(2)  # Wait before retrying
         else:
             print("Failed to download XML report after multiple attempts.")
             return False
@@ -194,4 +197,4 @@ if __name__ == "__main__":
         sys.exit(1)
     downloader.download_tmt_logs()
     downloader.download_container_logs()
-    downloader.download_container_logs(failed=True)
+    downloader.download_container_logs(is_failed=True)
