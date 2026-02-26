@@ -58,8 +58,6 @@ TEST_UPSTREAM_CASES = {
 
 # The default directory used for nightly build
 RESULTS_DIR = Path("/var/ci-scripts/daily_reports_dir")
-# The default directory used for running build
-SCLORG_DIR = Path("/var/ci-scripts/daily_scl_tests")
 
 
 def run_command(
@@ -120,7 +118,6 @@ class NightlyTestsReport(object):
         self.date = date.today().strftime("%Y-%m-%d")
         self.nightly_builds_url = ""
         self.reports_dir = RESULTS_DIR / self.date
-        self.sclorg_dir = SCLORG_DIR / self.date
         self.full_success = False
         self.smtp_port = 25
         self.smtp_server = "smtp.redhat.com"
@@ -237,8 +234,8 @@ class NightlyTestsReport(object):
         else:
             dictionary_key = "tmt_failed"
         self.data_dict["tmt"][dictionary_key].append(test_case)
-        log_path = self.sclorg_dir / f"{test_case}" / "log.txt"
-        log_name = path_dir / f"{test_case}.log.txt"
+        log_path = self.reports_dir / test_case / "tmt-verbose-log"
+        log_name = path_dir / "tmt-verbose-log.txt"
         self.send_file_to_pastebin(log_path=log_path, log_name=log_name)
         if log_name.exists():
             with open(log_name) as f:
@@ -378,7 +375,7 @@ class NightlyTestsReport(object):
 
     def generate_tmt_logs_containers(self):
         for test_case, cont_path, log_name in self.data_dict["tmt"]["logs"]:
-            print(test_case, cont_path, log_name)
+            print(f"generate_tmt_logs_containers: {test_case}, {cont_path}, {log_name}")
             if os.path.exists(log_name):
                 self.body += (
                     f"<b>{test_case}</b> <a href='{self.get_pastebin_url(log_name=log_name)}'>"
