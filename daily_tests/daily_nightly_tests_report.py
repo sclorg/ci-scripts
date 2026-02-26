@@ -14,7 +14,7 @@ from email.mime.text import MIMEText
 from pathlib import Path
 from typing import Dict, List
 
-default_mails: List[str] = []
+DEFAULT_MAILS: List[str] = []
 SCLORG_MAILS = {}
 SEND_PASTE_BIN = "/root/ci-scripts/send_to_paste_bin.sh"
 
@@ -118,9 +118,9 @@ class NightlyTestsReport(object):
         self.mime_msg = MIMEMultipart()
         self.body = ""
         self.date = date.today().strftime("%Y-%m-%d")
+        self.nightly_builds_url = ""
         self.reports_dir = RESULTS_DIR / self.date
         self.sclorg_dir = SCLORG_DIR / self.date
-        self.add_email = []
         self.full_success = False
         self.smtp_port = 25
         self.smtp_server = "smtp.redhat.com"
@@ -178,12 +178,14 @@ class NightlyTestsReport(object):
         if "SMTP_PORT" in os.environ:
             self.smtp_port = int(os.getenv("SMTP_PORT", 25))
         if "DEFAULT_MAILS" in os.environ:
-            default_mails.extend(os.environ["DEFAULT_MAILS"].split(","))
+            DEFAULT_MAILS = os.environ["DEFAULT_MAILS"].split(",")
+        if "NIGHTLY_BUILDS_URL" in os.environ:
+            self.nightly_builds_url = os.environ("NIGHTLY_BUILDS_URL", "")
         self.send_email = os.environ.get("SEND_EMAIL", False)
         self.send_email = True
 
         print(f"Loaded mails from environment: '{SCLORG_MAILS}'")
-        print(f"Default mails: '{default_mails}'")
+        print(f"Default mails: '{DEFAULT_MAILS}'")
         print(f"Send email: '{self.send_email}'")
 
     def send_file_to_pastebin(self, log_path, log_name: Path):
@@ -386,7 +388,7 @@ class NightlyTestsReport(object):
             else:
                 self.body += (
                     f"<b>{test_case}</b> No logs available. "
-                    f"Check nightly build machine<br>"
+                    f"<a href='{self.nightly_builds_url}'>Check nightly build machine</a><br>"
                 )
         self.body += "<br>"
 
@@ -399,9 +401,11 @@ class NightlyTestsReport(object):
                 for cont, mails in SCLORG_MAILS.items():
                     if str(Path(name).with_suffix("")) != cont:
                         continue
-                    self.add_email.extend(
-                        [ml for ml in mails if ml not in self.add_email]
-                    )
+                    for ml in mails:
+                        if ml in DEFAULT_MAILS:
+                            continue
+                        DEFAULT_MAILS.append(ml)
+        print(f"generate_emails: Additional emails: {DEFAULT_MAILS}")
 
     def send_emails(self):
         if not self.send_email:
@@ -422,7 +426,7 @@ class NightlyTestsReport(object):
         if self.args.upstream_tests:
             send_to = SCLORG_MAILS.get("upstream-tests", [])
         else:
-            send_to = default_mails + self.add_email
+            send_to = DEFAULT_MAILS
 
         self.mime_msg["From"] = send_from
         self.mime_msg["To"] = ", ".join(send_to)
