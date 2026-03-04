@@ -245,6 +245,12 @@ class NightlyTestsReport(object):
         :param not_exists: Flag indicating if the data directory does not exist
         :param is_failed: Flag indicating if the test has failed
         """
+        log_path = self.reports_dir / test_case / "tmt-verbose-log"
+        log_name = path_dir / "tmt-verbose-log.txt"
+        self.send_file_to_pastebin(log_path=log_path, log_name=log_name)
+
+        if not (is_running or is_failed or not_exists):
+            return
         if not_exists:
             msg = (
                 f"Data dir for test case {test_case} does not exist."
@@ -265,15 +271,11 @@ class NightlyTestsReport(object):
             dictionary_key = "tmt_running"
         if is_failed:
             dictionary_key = "tmt_failed"
-        log_path = self.reports_dir / test_case / "tmt-verbose-log"
-        log_name = path_dir / "tmt-verbose-log.txt"
-        self.send_file_to_pastebin(log_path=log_path, log_name=log_name)
         if log_name.exists():
             with open(log_name) as f:
                 print(f.readlines())
-        if is_failed or is_running:
-            self.data_dict["tmt"][dictionary_key].append(test_case)
-            self.data_dict["tmt"]["logs"].append((test_case, log_path, log_name))
+        self.data_dict["tmt"][dictionary_key].append(test_case)
+        self.data_dict["tmt"]["logs"].append((test_case, log_path, log_name))
 
     def collect_data(self):
         # Collect data to class dictionary
