@@ -35,13 +35,7 @@ LOG_FILE="${LOCAL_LOGS_DIR}/${TARGET}-${TESTS}.log"
 export USER_ID=$(id -u)
 export GROUP_ID=$(id -g)
 API_KEY="API_KEY_PRIVATE"
-# function generate_passwd_file() {
-#     grep -v ^ci-scripts /etc/passwd > "$HOME/passwd"
-#     echo "ci-scripts:x:${USER_ID}:${GROUP_ID}:User for running ci-scripts:${HOME}:/bin/bash" >> "$HOME/passwd"
-#     export LD_PRELOAD=libnss_wrapper.so
-#     export NSS_WRAPPER_PASSWD=${HOME}/passwd
-#     export NSS_WRAPPER_GROUP=/etc/group
-# }
+
 BRANCH="master"
 function prepare_environment() {
   mkdir -p "${LOCAL_LOGS_DIR}"
