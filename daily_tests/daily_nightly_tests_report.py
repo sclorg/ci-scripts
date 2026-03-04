@@ -127,6 +127,9 @@ class NightlyTestsReport(object):
             self.available_test_case = TEST_CASES
 
     def parse_args(self):
+        """
+        Parse command line arguments.
+        """
         parser = argparse.ArgumentParser(
             description="NightlyTestsReport program report all failures"
             "over all OS and Tests (tests, test-pytest, test-openshift-pytest)."
@@ -150,11 +153,17 @@ class NightlyTestsReport(object):
         return parser.parse_args()
 
     def return_plan_name(self, item) -> str:
+        """
+        Return the plan name for a given item.
+        """
         return "".join(
             [x[1] for x in self.available_test_case if item.startswith(x[0])]
         )
 
     def load_mails_from_environment(self):
+        """
+        Load email addresses from environment variables.
+        """
         print(os.environ)
         if "DB_MAILS" in os.environ:
             SCLORG_MAILS["mariadb-container"] = os.environ["DB_MAILS"].split(",")
@@ -186,6 +195,12 @@ class NightlyTestsReport(object):
         print(f"Send email: '{self.send_email}'")
 
     def send_file_to_pastebin(self, log_path, log_name: Path):
+        """
+        Send file to pastebin using send_to_paste_bin.sh script.
+        It is used for sending logs from TMT command in case of TMT failures.
+
+        :param log_path: Path to log file to send
+        :param log_name: Path to file where pastebin link will be stored"""
         if not os.path.exists(log_path):
             return
         cmd = f'{SEND_PASTE_BIN} "{log_path}" "{str(log_name)}"'
@@ -200,6 +215,11 @@ class NightlyTestsReport(object):
             time.sleep(1)
 
     def get_pastebin_url(self, log_name: str) -> str:
+        """
+        Get pastebin URL from file where send_to_paste_bin.sh
+        script stored it after sending logs to pastebin.
+        :param log_name: Path to file where pastebin link is stored
+        :return: URL as string or empty string if URL is not found in file"""
         with open(log_name, "r") as f:
             lines = f.read()
 
@@ -210,37 +230,50 @@ class NightlyTestsReport(object):
         return ""
 
     def store_tmt_logs_to_dict(
-        self, path_dir: Path, test_case, is_running=False, not_exists=False
+        self,
+        path_dir: Path,
+        test_case,
+        is_running=False,
+        not_exists=False,
+        is_failed=False,
     ):
+        """
+        Store TMT logs in a dictionary for reporting purposes.
+        :param path_dir: Path to the directory containing TMT logs
+        :param test_case: Name of the test case
+        :param is_running: Flag indicating if the test is still running
+        :param not_exists: Flag indicating if the data directory does not exist
+        :param is_failed: Flag indicating if the test has failed
+        """
         if not_exists:
             msg = (
                 f"Data dir for test case {test_case} does not exist."
                 f"Look at log in attachment called '{test_case}-log.txt'."
             )
-        else:
-            if is_running:
-                msg = (
-                    f"tmt tests for case {test_case} is still running."
-                    f"Look at log in attachment called '{test_case}-log.txt'."
-                )
-            else:
-                msg = (
-                    f"tmt command has failed for test case {test_case}."
-                    f"Look at log in attachment called '{test_case}-log.txt'."
-                )
+        if is_running:
+            msg = (
+                f"tmt tests for case {test_case} is still running."
+                f"Look at log in attachment called '{test_case}-log.txt'."
+            )
+        if is_failed:
+            msg = (
+                f"tmt command has failed for test case {test_case}."
+                f"Look at log in attachment called '{test_case}-log.txt'."
+            )
         self.data_dict["tmt"]["msg"].append(msg)
         if is_running:
             dictionary_key = "tmt_running"
-        else:
+        if is_failed:
             dictionary_key = "tmt_failed"
-        self.data_dict["tmt"][dictionary_key].append(test_case)
         log_path = self.reports_dir / test_case / "tmt-verbose-log"
         log_name = path_dir / "tmt-verbose-log.txt"
         self.send_file_to_pastebin(log_path=log_path, log_name=log_name)
         if log_name.exists():
             with open(log_name) as f:
                 print(f.readlines())
-        self.data_dict["tmt"]["logs"].append((test_case, log_path, log_name))
+        if is_failed or is_running:
+            self.data_dict["tmt"][dictionary_key].append(test_case)
+            self.data_dict["tmt"]["logs"].append((test_case, log_path, log_name))
 
     def collect_data(self):
         # Collect data to class dictionary
@@ -277,7 +310,7 @@ class NightlyTestsReport(object):
             # /var/tmp/daily_scl_tests/<test_case>/log.txt file
             if (path_dir / "tmt_failed").exists():
                 print(f"tmt command has failed for test case {test_case}.")
-                self.store_tmt_logs_to_dict(path_dir, test_case)
+                self.store_tmt_logs_to_dict(path_dir, test_case, is_failed=True)
                 failed_tests = True
                 continue
             data_dir = path_dir / "results"
@@ -293,7 +326,7 @@ class NightlyTestsReport(object):
                     print(success_logs)
                     for suc in success_logs:
                         self.store_tmt_logs_to_dict(
-                            path_dir=path_dir, test_case=test_case
+                            path_dir=path_dir, test_case=test_case, is_failed=False
                         )
                     self.data_dict["SUCCESS_DATA"].extend(
                         [(test_case, str(f), str(f.name)) for f in success_logs]
@@ -313,6 +346,11 @@ class NightlyTestsReport(object):
         pprint.pprint(self.data_dict)
 
     def generate_email_body(self):
+        """
+        Generate email body based on collected data.
+        It contains information about failed containers
+        and logs from TMT command in case of TMT failures.
+        """
         if self.args.upstream_tests:
             body_failure = "<b>NodeJS upstream tests failures:</b><br>"
             body_success = (
@@ -346,6 +384,9 @@ class NightlyTestsReport(object):
         print(f"Body to email: {self.body}")
 
     def generate_failed_containers(self):
+        """
+        Generate email body for failed containers.
+        """
         print("GENERATE FAILED CONTAINERS")
         for test_case, plan, msg in self.available_test_case:
             if test_case not in self.data_dict:
@@ -365,6 +406,9 @@ class NightlyTestsReport(object):
                 )
 
     def generate_success_containers(self):
+        """
+        Generate email body for successful containers.
+        """
         print("GENERATE SUCCESS CONTAINERS")
         for test_case, cont_path, log_name in self.data_dict["SUCCESS_DATA"]:
             if os.path.exists(log_name):
@@ -374,6 +418,9 @@ class NightlyTestsReport(object):
                 )
 
     def generate_tmt_logs_containers(self):
+        """
+        Generate email body for TMT logs.
+        """
         for test_case, cont_path, log_name in self.data_dict["tmt"]["logs"]:
             print(f"generate_tmt_logs_containers: {test_case}, {cont_path}, {log_name}")
             if os.path.exists(log_name):
@@ -390,6 +437,9 @@ class NightlyTestsReport(object):
         self.body += "<br>"
 
     def generate_emails(self):
+        """
+        Generate email list based on collected data and predefined email lists for each container.
+        """
         print("generate_emails: ", self.data_dict)
         for test_case, plan, _ in self.available_test_case:
             if test_case not in self.data_dict:
@@ -405,6 +455,9 @@ class NightlyTestsReport(object):
         print(f"generate_emails: Additional emails: {DEFAULT_MAILS}")
 
     def send_emails(self):
+        """
+        Send emails with the test results.
+        """
         if not self.send_email:
             print("Sending email is not allowed")
             return
