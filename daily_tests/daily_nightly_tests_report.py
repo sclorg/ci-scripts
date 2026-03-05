@@ -14,7 +14,6 @@ from email.mime.text import MIMEText
 from pathlib import Path
 from typing import Dict, List
 
-DEFAULT_MAILS: List[str] = []
 SCLORG_MAILS = {}
 SEND_PASTE_BIN = "/root/ci-scripts/send_to_paste_bin.sh"
 
@@ -121,6 +120,7 @@ class NightlyTestsReport(object):
         self.full_success = False
         self.smtp_port = 25
         self.smtp_server = "smtp.redhat.com"
+        self.default_mails: List[str] = []
         if self.args.upstream_tests:
             self.available_test_case = TEST_UPSTREAM_CASES
         else:
@@ -184,14 +184,14 @@ class NightlyTestsReport(object):
         if "SMTP_PORT" in os.environ:
             self.smtp_port = int(os.getenv("SMTP_PORT", 25))
         if "DEFAULT_MAILS" in os.environ:
-            DEFAULT_MAILS = os.environ["DEFAULT_MAILS"].split(",")
+            self.default_mails = os.environ["DEFAULT_MAILS"].split(",")
         if "NIGHTLY_BUILDS_URL" in os.environ:
             self.nightly_builds_url = os.environ("NIGHTLY_BUILDS_URL", "")
         self.send_email = os.environ.get("SEND_EMAIL", False)
         self.send_email = True
 
         print(f"Loaded mails from environment: '{SCLORG_MAILS}'")
-        print(f"Default mails: '{DEFAULT_MAILS}'")
+        print(f"Default mails: '{self.default_mails}'")
         print(f"Send email: '{self.send_email}'")
 
     def send_file_to_pastebin(self, log_path, log_name: Path):
@@ -442,19 +442,23 @@ class NightlyTestsReport(object):
         """
         Generate email list based on collected data and predefined email lists for each container.
         """
-        print("generate_emails: ", self.data_dict)
+        print("GENERATE_MAILS: ", self.data_dict)
+        print("GENERATE_MAILS: Available test cases: ", self.available_test_case)
         for test_case, plan, _ in self.available_test_case:
             if test_case not in self.data_dict:
                 continue
             for _, name in self.data_dict[test_case]:
                 for cont, mails in SCLORG_MAILS.items():
+                    print(
+                        f"generate_emails: Checking if container name '{name}' starts with '{cont}'"
+                    )
                     if str(Path(name).with_suffix("")) != cont:
                         continue
                     for ml in mails:
-                        if ml in DEFAULT_MAILS:
+                        if ml in self.default_mails:
                             continue
-                        DEFAULT_MAILS.append(ml)
-        print(f"generate_emails: Additional emails: {DEFAULT_MAILS}")
+                        self.default_mails.append(ml)
+        print(f"GENERATE_MAILS: Additional emails: {self.default_mails}")
 
     def send_emails(self):
         """
@@ -478,7 +482,7 @@ class NightlyTestsReport(object):
         if self.args.upstream_tests:
             send_to = SCLORG_MAILS.get("upstream-tests", [])
         else:
-            send_to = DEFAULT_MAILS
+            send_to = self.default_mails
 
         self.mime_msg["From"] = send_from
         self.mime_msg["To"] = ", ".join(send_to)
