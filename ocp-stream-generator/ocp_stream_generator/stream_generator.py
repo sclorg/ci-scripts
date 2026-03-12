@@ -26,11 +26,7 @@
 import yaml
 import json
 import sys
-from ocp_stream_generator.distribution_data import (
-    abbreviations,
-    images,
-    latest_description,
-)
+from distribution_data import abbreviations, images, latest_description
 
 
 class YamlLoader:
