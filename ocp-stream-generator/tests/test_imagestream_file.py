@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from stream_generator import ImagestreamFile
+from ocp_stream_generator.stream_generator import ImagestreamFile
 
 
 def test_create_isf():

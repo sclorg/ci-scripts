@@ -20,4 +20,10 @@ jobs:
       with:
         tox_env: ${{ matrix.tox_env }}
         workdir: "daily_tests/"
-...
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        flags: daily-tests-unit
+        files: daily_tests/coverage.xml
+        fail_ci_if_error: false
