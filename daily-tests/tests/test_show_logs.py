@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 
-import show_logs
+from daily_tests import show_logs
 
 TEST_DIR = Path(__file__).parent.absolute()
 sys.path.append(str(TEST_DIR))
