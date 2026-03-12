@@ -26,7 +26,16 @@
 import yaml
 import json
 import sys
-from distribution_data import abbreviations, images, latest_description
+
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.parent.absolute()))
+
+from ocp_stream_generator.distribution_data import (
+    abbreviations,
+    images,
+    latest_description,
+)
 
 
 class YamlLoader:

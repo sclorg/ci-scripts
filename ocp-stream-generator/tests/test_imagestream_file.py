@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 from ocp_stream_generator.stream_generator import ImagestreamFile
 
 
