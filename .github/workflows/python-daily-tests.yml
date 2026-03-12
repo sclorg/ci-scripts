@@ -19,11 +19,11 @@ jobs:
     - uses: fedora-python/tox-github-action@main
       with:
         tox_env: ${{ matrix.tox_env }}
-        workdir: "daily_tests/"
+        workdir: "daily-tests/"
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         flags: daily-tests-unit
-        files: daily_tests/coverage.xml
+        files: daily-tests/coverage.xml
         fail_ci_if_error: false

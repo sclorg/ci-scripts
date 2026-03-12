@@ -1,11 +1,12 @@
 # pylint: disable=import-error,redefined-outer-name
 import sys
+import pytest
+
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
+from daily_tests import download_logs
 
-import download_logs
 
 TEST_DIR = Path(__file__).parent.absolute()
 sys.path.insert(0, str(TEST_DIR.parent))
@@ -94,7 +95,9 @@ class TestDownloadLog:
         mock_response.status_code = 200
         mock_response.content = b"log content"
 
-        with patch("download_logs.requests.get", return_value=mock_response):
+        with patch(
+            "daily_tests.download_logs.requests.get", return_value=mock_response
+        ):
             result = downloader.download_log("http://example.com/log.txt", "log.txt")
 
         assert result is True
@@ -107,7 +110,9 @@ class TestDownloadLog:
         mock_response.status_code = 200
         mock_response.content = b"failed log"
 
-        with patch("download_logs.requests.get", return_value=mock_response):
+        with patch(
+            "daily_tests.download_logs.requests.get", return_value=mock_response
+        ):
             result = downloader.download_log(
                 "http://example.com/fail.log", "fail.log", is_failed=True
             )
@@ -120,8 +125,10 @@ class TestDownloadLog:
         mock_response = MagicMock()
         mock_response.status_code = 404
 
-        with patch("download_logs.requests.get", return_value=mock_response):
-            with patch("download_logs.time.sleep"):
+        with patch(
+            "daily_tests.download_logs.requests.get", return_value=mock_response
+        ):
+            with patch("daily_tests.download_logs.time.sleep"):
                 result = downloader.download_log(
                     "http://example.com/missing.log", "missing.log"
                 )
@@ -163,7 +170,9 @@ class TestDownloadTmtLogs:
         mock_response.status_code = 200
         mock_response.content = b"log content"
 
-        with patch("download_logs.requests.get", return_value=mock_response):
+        with patch(
+            "daily_tests.download_logs.requests.get", return_value=mock_response
+        ):
             downloader.download_tmt_logs()
 
         assert downloader.data_dir_url_link == "http://example.com/data"
@@ -208,7 +217,9 @@ class TestDownloadContainerLogs:
         mock_response.text = "<html>data dir</html>"
         mock_response.content = b"log"
 
-        with patch("download_logs.requests.get", return_value=mock_response):
+        with patch(
+            "daily_tests.download_logs.requests.get", return_value=mock_response
+        ):
             result = downloader.download_container_logs()
 
         assert result is True
@@ -222,7 +233,9 @@ class TestDownloadContainerLogs:
         mock_response.text = "<html>results</html>"
         mock_response.content = b"log"
 
-        with patch("download_logs.requests.get", return_value=mock_response):
+        with patch(
+            "daily_tests.download_logs.requests.get", return_value=mock_response
+        ):
             result = downloader.download_container_logs(is_failed=True)
 
         assert result is True
@@ -232,7 +245,9 @@ class TestDownloadContainerLogs:
         mock_response = MagicMock()
         mock_response.status_code = 404
 
-        with patch("download_logs.requests.get", return_value=mock_response):
+        with patch(
+            "daily_tests.download_logs.requests.get", return_value=mock_response
+        ):
             result = downloader.download_container_logs()
 
         assert result is False
@@ -248,9 +263,12 @@ class TestGetXmlReport:
         mock_response.status_code = 200
         mock_response.content = b"<testsuites></testsuites>"
 
-        with patch("download_logs.requests.get", return_value=mock_response):
+        with patch(
+            "daily_tests.download_logs.requests.get", return_value=mock_response
+        ):
             with patch(
-                "download_logs.xmltodict.parse", return_value={"testsuites": {}}
+                "daily_tests.download_logs.xmltodict.parse",
+                return_value={"testsuites": {}},
             ):
                 result = downloader.get_xml_report()
 
@@ -270,9 +288,12 @@ class TestGetXmlReport:
         mock_response.status_code = 200
         mock_response.content = b"<testsuites></testsuites>"
 
-        with patch("download_logs.requests.get", return_value=mock_response):
+        with patch(
+            "daily_tests.download_logs.requests.get", return_value=mock_response
+        ):
             with patch(
-                "download_logs.xmltodict.parse", return_value={"testsuites": {}}
+                "daily_tests.download_logs.xmltodict.parse",
+                return_value={"testsuites": {}},
             ):
                 result = downloader.get_xml_report()
 
@@ -291,10 +312,11 @@ class TestGetXmlReport:
         mock_response.content = b"<testsuites></testsuites>"
 
         with patch(
-            "download_logs.requests.get", return_value=mock_response
+            "daily_tests.download_logs.requests.get", return_value=mock_response
         ) as mock_get:
             with patch(
-                "download_logs.xmltodict.parse", return_value={"testsuites": {}}
+                "daily_tests.download_logs.xmltodict.parse",
+                return_value={"testsuites": {}},
             ):
                 result = downloader.get_xml_report()
 
@@ -306,8 +328,10 @@ class TestGetXmlReport:
         mock_response = MagicMock()
         mock_response.status_code = 500
 
-        with patch("download_logs.requests.get", return_value=mock_response):
-            with patch("download_logs.time.sleep"):
+        with patch(
+            "daily_tests.download_logs.requests.get", return_value=mock_response
+        ):
+            with patch("daily_tests.download_logs.time.sleep"):
                 result = downloader.get_xml_report()
 
         assert result is False

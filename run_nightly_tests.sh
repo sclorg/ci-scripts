@@ -111,7 +111,7 @@ function run_tests() {
     touch "${DAILY_REPORTS_TESTS_DIR}/tmt_failed"
   fi
   cp "${LOG_FILE}" "${DAILY_REPORTS_TESTS_DIR}/testing_farm_${TARGET}_${TESTS}.txt"
-  python3 /root/ci-scripts/daily_tests/download_logs.py "${LOG_FILE}" "${TARGET}" "${TESTS}"
+  python3 /root/ci-scripts/daily-tests/daily_tests/download_logs.py "${LOG_FILE}" "${TARGET}" "${TESTS}"
 }
 
 if [[ "$TESTS" != "test" ]] && [[ "$TESTS" != "test-pytest" ]] && [[ "$TESTS" != "test-upstream" ]] && [[ "$TESTS" != "test-openshift-pytest" ]] && [[ "$TESTS" != "test-openshift-4" ]]; then
