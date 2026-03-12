@@ -1,6 +1,15 @@
-.coverage
-coverage.xml
 .mypy_cache
 .idea
 .vscode
 __pycache__
+
+
+# Unit tests / coverage reports
+.tox/
+.coverage
+.coverage.*
+.cache
+coverage.xml
+coverage-unit.xml
+coverage-integration.xml
+.pytest_cache/
