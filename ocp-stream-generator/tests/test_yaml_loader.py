@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 
-from stream_generator import YamlLoader
-from data.data_yaml_loader import load_yaml_result
+from ocp_stream_generator.stream_generator import YamlLoader
+from tests.data.data_yaml_loader import load_yaml_result
 
 
 def test_load_yaml():

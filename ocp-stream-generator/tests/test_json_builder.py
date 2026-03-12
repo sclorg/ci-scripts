@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 import json
 import re
-from stream_generator import JsonBuilder
-from stream_generator import Tag
-from stream_generator import LatestTag
-from stream_generator import CustomTag
-from stream_generator import ImagestreamFile
-from data.data_json_builder import add_tag_result
-from data.data_json_builder import add_tag_latest_result
-from data.data_json_builder import add_tag_custom_result
-from data.data_json_builder import create_annotation_result
-from data.data_json_builder import create_annotation_latest_result
-from data.data_json_builder import create_header_result
-from data.data_json_builder import generate_json_result
+from ocp_stream_generator.stream_generator import JsonBuilder
+from ocp_stream_generator.stream_generator import Tag
+from ocp_stream_generator.stream_generator import LatestTag
+from ocp_stream_generator.stream_generator import CustomTag
+from ocp_stream_generator.stream_generator import ImagestreamFile
+from tests.data.data_json_builder import add_tag_result
+from tests.data.data_json_builder import add_tag_latest_result
+from tests.data.data_json_builder import add_tag_custom_result
+from tests.data.data_json_builder import create_annotation_result
+from tests.data.data_json_builder import create_annotation_latest_result
+from tests.data.data_json_builder import create_header_result
+from tests.data.data_json_builder import generate_json_result
 
 builder = JsonBuilder()
 

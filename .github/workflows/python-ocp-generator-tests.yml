@@ -20,4 +20,10 @@ jobs:
       with:
         tox_env: ${{ matrix.tox_env }}
         workdir: "ocp-stream-generator/"
-...
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        flags: ocp-stream-generator-unit
+        files: ocp-stream-generator/coverage.xml
+        fail_ci_if_error: false
