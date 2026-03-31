@@ -53,11 +53,11 @@ function get_compose() {
     TMT_PLAN_URL="$DOWNSTREAM_TMT_REPO"
   elif [[ "$TARGET" == "rhel9" ]]; then
     # COMPOSE="1MT-RHEL-9.6.0-updates"
-    COMPOSE="RHEL-9.6.0-Nightly"
+    COMPOSE="RHEL-9.8.0-Nightly"
     TMT_PLAN_URL="$DOWNSTREAM_TMT_REPO"
   elif [[ "$TARGET" == "rhel10" ]]; then
     # COMPOSE="1MT-RHEL-10.0"
-    COMPOSE="RHEL-10-Nightly"
+    COMPOSE="RHEL-10.2-Nightly"
     TMT_PLAN_URL="$DOWNSTREAM_TMT_REPO"
   elif [[ "$TARGET" == "fedora" ]]; then
     # COMPOSE="1MT-Fedora-${VERSION}"
