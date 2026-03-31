@@ -2,7 +2,7 @@
 
 set -x
 
-cd /root/ci-scripts/daily_tests
+cd "/root/ci-scripts/daily-tests/daily_tests" || exit 1
 
 while true; do
     find "/var/ci-scripts/daily_reports_dir/" -ctime +30 -type d

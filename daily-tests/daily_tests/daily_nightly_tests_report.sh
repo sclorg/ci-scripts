@@ -2,7 +2,7 @@
 
 set -x
 
-cd /root/ci-scripts/daily_tests
+cd "/root/ci-scripts/daily-tests/daily_tests" || exit 1
 CUR_DATE=$(date +%Y-%m-%d)
 
 find "/var/ci-scripts/daily_reports_dir/${CUR_DATE}" -type f -name "tmt_*"
