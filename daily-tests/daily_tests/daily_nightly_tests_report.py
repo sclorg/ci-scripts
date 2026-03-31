@@ -160,35 +160,51 @@ class NightlyTestsReport(object):
             [x[1] for x in self.available_test_case if item.startswith(x[0])]
         )
 
+    def _get_env_variable(self, var_name: str, default_value: str = "") -> str:
+        """
+        Get environment variable value or return default value if not set.
+        :param var_name: Name of the environment variable
+        :param default_value: Default value to return if environment variable is not set
+        :return: Value of the environment variable or default value
+        """
+        if var_name in os.environ:
+            value = os.getenv(var_name, default_value)
+            print(f"Environment variable '{var_name}': '{value}'")
+            return value
+        return default_value
+
     def load_mails_from_environment(self):
         """
         Load email addresses from environment variables.
         """
         print(os.environ)
-        if "DB_MAILS" in os.environ:
-            SCLORG_MAILS["mariadb-container"] = os.getenv("DB_MAILS").split(",")
-            SCLORG_MAILS["mysql-container"] = os.getenv("DB_MAILS").split(",")
-            SCLORG_MAILS["postgresql-container"] = os.getenv("DB_MAILS").split(",")
-        if "RUBY_MAILS" in os.environ:
-            SCLORG_MAILS["s2i-ruby-container"] = os.getenv("RUBY_MAILS").split(",")
-        if "PYTHON_MAILS" in os.environ:
-            SCLORG_MAILS["s2i-python-container"] = os.getenv("PYTHON_MAILS").split(",")
-        if "NODEJS_MAILS" in os.environ:
-            SCLORG_MAILS["s2i-nodejs-container"] = os.getenv("NODEJS_MAILS").split(",")
-        if "PERL_MAILS" in os.environ:
-            SCLORG_MAILS["s2i-perl-container"] = os.getenv("PERL_MAILS").split(",")
-        if "UPSTREAM_MAILS" in os.environ:
-            SCLORG_MAILS["upstream-tests"] = os.getenv("UPSTREAM_MAILS").split(",")
-        if "SMTP_SERVER" in os.environ:
-            self.smtp_server = os.getenv("SMTP_SERVER", "smtp.redhat.com")
-        if "SMTP_PORT" in os.environ:
-            self.smtp_port = int(os.getenv("SMTP_PORT", 25))
-        if "DEFAULT_MAILS" in os.environ:
-            self.default_mails = os.getenv("DEFAULT_MAILS").split(",")
-        if "NIGHTLY_BUILDS_URL" in os.environ:
-            self.nightly_builds_url = os.getenv("NIGHTLY_BUILDS_URL", "")
-        self.send_email = os.getenv("SEND_EMAIL", False)
-        self.send_email = True
+        SCLORG_MAILS["mariadb-container"] = self._get_env_variable("DB_MAILS").split(
+            ","
+        )
+        SCLORG_MAILS["mysql-container"] = self._get_env_variable("DB_MAILS").split(",")
+        SCLORG_MAILS["postgresql-container"] = self._get_env_variable("DB_MAILS").split(
+            ","
+        )
+        SCLORG_MAILS["s2i-ruby-container"] = self._get_env_variable("RUBY_MAILS").split(
+            ","
+        )
+        SCLORG_MAILS["s2i-python-container"] = self._get_env_variable(
+            "PYTHON_MAILS"
+        ).split(",")
+        SCLORG_MAILS["s2i-nodejs-container"] = self._get_env_variable(
+            "NODEJS_MAILS"
+        ).split(",")
+        SCLORG_MAILS["s2i-perl-container"] = self._get_env_variable("PERL_MAILS").split(
+            ","
+        )
+        SCLORG_MAILS["upstream-tests"] = self._get_env_variable("UPSTREAM_MAILS").split(
+            ","
+        )
+        self.smtp_server = self._get_env_variable("SMTP_SERVER", "smtp.redhat.com")
+        self.smtp_port = int(self._get_env_variable("SMTP_PORT", "25"))
+        self.default_mails = os.getenv("DEFAULT_MAILS").split(",")
+        self.nightly_builds_url = os.getenv("NIGHTLY_BUILDS_URL", "")
+        self.send_email = bool(os.getenv("SEND_EMAIL", "False"))
 
         print(f"Loaded mails from environment: '{SCLORG_MAILS}'")
         print(f"Default mails: '{self.default_mails}'")
