@@ -15,7 +15,7 @@ else
   exit 1
 fi
 
-cd "/root/ci-scripts/"
+cd "/root/ci-scripts/" || exit 1
 
 # Local working directories
 CUR_DATE=$(date +%Y-%m-%d)
