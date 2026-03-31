@@ -166,28 +166,28 @@ class NightlyTestsReport(object):
         """
         print(os.environ)
         if "DB_MAILS" in os.environ:
-            SCLORG_MAILS["mariadb-container"] = os.environ["DB_MAILS"].split(",")
-            SCLORG_MAILS["mysql-container"] = os.environ["DB_MAILS"].split(",")
-            SCLORG_MAILS["postgresql-container"] = os.environ["DB_MAILS"].split(",")
+            SCLORG_MAILS["mariadb-container"] = os.getenv("DB_MAILS").split(",")
+            SCLORG_MAILS["mysql-container"] = os.getenv("DB_MAILS").split(",")
+            SCLORG_MAILS["postgresql-container"] = os.getenv("DB_MAILS").split(",")
         if "RUBY_MAILS" in os.environ:
-            SCLORG_MAILS["s2i-ruby-container"] = os.environ["RUBY_MAILS"].split(",")
+            SCLORG_MAILS["s2i-ruby-container"] = os.getenv("RUBY_MAILS").split(",")
         if "PYTHON_MAILS" in os.environ:
-            SCLORG_MAILS["s2i-python-container"] = os.environ["PYTHON_MAILS"].split(",")
+            SCLORG_MAILS["s2i-python-container"] = os.getenv("PYTHON_MAILS").split(",")
         if "NODEJS_MAILS" in os.environ:
-            SCLORG_MAILS["s2i-nodejs-container"] = os.environ["NODEJS_MAILS"].split(",")
+            SCLORG_MAILS["s2i-nodejs-container"] = os.getenv("NODEJS_MAILS").split(",")
         if "PERL_MAILS" in os.environ:
-            SCLORG_MAILS["s2i-perl-container"] = os.environ["PERL_MAILS"].split(",")
+            SCLORG_MAILS["s2i-perl-container"] = os.getenv("PERL_MAILS").split(",")
         if "UPSTREAM_MAILS" in os.environ:
-            SCLORG_MAILS["upstream-tests"] = os.environ["UPSTREAM_MAILS"].split(",")
+            SCLORG_MAILS["upstream-tests"] = os.getenv("UPSTREAM_MAILS").split(",")
         if "SMTP_SERVER" in os.environ:
             self.smtp_server = os.getenv("SMTP_SERVER", "smtp.redhat.com")
         if "SMTP_PORT" in os.environ:
             self.smtp_port = int(os.getenv("SMTP_PORT", 25))
         if "DEFAULT_MAILS" in os.environ:
-            self.default_mails = os.environ["DEFAULT_MAILS"].split(",")
+            self.default_mails = os.getenv("DEFAULT_MAILS").split(",")
         if "NIGHTLY_BUILDS_URL" in os.environ:
-            self.nightly_builds_url = os.environ("NIGHTLY_BUILDS_URL", "")
-        self.send_email = os.environ.get("SEND_EMAIL", False)
+            self.nightly_builds_url = os.getenv("NIGHTLY_BUILDS_URL", "")
+        self.send_email = os.getenv("SEND_EMAIL", False)
         self.send_email = True
 
         print(f"Loaded mails from environment: '{SCLORG_MAILS}'")
