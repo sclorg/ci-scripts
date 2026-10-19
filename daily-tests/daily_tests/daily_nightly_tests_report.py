@@ -430,8 +430,12 @@ class NightlyTestsReport(object):
         print("GENERATE SUCCESS CONTAINERS")
         for test_case, cont_path, log_name in self.data_dict["SUCCESS_DATA"]:
             if os.path.exists(log_name):
+                paste_bin_file = f"{cont_path}.txt"
+                self.send_file_to_pastebin(
+                    log_path=cont_path, log_name=paste_bin_file
+                )
                 self.body += (
-                    f" <a href='{self.get_pastebin_url(log_name=log_name)}'>See logs</a>"
+                    f" <a href='{self.get_pastebin_url(log_name=paste_bin_file)}'>{log_name}</a>"
                     f"<br>"
                 )
 
