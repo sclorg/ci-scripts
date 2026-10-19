@@ -418,8 +418,10 @@ class NightlyTestsReport(object):
                 self.send_file_to_pastebin(
                     log_path=full_log_name, log_name=paste_bin_file
                 )
+                url_paste_bin = self.get_pastebin_url(log_name=paste_bin_file)
+                print(f"Paste bin URL:{url_paste_bin}")
                 self.body += (
-                    f"<a href='{self.get_pastebin_url(log_name=paste_bin_file)}'>{name}</a>"
+                    f"<a href='{url_paste_bin}'>{name}</a>"
                     f"<br>"
                 )
 
@@ -434,8 +436,10 @@ class NightlyTestsReport(object):
                 self.send_file_to_pastebin(
                     log_path=cont_path, log_name=paste_bin_file
                 )
+                url_paste_bin = self.get_pastebin_url(log_name=paste_bin_file)
+                print(f"Paste bin URL:{url_paste_bin}")
                 self.body += (
-                    f" <a href='{self.get_pastebin_url(log_name=paste_bin_file)}'>{log_name}</a>"
+                    f" <a href='{url_paste_bin}'>{log_name}</a>"
                     f"<br>"
                 )
 
