@@ -183,8 +183,33 @@ class TestCollectData:
 
         assert collect_report.full_success is True
         assert collect_report.data_dict["SUCCESS"] == ["fedora-test"]
+        assert collect_report.data_dict["SUCCESS_DATA"] == []
         assert collect_report.data_dict["tmt"]["tmt_running"] == []
         assert collect_report.data_dict["tmt"]["tmt_failed"] == []
+
+    def test_collect_data_records_success_data_for_upstream_logs(self, collect_report):
+        collect_report.args.upstream_tests = True
+        case_dir = collect_report.reports_dir / "fedora-test"
+        (case_dir / "results").mkdir(parents=True)
+        success_log = case_dir / "success.log"
+        success_log.write_text("success", encoding="utf-8")
+        second_case_dir = collect_report.reports_dir / "rhel-test"
+        (second_case_dir / "results").mkdir(parents=True)
+        second_success_log = second_case_dir / "success.log"
+        second_success_log.write_text("success", encoding="utf-8")
+        collect_report.available_test_case = {
+            ("fedora-test", "nightly-fedora", "Fedora test results:"),
+            ("rhel-test", "nightly-rhel", "RHEL test results:"),
+        }
+
+        collect_report.collect_data()
+
+        assert sorted(collect_report.data_dict["SUCCESS_DATA"]) == sorted(
+            [
+                ("fedora-test", str(success_log), "success.log"),
+                ("rhel-test", str(second_success_log), "success.log"),
+            ]
+        )
 
     def test_collect_data_records_failed_container_logs(self, collect_report):
         case_dir = collect_report.reports_dir / "fedora-test"
