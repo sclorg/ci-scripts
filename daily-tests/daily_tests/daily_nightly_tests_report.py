@@ -346,9 +346,9 @@ class NightlyTestsReport(object):
                         self.store_tmt_logs_to_dict(
                             path_dir=path_dir, test_case=test_case, is_failed=False
                         )
-                    self.data_dict["SUCCESS_DATA"].extend(
-                        [(test_case, str(f), str(f.name)) for f in success_logs]
-                    )
+                    for f in success_logs:
+                        print(f"Success log for {test_case} is: {f}")
+                        self.data_dict["SUCCESS_DATA"].append((test_case, str(f), str(f.name)))
                 continue
             print(f"Failed containers are for {test_case} are: {failed_containers}")
             failed_tests = True
@@ -429,7 +429,7 @@ class NightlyTestsReport(object):
         """
         Generate email body for successful containers.
         """
-        print("GENERATE SUCCESS CONTAINERS")
+        print(f"GENERATE SUCCESS CONTAINERS {self.data_dict['SUCCESS_DATA']}")
         for test_case, cont_path, log_name in self.data_dict["SUCCESS_DATA"]:
             if os.path.exists(log_name):
                 paste_bin_file = f"{cont_path}.txt"
