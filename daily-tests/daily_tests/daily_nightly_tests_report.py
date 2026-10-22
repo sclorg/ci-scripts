@@ -439,7 +439,7 @@ class NightlyTestsReport(object):
                 url_paste_bin = self.get_pastebin_url(log_name=paste_bin_file)
                 print(f"Paste bin URL:{url_paste_bin}")
                 self.body += (
-                    f" <a href='{url_paste_bin}'>{log_name}</a>"
+                    f"{test_case} logs: <a href='{url_paste_bin}'>{log_name}</a>"
                     f"<br>"
                 )
 
