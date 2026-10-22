@@ -1,0 +1,6 @@
+summary: Run ocp-stream-generator pytest suite
+discover:
+    how: fmf
+    filter: tag:ocp-stream-generator
+execute:
+    how: tmt

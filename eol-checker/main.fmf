@@ -1,0 +1,9 @@
+summary: eol-checker unit tests
+test: ./test.sh
+tag:
+  - eol-checker
+duration: 10m
+require:
+  - python3-pytest
+  - python3-pyyaml
+  - python-tox

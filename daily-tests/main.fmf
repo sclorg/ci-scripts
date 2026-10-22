@@ -1,0 +1,13 @@
+summary: daily-tests unit tests
+test: ./test.sh
+tag:
+  - daily-tests
+duration: 10m
+require:
+  - python3-pytest
+  - python3-flexmock
+  - python3-pyyaml
+  - python3-requests
+  - python3-xmltodict
+  - python3-pyyaml
+  - python-tox

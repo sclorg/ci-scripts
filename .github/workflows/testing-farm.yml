@@ -1,0 +1,35 @@
+---
+name: Testing Farm
+on:
+  pull_request:
+    branches:
+    - master
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+
+concurrency:
+  group: "testing-farm-${{ github.event.issue.number }}"
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tox_env: [py311, py312, py313, py314]
+    steps:
+      - uses: sclorg/testing-farm-as-github-action@v4
+        with:
+          api_key: ${{ secrets.TF_PUBLIC_API_KEY }}
+          compose: Fedora-45
+          tmt_plan_regex: ".*"
+          variables: "TOX_ENV=${{ matrix.tox_env }}"
+          update_pull_request_status: "true"
+          pull_request_status_name: "Testing Farm - ${{ matrix.tox_env }}"
+          create_issue_comment: "true"
