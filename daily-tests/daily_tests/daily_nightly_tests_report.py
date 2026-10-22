@@ -431,7 +431,7 @@ class NightlyTestsReport(object):
         """
         print(f"GENERATE SUCCESS CONTAINERS {self.data_dict['SUCCESS_DATA']}")
         for test_case, cont_path, log_name in self.data_dict["SUCCESS_DATA"]:
-            if os.path.exists(log_name):
+            if os.path.exists(cont_path):
                 paste_bin_file = f"{cont_path}.txt"
                 self.send_file_to_pastebin(
                     log_path=cont_path, log_name=paste_bin_file
