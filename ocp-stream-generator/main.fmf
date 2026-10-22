@@ -1,0 +1,9 @@
+summary: ocp-stream-generator unit tests
+test: ./test.sh
+tag:
+  - ocp-stream-generator
+duration: 10m
+require:
+  - python3-pytest
+  - python3-pyyaml
+  - python-tox
